@@ -11,6 +11,12 @@ struct ContentView: View {
     
     @State private var searchText: String = ""
     @State private var filteredRecordings: [Recording] = []
+    @State private var showCopyToast = false
+    
+    @State private var editingRecording: Recording? = nil
+    @State private var newRecordingTitle: String = ""
+
+
 
     
     @State private var selectedRecording: Recording? = nil
@@ -30,6 +36,58 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
+            if showCopyToast {
+                Text("Recording copied")
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .zIndex(1) // ensures it appears above other views
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
+            }
+            
+            if let editing = editingRecording {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        // Tap outside cancels edit
+                        editingRecording = nil
+                    }
+
+                VStack(spacing: 20) {
+                    Text("Edit Recording Title")
+                        .font(.headline)
+
+                    TextField("New Title", text: $newRecordingTitle)
+                        .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+
+                    HStack {
+                        Button("Cancel") {
+                            editingRecording = nil
+                        }
+                        .buttonStyle(.bordered)
+
+                        Button("Save") {
+                            // Update the recording title
+                            if let index = recordingObjects.firstIndex(where: { $0.id == editing.id }) {
+                                recordingObjects[index].title = newRecordingTitle
+                            }
+                            editingRecording = nil
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(12)
+                .frame(maxWidth: 400)
+                .shadow(radius: 20)
+            }
+
+
             VStack(alignment: .leading, spacing: 20) {
                 RecorderView(onFinishRecording: { url in
                     Task {
@@ -56,6 +114,7 @@ struct ContentView: View {
 
                             Spacer()
 
+                            // Play/Pause Button
                             Button {
                                 if player.playingURL == recording.fileURL && player.isPlaying {
                                     player.pause()
@@ -67,13 +126,75 @@ struct ContentView: View {
                             }
                             .buttonStyle(.plain)
 
+                            // Progress bar
                             ProgressView(value: player.playingURL == recording.fileURL ? player.progress : 0)
                                 .frame(width: 60)
+
+                            // --- Three-dot menu ---
+                            Menu {
+                                Button {
+                                    // Copy transcription
+                                    UIPasteboard.general.string = recording.fullText
+                                    withAnimation { showCopyToast = true }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        withAnimation { showCopyToast = false }
+                                    }
+                                } label: {
+                                    Label("Copy Transcription", systemImage: "doc.on.doc")
+                                }
+
+                                Button {
+                                    // Share transcription
+                                    let activityVC = UIActivityViewController(activityItems: [recording.fullText], applicationActivities: nil)
+                                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                       let rootVC = windowScene.keyWindow?.rootViewController {
+                                        rootVC.present(activityVC, animated: true)
+                                    }
+                                } label: {
+                                    Label("Share Transcription", systemImage: "square.and.arrow.up")
+                                }
+
+                                Button {
+                                    // Export audio
+                                    let activityVC = UIActivityViewController(activityItems: [recording.fileURL], applicationActivities: nil)
+                                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                       let rootVC = windowScene.keyWindow?.rootViewController {
+                                        rootVC.present(activityVC, animated: true)
+                                    }
+                                } label: {
+                                    Label("Export Audio", systemImage: "square.and.arrow.up.fill")
+                                }
+
+                                Button {
+                                    // Edit title
+                                    editingRecording = recording
+                                    newRecordingTitle = recording.title
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+
+                                Button(role: .destructive) {
+                                    // Delete recording
+                                    if let index = recordingObjects.firstIndex(where: { $0.id == recording.id }) {
+                                        modelContext.delete(recordingObjects[index])
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .rotationEffect(.degrees(90))
+                                    .frame(width: 24, height: 24)
+                                    .contentShape(Rectangle())
+                            }
+                            .menuStyle(.borderlessButton)
                         }
                         .contentShape(Rectangle())
                         .onTapGesture {
                             selectedRecording = recording
                         }
+
                     }
                     .onDelete(perform: deleteRecordings)
                 }
