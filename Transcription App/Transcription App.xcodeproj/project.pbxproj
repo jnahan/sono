@@ -20,6 +20,7 @@
 		5D962F262ECE92E500049626 /* RecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderView.swift */; };
 		5D962F282ECE935500049626 /* MiniPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F272ECE935500049626 /* MiniPlayer.swift */; };
 		5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2A2ECEBAC000049626 /* SettingsView.swift */; };
+		5D962F2D2ECEBBF800049626 /* RecordingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2C2ECEBBF800049626 /* RecordingDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		5D962F252ECE92E500049626 /* RecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderView.swift; sourceTree = "<group>"; };
 		5D962F272ECE935500049626 /* MiniPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPlayer.swift; sourceTree = "<group>"; };
 		5D962F2A2ECEBAC000049626 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		5D962F2C2ECEBBF800049626 /* RecordingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				5D962F2A2ECEBAC000049626 /* SettingsView.swift */,
+				5D962F2C2ECEBBF800049626 /* RecordingDetailView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -203,6 +206,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D962F262ECE92E500049626 /* RecorderView.swift in Sources */,
+				5D962F2D2ECEBBF800049626 /* RecordingDetailView.swift in Sources */,
 				5D7925AE2ECD8E4A002889A6 /* ContentView.swift in Sources */,
 				5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */,
 				5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */,

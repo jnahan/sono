@@ -206,10 +206,7 @@ struct ContentView: View {
 
         } detail: {
             if let selected = selectedRecording {
-                ScrollView {
-                    Text(selected.fullText)
-                        .padding()
-                }
+                RecordingDetailView(recording: selected)
             } else {
                 Text("Select a recording")
                     .foregroundStyle(.secondary)
