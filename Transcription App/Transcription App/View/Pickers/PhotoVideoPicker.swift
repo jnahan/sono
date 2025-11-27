@@ -2,14 +2,13 @@ import SwiftUI
 import PhotosUI
 import AVFoundation
 
-/// Picker for selecting videos from the photo library
 struct PhotoVideoPicker: UIViewControllerRepresentable {
     let onMediaPicked: (URL) -> Void
+    let onCancel: (() -> Void)?
     
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration(photoLibrary: .shared())
         
-        // Only show videos (no photos)
         config.filter = .videos
         config.selectionLimit = 1
         config.preferredAssetRepresentationMode = .current
@@ -22,29 +21,37 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(onMediaPicked: onMediaPicked)
+        Coordinator(onMediaPicked: onMediaPicked, onCancel: onCancel)
     }
     
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
         let onMediaPicked: (URL) -> Void
+        let onCancel: (() -> Void)?
         
-        init(onMediaPicked: @escaping (URL) -> Void) {
+        init(onMediaPicked: @escaping (URL) -> Void, onCancel: (() -> Void)?) {
             self.onMediaPicked = onMediaPicked
+            self.onCancel = onCancel
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
             
-            guard let result = results.first else { return }
+            guard let result = results.first else {
+                DispatchQueue.main.async {
+                    self.onCancel?()
+                }
+                return
+            }
             
-            // Load video file
             result.itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, error in
                 guard let url = url, error == nil else {
                     print("❌ Failed to load video: \(error?.localizedDescription ?? "Unknown error")")
+                    DispatchQueue.main.async {
+                        self.onCancel?()
+                    }
                     return
                 }
                 
-                // Copy to app's directory
                 self.copyVideoToAppDirectory(from: url)
             }
         }
@@ -53,7 +60,6 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
             do {
                 let fileManager = FileManager.default
                 
-                // Create destination directory
                 let destinationDir = try fileManager.url(
                     for: .applicationSupportDirectory,
                     in: .userDomainMask,
@@ -63,23 +69,23 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
                 
                 try fileManager.createDirectory(at: destinationDir, withIntermediateDirectories: true)
                 
-                // Create unique filename
                 let timestamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
                 let ext = sourceURL.pathExtension
                 let destinationURL = destinationDir.appendingPathComponent("video-\(timestamp).\(ext)")
                 
-                // Copy the file
                 try fileManager.copyItem(at: sourceURL, to: destinationURL)
                 
                 print("✅ Video imported from library: \(destinationURL.lastPathComponent)")
                 
-                // Call completion handler
                 DispatchQueue.main.async {
                     self.onMediaPicked(destinationURL)
                 }
                 
             } catch {
                 print("❌ Error copying video: \(error)")
+                DispatchQueue.main.async {
+                    self.onCancel?()
+                }
             }
         }
     }

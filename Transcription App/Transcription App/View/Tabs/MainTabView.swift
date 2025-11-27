@@ -2,26 +2,21 @@ import SwiftUI
 import SwiftData
 
 struct MainTabView: View {
-    // MARK: - Environment & Queries
     @Environment(\.modelContext) private var modelContext
     @Query private var folders: [Folder]
     
-    // MARK: - State
     @State private var selectedTab = 0
     @State private var showPlusButton = true
     
-    // MARK: - Sheet States
     @State private var showAddSheet = false
     @State private var showRecorderScreen = false
     @State private var showFilePicker = false
     @State private var showPhotoPicker = false
     @State private var showTranscriptionDetail = false
-    @State private var pendingAudioURL: URL? = nil
+    @State private var pendingAudioURL: URL?
     
-    // MARK: - Body
     var body: some View {
         ZStack {
-            // Tab Bar
             TabView(selection: $selectedTab) {
                 RecordingsView()
                     .environment(\.showPlusButton, $showPlusButton)
@@ -30,7 +25,6 @@ struct MainTabView: View {
                     }
                     .tag(0)
                 
-                // Placeholder for center plus button
                 Color.clear
                     .tabItem {
                         Label("", systemImage: "")
@@ -45,7 +39,6 @@ struct MainTabView: View {
                     .tag(2)
             }
             
-            // Custom Plus Button Overlay
             if showPlusButton {
                 VStack {
                     Spacer()
@@ -88,22 +81,30 @@ struct MainTabView: View {
             RecorderView()
         }
         .sheet(isPresented: $showFilePicker) {
-            MediaFilePicker { url, mediaType in
-                pendingAudioURL = url
-                showFilePicker = false
-                showTranscriptionDetail = true
-                
-                print("Imported \(mediaType == .video ? "video" : "audio") from files: \(url.lastPathComponent)")
-            }
+            MediaFilePicker(
+                onFilePicked: { url, mediaType in
+                    pendingAudioURL = url
+                    showFilePicker = false
+                    showTranscriptionDetail = true
+                    print("Imported \(mediaType == .video ? "video" : "audio") from files: \(url.lastPathComponent)")
+                },
+                onCancel: {
+                    showFilePicker = false
+                }
+            )
         }
         .sheet(isPresented: $showPhotoPicker) {
-            PhotoVideoPicker { url in
-                pendingAudioURL = url
-                showPhotoPicker = false
-                showTranscriptionDetail = true
-                
-                print("Imported video from photos: \(url.lastPathComponent)")
-            }
+            PhotoVideoPicker(
+                onMediaPicked: { url in
+                    pendingAudioURL = url
+                    showPhotoPicker = false
+                    showTranscriptionDetail = true
+                    print("Imported video from photos: \(url.lastPathComponent)")
+                },
+                onCancel: {
+                    showPhotoPicker = false
+                }
+            )
         }
         .fullScreenCover(item: Binding(
             get: { showTranscriptionDetail ? pendingAudioURL : nil },
@@ -128,7 +129,6 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Environment Key
 private struct ShowPlusButtonKey: EnvironmentKey {
     static let defaultValue: Binding<Bool> = .constant(true)
 }
@@ -140,7 +140,6 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Preview
 #Preview {
     MainTabView()
         .modelContainer(for: [Recording.self, RecordingSegment.self, Folder.self], inMemory: true)
