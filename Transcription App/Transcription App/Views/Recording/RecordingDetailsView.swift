@@ -16,72 +16,85 @@ struct RecordingDetailsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Scrollable Content Area
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Title and Date
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(recording.title)
-                            .font(.system(size: 34, weight: .bold))
-                        
-                        Text(recording.recordedAt, style: .date)
-                            .font(.system(size: 17))
-                            .foregroundColor(.secondary)
-                    }
+            // Header
+            VStack(spacing: 12) {
+                // Flower icon
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.accent)
+                
+                // Date
+                Text(relativeDate)
+                    .font(.system(size: 16))
+                    .foregroundColor(.warmGray500)
+                
+                // Title
+                Text(recording.title)
+                    .font(.custom("LibreBaskerville-Regular", size: 28))
+                    .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                    
-                    // Transcription with timestamps
+            }
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            
+            // Scrollable Transcript Area
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
                     if !recording.segments.isEmpty {
                         ForEach(recording.segments) { segment in
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 Text(formatTime(segment.start))
                                     .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.warmGray500)
                                 
                                 Text(segment.text)
                                     .font(.system(size: 17))
+                                    .foregroundColor(.baseBlack)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-                            .padding(.horizontal)
-                            .padding(.bottom, 8)
                         }
                     } else {
-                        // Fallback to full text if no segments
                         Text(recording.fullText)
                             .font(.system(size: 17))
-                            .padding(.horizontal)
+                            .foregroundColor(.baseBlack)
                     }
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 200) // Space for player controls
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .background(Color.warmGray50)
+                .cornerRadius(16)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 200)
             }
             
             Spacer()
             
             // Audio Player Controls (Fixed at bottom)
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 // Progress Bar
                 VStack(spacing: 8) {
-                    Slider(value: $audioPlayer.currentTime, in: 0...audioPlayer.duration) { editing in
+                    Slider(value: $audioPlayer.currentTime, in: 0...max(audioPlayer.duration, 0.1)) { editing in
                         if !editing {
                             audioPlayer.seek(to: audioPlayer.currentTime)
                         }
                     }
-                    .tint(.primary)
+                    .tint(.baseBlack)
                     
                     HStack {
                         Text(formatTime(audioPlayer.currentTime))
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 14))
+                            .foregroundColor(.warmGray600)
+                            .monospacedDigit()
                         
                         Spacer()
                         
                         Text(formatTime(audioPlayer.duration))
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 14))
+                            .foregroundColor(.warmGray600)
+                            .monospacedDigit()
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 24)
                 
                 // Playback Controls
                 HStack(spacing: 60) {
@@ -90,8 +103,8 @@ struct RecordingDetailsView: View {
                         audioPlayer.skip(by: -15)
                     } label: {
                         Image(systemName: "gobackward.15")
-                            .font(.system(size: 32))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 36))
+                            .foregroundColor(.baseBlack)
                     }
                     
                     // Play/Pause
@@ -104,16 +117,9 @@ struct RecordingDetailsView: View {
                             }
                         }
                     } label: {
-                        ZStack {
-                            Circle()
-                                .fill(Color.primary)
-                                .frame(width: 70, height: 70)
-                            
-                            Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
-                                .font(.system(size: 30))
-                                .foregroundColor(.white)
-                                .offset(x: audioPlayer.isPlaying ? 0 : 2)
-                        }
+                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 48))
+                            .foregroundColor(.baseBlack)
                     }
                     
                     // Forward 15 seconds
@@ -121,48 +127,62 @@ struct RecordingDetailsView: View {
                         audioPlayer.skip(by: 15)
                     } label: {
                         Image(systemName: "goforward.15")
-                            .font(.system(size: 32))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 36))
+                            .foregroundColor(.baseBlack)
                     }
                 }
+                .padding(.vertical, 8)
                 
                 // Bottom Action Buttons
-                HStack(spacing: 40) {
+                HStack(spacing: 0) {
                     // Note button
                     Button {
                         showNotePopup = true
                     } label: {
-                        Image(systemName: "note.text")
-                            .font(.system(size: 24))
-                            .foregroundColor(.primary)
+                        VStack(spacing: 4) {
+                            Image(systemName: "note.text")
+                                .font(.system(size: 24))
+                            Text("Note")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(.warmGray600)
                     }
-                    
-                    Spacer()
+                    .frame(maxWidth: .infinity)
                     
                     // Copy button
                     Button {
                         UIPasteboard.general.string = recording.fullText
                     } label: {
-                        Image(systemName: "doc.on.doc")
-                            .font(.system(size: 24))
-                            .foregroundColor(.primary)
+                        VStack(spacing: 4) {
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 24))
+                            Text("Copy")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(.warmGray600)
                     }
+                    .frame(maxWidth: .infinity)
                     
                     // Share button
                     Button {
                         showShareSheet = true
                     } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 24))
-                            .foregroundColor(.primary)
+                        VStack(spacing: 4) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 24))
+                            Text("Share")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(.warmGray600)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 20)
+                .padding(.bottom, 32)
             }
             .padding(.top, 16)
-            .background(.ultraThinMaterial)
+            .background(Color.baseWhite)
         }
+        .background(Color.baseWhite)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
@@ -171,7 +191,8 @@ struct RecordingDetailsView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 20))
+                        .foregroundColor(.warmGray600)
                 }
             }
             
@@ -202,8 +223,10 @@ struct RecordingDetailsView: View {
                         Label("Delete", systemImage: "trash")
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "ellipsis")
                         .font(.system(size: 20))
+                        .foregroundColor(.warmGray600)
+                        .rotationEffect(.degrees(90))
                 }
             }
         }
@@ -246,6 +269,26 @@ struct RecordingDetailsView: View {
         }
         .onDisappear {
             audioPlayer.stop()
+        }
+    }
+    
+    private var relativeDate: String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if calendar.isDateInToday(recording.recordedAt) {
+            return "Today"
+        } else if calendar.isDateInYesterday(recording.recordedAt) {
+            return "Yesterday"
+        } else {
+            let components = calendar.dateComponents([.day], from: recording.recordedAt, to: now)
+            if let days = components.day, days < 7 {
+                return "\(days)d ago"
+            } else {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMM d, yyyy"
+                return formatter.string(from: recording.recordedAt)
+            }
         }
     }
     
