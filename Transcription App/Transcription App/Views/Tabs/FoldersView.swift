@@ -41,6 +41,7 @@ struct FoldersView: View {
             .navigationDestination(for: Folder.self) { folder in
                 FolderDetailView(folder: folder, showPlusButton: showPlusButton)
                     .onAppear { showPlusButton.wrappedValue = false }
+                    .onDisappear { showPlusButton.wrappedValue = true }  // Add this line
             }
             .alert("Create Folder", isPresented: $showCreateFolder) {
                 TextField("Folder name", text: $newFolderName)
@@ -201,6 +202,7 @@ struct FolderDetailView: View {
             }
             .navigationTitle(folder.name)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .tabBar)
             .navigationDestination(for: Recording.self) { recording in
                 RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
