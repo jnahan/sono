@@ -9,10 +9,10 @@ import UIKit // For haptic feedback and opening Settings
 // A clean recording interface with just the recorder controls and waveform visualization
 struct RecorderControl: View {
     // State object to manage recording and audio levels.
-    @StateObject private var rec = MiniRecorder()
+    @StateObject private var rec = Recorder()
     
     // State object to manage audio playback.
-    @StateObject private var player = MiniPlayer()
+    @StateObject private var player = Player()
     
     // Tracks whether microphone permission is denied to show an alert.
     @State private var micDenied = false

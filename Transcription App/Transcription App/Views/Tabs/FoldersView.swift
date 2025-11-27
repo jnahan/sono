@@ -108,7 +108,7 @@ struct FolderDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allRecordings: [Recording]
     
-    @StateObject private var player = MiniPlayer()
+    @StateObject private var player = Player()
     
     let folder: Folder
     var showPlusButton: Binding<Bool>

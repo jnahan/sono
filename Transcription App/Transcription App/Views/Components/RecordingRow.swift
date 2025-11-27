@@ -4,7 +4,7 @@ import SwiftUI
 struct RecordingRow: View {
     // MARK: - Properties
     let recording: Recording
-    @ObservedObject var player: MiniPlayer
+    @ObservedObject var player: Player
     let onCopy: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void

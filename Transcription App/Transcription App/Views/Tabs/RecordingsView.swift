@@ -8,7 +8,7 @@ struct RecordingsView: View {
     @Query private var recordings: [Recording]
     
     // MARK: - State Objects
-    @StateObject private var player = MiniPlayer()
+    @StateObject private var player = Player()
     
     // MARK: - State
     @State private var searchText = ""
