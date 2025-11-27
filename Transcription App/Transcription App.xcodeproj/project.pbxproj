@@ -111,7 +111,6 @@
 				5D70377D2ECD910200D061E3 /* TestRecording */,
 				5D7925BB2ECD8E5A002889A6 /* Model */,
 				5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */,
-				5D7925AD2ECD8E4A002889A6 /* ContentView.swift */,
 				5D7925B12ECD8E4B002889A6 /* Assets.xcassets */,
 				5D7925B32ECD8E4B002889A6 /* Preview Content */,
 			);
@@ -139,17 +138,42 @@
 		5D962F292ECEBAB200049626 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				5D962F2A2ECEBAC000049626 /* SettingsView.swift */,
-				5D962F2C2ECEBBF800049626 /* RecordingDetailView.swift */,
+				5DB5790D2ED8BB20002DC84D /* Settings */,
+				5DB5790C2ED8BAB5002DC84D /* Recording */,
+				5DB5790B2ED8BAA0002DC84D /* Main */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		5DB5790B2ED8BAA0002DC84D /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				5DB579032ED84651002DC84D /* MainTabView.swift */,
+				5DB579052ED846A6002DC84D /* FoldersView.swift */,
+				5D7925AD2ECD8E4A002889A6 /* ContentView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		5DB5790C2ED8BAB5002DC84D /* Recording */ = {
+			isa = PBXGroup;
+			children = (
 				5D4622D32ED83570009A454D /* TranscriptionView.swift */,
+				5D962F2C2ECEBBF800049626 /* RecordingDetailView.swift */,
 				5DB579012ED84343002DC84D /* RecorderScreen.swift */,
 				5D962F252ECE92E500049626 /* RecorderView.swift */,
 				5D962F232ECE8DD400049626 /* MultiBarVisualizerView.swift */,
-				5DB579032ED84651002DC84D /* MainTabView.swift */,
-				5DB579052ED846A6002DC84D /* FoldersView.swift */,
 				5DB579072ED8475F002DC84D /* AddRecordingSheetView.swift */,
 			);
-			path = View;
+			path = Recording;
+			sourceTree = "<group>";
+		};
+		5DB5790D2ED8BB20002DC84D /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				5D962F2A2ECEBAC000049626 /* SettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
