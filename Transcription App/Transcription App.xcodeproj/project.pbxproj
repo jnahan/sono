@@ -12,7 +12,6 @@
 		5D4622D42ED83570009A454D /* CreateRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4622D32ED83570009A454D /* CreateRecordingView.swift */; };
 		5D70377C2ECD90B200D061E3 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5D70377B2ECD90B200D061E3 /* WhisperKit */; };
 		5D70377F2ECD916400D061E3 /* jfk.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5D70377E2ECD916400D061E3 /* jfk.wav */; };
-		5D7037822ECD91C300D061E3 /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7037812ECD91C300D061E3 /* TranscriptionService.swift */; };
 		5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */; };
 		5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */; };
 		5D7925B22ECD8E4B002889A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D7925B12ECD8E4B002889A6 /* Assets.xcassets */; };
@@ -35,6 +34,7 @@
 		5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */; };
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
+		5DB579222ED8CF97002DC84D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579212ED8CF97002DC84D /* Colors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,7 +42,6 @@
 		5D214A392ED8263B0069565D /* RecordingSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegment.swift; sourceTree = "<group>"; };
 		5D4622D32ED83570009A454D /* CreateRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecordingView.swift; sourceTree = "<group>"; };
 		5D70377E2ECD916400D061E3 /* jfk.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = jfk.wav; sourceTree = "<group>"; };
-		5D7037812ECD91C300D061E3 /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 		5D7925A82ECD8E4A002889A6 /* Transcription App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transcription App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcription_AppApp.swift; sourceTree = "<group>"; };
 		5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
@@ -66,6 +65,7 @@
 		5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingActionsMenu.swift; sourceTree = "<group>"; };
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
+		5DB579212ED8CF97002DC84D /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,7 +91,6 @@
 		5D7037802ECD91B400D061E3 /* Service */ = {
 			isa = PBXGroup;
 			children = (
-				5D7037812ECD91C300D061E3 /* TranscriptionService.swift */,
 				5D962F272ECE935500049626 /* MiniPlayer.swift */,
 				5D962F212ECE87ED00049626 /* MiniRecorder.swift */,
 			);
@@ -117,6 +116,7 @@
 		5D7925AA2ECD8E4A002889A6 /* Transcription App */ = {
 			isa = PBXGroup;
 			children = (
+				5DB579202ED8CF8E002DC84D /* Utilities */,
 				5D962F292ECEBAB200049626 /* View */,
 				5D7037802ECD91B400D061E3 /* Service */,
 				5D70377D2ECD910200D061E3 /* TestRecording */,
@@ -173,6 +173,7 @@
 			children = (
 				5DB579012ED84343002DC84D /* RecorderView.swift */,
 				5D4622D32ED83570009A454D /* CreateRecordingView.swift */,
+				5D962F252ECE92E500049626 /* RecorderControl.swift */,
 				5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */,
 			);
 			path = Recording;
@@ -196,7 +197,6 @@
 				5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */,
 				5DB579132ED8C031002DC84D /* CopyToast.swift */,
 				5DB579152ED8C052002DC84D /* EmptyStateView.swift */,
-				5D962F252ECE92E500049626 /* RecorderControl.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -208,6 +208,14 @@
 				5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */,
 			);
 			path = Pickers;
+			sourceTree = "<group>";
+		};
+		5DB579202ED8CF8E002DC84D /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				5DB579212ED8CF97002DC84D /* Colors.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -293,11 +301,11 @@
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */,
 				5D214A372ED8238B0069565D /* Folder.swift in Sources */,
+				5DB579222ED8CF97002DC84D /* Colors.swift in Sources */,
 				5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */,
 				5DB579062ED846A6002DC84D /* FoldersView.swift in Sources */,
 				5D962F222ECE87ED00049626 /* MiniRecorder.swift in Sources */,
 				5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */,
-				5D7037822ECD91C300D061E3 /* TranscriptionService.swift in Sources */,
 				5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */,
 				5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */,
 				5DB579162ED8C052002DC84D /* EmptyStateView.swift in Sources */,
