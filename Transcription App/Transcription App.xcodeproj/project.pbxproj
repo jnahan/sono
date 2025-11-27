@@ -33,6 +33,7 @@
 		5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */; };
 		5DB579142ED8C031002DC84D /* CopyToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579132ED8C031002DC84D /* CopyToast.swift */; };
 		5DB579162ED8C052002DC84D /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579152ED8C052002DC84D /* EmptyStateView.swift */; };
+		5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,7 @@
 		5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRecordingOverlay.swift; sourceTree = "<group>"; };
 		5DB579132ED8C031002DC84D /* CopyToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToast.swift; sourceTree = "<group>"; };
 		5DB579152ED8C052002DC84D /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingActionsMenu.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +194,7 @@
 				5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */,
 				5DB579132ED8C031002DC84D /* CopyToast.swift */,
 				5DB579152ED8C052002DC84D /* EmptyStateView.swift */,
+				5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -283,6 +286,7 @@
 				5DB579062ED846A6002DC84D /* FoldersView.swift in Sources */,
 				5D962F222ECE87ED00049626 /* MiniRecorder.swift in Sources */,
 				5D7037822ECD91C300D061E3 /* TranscriptionService.swift in Sources */,
+				5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */,
 				5DB579162ED8C052002DC84D /* EmptyStateView.swift in Sources */,
 				5D962F282ECE935500049626 /* MiniPlayer.swift in Sources */,
 				5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */,

@@ -37,37 +37,12 @@ struct RecordingRow: View {
                 .frame(width: 60)
             
             // Actions Menu
-            Menu {
-                Button(action: onCopy) {
-                    Label("Copy Transcription", systemImage: "doc.on.doc")
-                }
-                
-                Button {
-                    shareTranscription()
-                } label: {
-                    Label("Share Transcription", systemImage: "square.and.arrow.up")
-                }
-                
-                Button {
-                    exportAudio()
-                } label: {
-                    Label("Export Audio", systemImage: "square.and.arrow.up.fill")
-                }
-                
-                Button(action: onEdit) {
-                    Label("Edit", systemImage: "pencil")
-                }
-                
-                Button(role: .destructive, action: onDelete) {
-                    Label("Delete", systemImage: "trash")
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .rotationEffect(.degrees(90))
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
-            }
-            .menuStyle(.borderlessButton)
+            RecordingActionsMenu(
+                recording: recording,
+                onCopy: onCopy,
+                onEdit: onEdit,
+                onDelete: onDelete
+            )
         }
     }
     
@@ -82,30 +57,6 @@ struct RecordingRow: View {
             player.pause()
         } else if let url = recording.resolvedURL {
             player.play(url)
-        }
-    }
-    
-    private func shareTranscription() {
-        let activityVC = UIActivityViewController(
-            activityItems: [recording.fullText],
-            applicationActivities: nil
-        )
-        presentActivityViewController(activityVC)
-    }
-    
-    private func exportAudio() {
-        guard let url = recording.resolvedURL else { return }
-        let activityVC = UIActivityViewController(
-            activityItems: [url],
-            applicationActivities: nil
-        )
-        presentActivityViewController(activityVC)
-    }
-    
-    private func presentActivityViewController(_ activityVC: UIActivityViewController) {
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.keyWindow?.rootViewController {
-            rootVC.present(activityVC, animated: true)
         }
     }
 }
