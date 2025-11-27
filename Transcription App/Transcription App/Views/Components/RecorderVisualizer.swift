@@ -2,17 +2,13 @@ import SwiftUI
 import Combine
 import AVFoundation
 
-/// Displays audio level values as a horizontal bar graph waveform
 struct RecorderVisualizer: View {
-    // MARK: - Properties
     let values: [Float]
     let barCount: Int
     
-    // MARK: - Configuration
-    private let barSpacing: CGFloat = 1
-    private let minBarHeight: CGFloat = 0.07
+    private let barSpacing: CGFloat = 2
+    private let minBarHeight: CGFloat = 0.05
     
-    // MARK: - Body
     var body: some View {
         GeometryReader { geo in
             let width = max(0, geo.size.width.isFinite ? geo.size.width : 0)
@@ -34,7 +30,6 @@ struct RecorderVisualizer: View {
         }
     }
     
-    // MARK: - Helper Methods
     private func calculateBarWidth(width: CGFloat, barCount: Int) -> CGFloat {
         let totalSpacing = CGFloat(barCount - 1) * barSpacing
         let availableWidth = max(0, width - totalSpacing)
@@ -56,7 +51,6 @@ struct RecorderVisualizer: View {
     }
 }
 
-// MARK: - Bar View
 private struct BarView: View {
     let value: Float
     let width: CGFloat
@@ -70,10 +64,9 @@ private struct BarView: View {
         let yOffset = (height - barHeight) / 2
         
         Rectangle()
-            .fill(Color.primary.opacity(0.85))
+            .fill(Color.accent)
             .frame(width: max(0, width), height: barHeight)
             .cornerRadius(width / 2)
-            .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
             .offset(y: yOffset)
     }
 }
