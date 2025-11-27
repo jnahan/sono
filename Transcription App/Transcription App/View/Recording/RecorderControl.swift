@@ -5,9 +5,9 @@ import Combine
 import UIKit // For haptic feedback and opening Settings
 #endif
 
-// MARK: - RecorderView
+// MARK: - RecorderControl
 // A clean recording interface with just the recorder controls and waveform visualization
-struct RecorderView: View {
+struct RecorderControl: View {
     // State object to manage recording and audio levels.
     @StateObject private var rec = MiniRecorder()
     
@@ -27,7 +27,7 @@ struct RecorderView: View {
                 .font(.title3).bold()
             
             // MARK: Waveform Visualizer - shows recent microphone level history bars.
-            MultiBarVisualizerView(values: rec.meterHistory, barCount: 24)
+            RecorderVisualizer(values: rec.meterHistory, barCount: 24)
                 .frame(height: 54)
                 .padding(.horizontal)
             
@@ -43,7 +43,7 @@ struct RecorderView: View {
             HStack(spacing: 12) {
                 
                 // Record button toggles recording state.
-                // In RecorderView.swift - update the Record button action:
+                // In RecorderControl.swift - update the Record button action:
 
                 Button(rec.isRecording ? "Stop" : "Record") {
                     playTapHaptic()

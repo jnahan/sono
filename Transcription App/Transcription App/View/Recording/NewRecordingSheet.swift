@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct AddRecordingSheet: View {
+struct NewRecordingSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var onRecordAudio: () -> Void

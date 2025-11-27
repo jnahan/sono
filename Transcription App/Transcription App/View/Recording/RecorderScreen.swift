@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct RecorderScreen: View {
+struct RecorderView: View {
     @Environment(\.dismiss) private var dismiss
     @Query private var folders: [Folder]
     @Environment(\.modelContext) private var modelContext
@@ -18,8 +18,8 @@ struct RecorderScreen: View {
                 VStack {
                     Spacer()
                     
-                    RecorderView(onFinishRecording: { url in
-                        print("=== RecorderView finished with URL: \(url)")
+                    RecorderControl(onFinishRecording: { url in
+                        print("=== RecorderControl finished with URL: \(url)")
                         pendingAudioURL = url
                         showTranscriptionDetail = true
                     })

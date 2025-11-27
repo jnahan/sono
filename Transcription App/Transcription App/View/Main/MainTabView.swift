@@ -12,7 +12,7 @@ struct MainTabView: View {
     
     // MARK: - Sheet States
     @State private var showAddSheet = false
-    @State private var showRecorderScreen = false
+    @State private var showRecorderView = false
     @State private var showFilePicker = false
     @State private var showTranscriptionDetail = false
     @State private var pendingAudioURL: URL? = nil
@@ -74,16 +74,16 @@ struct MainTabView: View {
             }
         }
         .sheet(isPresented: $showAddSheet) {
-            AddRecordingSheet(
-                onRecordAudio: { showRecorderScreen = true },
+            NewRecordingSheet(
+                onRecordAudio: { showRecorderView = true },
                 onUploadFile: { showFilePicker = true }
             )
             .presentationDetents([.height(200)])
             .presentationDragIndicator(.hidden)
             .presentationBackground(.clear)
         }
-        .fullScreenCover(isPresented: $showRecorderScreen) {
-            RecorderScreen()
+        .fullScreenCover(isPresented: $showRecorderView) {
+            RecorderView()
         }
         .sheet(isPresented: $showFilePicker) {
             AudioFilePicker { url in
