@@ -45,7 +45,7 @@ struct RecorderScreen: View {
                     }
                 }
             )) { audioURL in
-                TranscriptionDetailView(
+                CreateRecordingView(
                     isPresented: $showTranscriptionDetail,
                     audioURL: audioURL,
                     folders: folders,

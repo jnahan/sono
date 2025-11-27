@@ -55,7 +55,7 @@ struct RecordingsView: View {
                 SettingsView()
             }
             .navigationDestination(item: $selectedRecording) { recording in
-                RecordingDetailView(recording: recording)
+                RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
                     .onDisappear { showPlusButton.wrappedValue = true }
             }

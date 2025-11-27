@@ -43,18 +43,23 @@ struct RecorderView: View {
             HStack(spacing: 12) {
                 
                 // Record button toggles recording state.
+                // In RecorderView.swift - update the Record button action:
+
                 Button(rec.isRecording ? "Stop" : "Record") {
                     playTapHaptic()
                     if rec.isRecording {
-                        // Stop recording; recordings list will refresh via onChange.
                         rec.stop()
                         if let fileURL = rec.fileURL {
                             onFinishRecording?(fileURL)
                         }
                     } else {
-                        // Stop playback if active, then start recording.
+                        // ✅ MAKE SURE TO STOP PLAYER FIRST
                         player.stop()
-                        rec.start()
+                        
+                        // ✅ ADD A SMALL DELAY TO LET AUDIO SESSION SETTLE
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            rec.start()
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)

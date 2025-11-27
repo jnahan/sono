@@ -3,7 +3,7 @@ import SwiftData
 import Foundation
 import WhisperKit
 
-struct TranscriptionDetailView: View {
+struct CreateRecordingView: View {
     @Binding var isPresented: Bool
     let audioURL: URL
     let folders: [Folder]
@@ -75,7 +75,7 @@ struct TranscriptionDetailView: View {
                 )
             }
             .onAppear {
-                print("=== TranscriptionDetailView APPEARED ===")
+                print("=== CreateRecordingView APPEARED ===")
                 print("Audio URL: \(audioURL)")
                 print("Audio path: \(audioURL.path)")
                 print("File exists: \(FileManager.default.fileExists(atPath: audioURL.path))")

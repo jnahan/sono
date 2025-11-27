@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import AVFoundation
 
-struct RecordingDetailView: View {
+struct RecordingDetailsView: View {
     let recording: Recording
     @StateObject private var audioPlayer = AudioPlayerController()
     @Environment(\.modelContext) private var modelContext

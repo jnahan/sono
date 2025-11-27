@@ -167,7 +167,7 @@ struct FolderDetailView: View {
             .navigationTitle(folder.name)
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Recording.self) { recording in
-                RecordingDetailView(recording: recording)
+                RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
             }
             .overlay {
