@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 import Foundation
-import WhisperKit
 
 struct CreateRecordingView: View {
     @Binding var isPresented: Bool
@@ -18,6 +17,7 @@ struct CreateRecordingView: View {
     @State private var transcribedLanguage: String = ""
     @State private var transcribedSegments: [RecordingSegment] = []
     @State private var showFolderPicker = false
+    @State private var isTranscribing = false
     
     var body: some View {
         NavigationStack {
@@ -43,6 +43,16 @@ struct CreateRecordingView: View {
                         .frame(height: 200)
                 }
                 
+                if isTranscribing {
+                    Section {
+                        HStack {
+                            ProgressView()
+                            Text("Transcribing...")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
                 if let error = transcriptionError {
                     Section {
                         Text("Error: \(error)")
@@ -54,7 +64,7 @@ struct CreateRecordingView: View {
                     Button("Save transcription") {
                         saveRecording()
                     }
-                    .disabled(title.isEmpty)
+                    .disabled(title.isEmpty || isTranscribing)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -75,67 +85,42 @@ struct CreateRecordingView: View {
                 )
             }
             .onAppear {
-                print("=== CreateRecordingView APPEARED ===")
-                print("Audio URL: \(audioURL)")
-                print("Audio path: \(audioURL.path)")
-                print("File exists: \(FileManager.default.fileExists(atPath: audioURL.path))")
                 title = audioURL.deletingPathExtension().lastPathComponent
-                print("Title set to: \(title)")
                 startTranscription()
             }
         }
     }
     
     private func startTranscription() {
-        print("=== STARTING TRANSCRIPTION ===")
+        isTranscribing = true
+        transcriptionError = nil
+        
         Task {
             do {
-                print("Creating WhisperKit with tiny model...")
-                let pipe = try await WhisperKit(WhisperKitConfig(model: "tiny"))
-                print("Transcribing audio at: \(audioURL.path)")
-                let results = try await pipe.transcribe(audioPath: audioURL.path)
-                print("Got \(results.count) results")
+                let result = try await TranscriptionService.shared.transcribe(audioURL: audioURL)
                 
-                if let firstResult = results.first {
-                    let segments = firstResult.segments.map { seg in
+                await MainActor.run {
+                    transcribedText = result.text
+                    transcribedLanguage = result.language
+                    transcribedSegments = result.segments.map { segment in
                         RecordingSegment(
-                            start: Double(seg.start),
-                            end: Double(seg.end),
-                            text: seg.text
+                            start: segment.start,
+                            end: segment.end,
+                            text: segment.text
                         )
                     }
-                    
-                    await MainActor.run {
-                        print("=== TRANSCRIPTION COMPLETE ===")
-                        print("Text length: \(firstResult.text.count) characters")
-                        print("First 100 chars: \(String(firstResult.text.prefix(100)))")
-                        transcribedText = firstResult.text
-                        transcribedLanguage = firstResult.language
-                        transcribedSegments = segments
-                    }
-                } else {
-                    await MainActor.run {
-                        print("=== NO TRANSCRIPTION RESULTS ===")
-                        transcriptionError = "No transcription results returned"
-                    }
+                    isTranscribing = false
                 }
             } catch {
-                print("=== TRANSCRIPTION FAILED ===")
-                print("Error: \(error)")
-                print("Error details: \(error.localizedDescription)")
                 await MainActor.run {
                     transcriptionError = error.localizedDescription
+                    isTranscribing = false
                 }
             }
         }
     }
     
     private func saveRecording() {
-        print("=== SAVING RECORDING ===")
-        print("Title: \(title)")
-        print("Text length: \(transcribedText.count)")
-        print("Folder: \(selectedFolder?.name ?? "none")")
-        
         let recording = Recording(
             title: title,
             fileURL: audioURL,
@@ -155,7 +140,6 @@ struct CreateRecordingView: View {
     }
 }
 
-// MARK: - Folder Picker View
 struct FolderPickerView: View {
     let folders: [Folder]
     @Binding var selectedFolder: Folder?

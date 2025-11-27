@@ -35,6 +35,7 @@
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579222ED8CF97002DC84D /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579212ED8CF97002DC84D /* Colors.swift */; };
+		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,6 +67,7 @@
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579212ED8CF97002DC84D /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 			children = (
 				5D962F272ECE935500049626 /* MiniPlayer.swift */,
 				5D962F212ECE87ED00049626 /* MiniRecorder.swift */,
+				5DB579242ED8D143002DC84D /* TranscriptionService.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				5DB579022ED84343002DC84D /* RecorderView.swift in Sources */,
 				5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */,
 				5DB579042ED84651002DC84D /* MainTabView.swift in Sources */,
+				5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */,
 				5DB579102ED8BF6E002DC84D /* RecordingRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
