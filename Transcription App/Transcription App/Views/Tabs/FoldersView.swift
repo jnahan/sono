@@ -241,6 +241,8 @@ struct FolderDetailView: View {
         .onAppear {
             viewModel.configure(modelContext: modelContext)
         }
+        .background(Color.warmGray50)
+
     }
 }
 

@@ -30,13 +30,7 @@ struct RecordingsView: View {
                         SearchBar(text: $searchText, placeholder: "Search recordings")
                             .padding(.horizontal, 16)
                         
-                        recordingsList
-                        Image("gear-six")
-                            .resizable()
-                            .foregroundColor(.accent)
-                            .frame(width: 64, height: 64)
-
-                    }
+                        recordingsList                    }
                 }
                 
                 if viewModel.editingRecording != nil {
@@ -50,8 +44,12 @@ struct RecordingsView: View {
                     )
                 }
             }
-            .onChange(of: searchText) { _ in updateFilteredRecordings() }
-            .onChange(of: recordings) { _ in updateFilteredRecordings() }
+            .onChange(of: searchText) { oldValue, newValue in
+                updateFilteredRecordings()
+            }
+            .onChange(of: recordings) { oldValue, newValue in
+                updateFilteredRecordings()
+            }
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 updateFilteredRecordings()
@@ -64,6 +62,8 @@ struct RecordingsView: View {
                     .onAppear { showPlusButton.wrappedValue = false }
                     .onDisappear { showPlusButton.wrappedValue = true }
             }
+            .background(Color.warmGray50)
+
         }
     }
     
@@ -102,10 +102,15 @@ struct RecordingsView: View {
                         onDelete: { viewModel.deleteRecording(recording) }
                     )
                 }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.warmGray50)
+                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
             }
             .onDelete(perform: deleteRecordings)
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.warmGray50)
     }
     
     private func updateFilteredRecordings() {

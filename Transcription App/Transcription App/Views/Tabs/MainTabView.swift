@@ -21,14 +21,22 @@ struct MainTabView: View {
                 RecordingsView()
                     .environment(\.showPlusButton, $showPlusButton)
                     .tabItem {
-                        Label("Recordings", systemImage: "waveform")
+                        Image(selectedTab == 0 ? "house-fill" : "house")
+                            .resizable()
+                            .renderingMode(.template)
+                            .foregroundColor(selectedTab == 0 ? .baseBlack : .warmGray400)
+                            .frame(width: 32, height: 32)
                     }
                     .tag(0)
                 
                 FoldersView()
                     .environment(\.showPlusButton, $showPlusButton)
                     .tabItem {
-                        Label("Folders", systemImage: "folder")
+                        Image(selectedTab == 1 ? "folder-fill" : "folder")
+                            .resizable()
+                            .renderingMode(.template)
+                            .foregroundColor(selectedTab == 1 ? .baseBlack : .warmGray400)
+                            .frame(width: 32, height: 32)
                     }
                     .tag(1)
             }
@@ -45,13 +53,13 @@ struct MainTabView: View {
                     } label: {
                         ZStack {
                             Circle()
-                                .fill(Color.black)
+                                .fill(Color.baseBlack)
                                 .frame(width: 56, height: 56)
                                 .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
                             
                             Image(systemName: "plus")
                                 .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(.baseWhite)
                         }
                     }
                     .padding(.bottom, 8)
