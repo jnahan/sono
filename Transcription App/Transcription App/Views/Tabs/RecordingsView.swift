@@ -31,6 +31,11 @@ struct RecordingsView: View {
                             .padding(.horizontal, 16)
                         
                         recordingsList
+                        Image("gear-six")
+                            .resizable()
+                            .foregroundColor(.accent)
+                            .frame(width: 64, height: 64)
+
                     }
                 }
                 
