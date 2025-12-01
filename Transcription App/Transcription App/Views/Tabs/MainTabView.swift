@@ -1,6 +1,10 @@
 import SwiftUI
 import SwiftData
 
+extension URL: Identifiable {
+    public var id: String { self.absoluteString }
+}
+
 private struct ShowPlusButtonKey: EnvironmentKey {
     static let defaultValue: Binding<Bool> = .constant(true)
 }
@@ -15,15 +19,16 @@ extension EnvironmentValues {
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var folders: [Folder]
+
     
     @State private var selectedTab = 0
     @State private var showPlusButton = true
     
-    @State private var showAddSheet = false
+    @State private var showNewRecordingSheet = false
     @State private var showRecorderScreen = false
     @State private var showFilePicker = false
-    @State private var showPhotoPicker = false
-    @State private var showTranscriptionDetail = false
+    @State private var showVideoPicker = false
+    // used to pass file url from picker to transcription screen
     @State private var pendingAudioURL: URL?
     
     var body: some View {
@@ -34,13 +39,13 @@ struct MainTabView: View {
                     .tabItem { EmptyView() } // Hide default tab item
                     .tag(0)
                 
-                FoldersView()
+                CollectionsView()
                     .environment(\.showPlusButton, $showPlusButton)
                     .tabItem { EmptyView() } // Hide default tab item
                     .tag(1)
             }
             
-            // Custom Tab Bar Overlay - Only show when on main tabs
+            // Custom Tab Bar
             if showPlusButton {
                 VStack {
                     Spacer()
@@ -59,7 +64,7 @@ struct MainTabView: View {
                         
                         // Plus button
                         Button {
-                            showAddSheet = true
+                            showNewRecordingSheet = true
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "plus")
@@ -68,8 +73,7 @@ struct MainTabView: View {
                             }
                             .frame(width: 120, height: 48)
                             .background(Color.baseBlack)
-                            .cornerRadius(24)
-                            .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+                            .cornerRadius(32)
                         }
                         
                         // Folder button
@@ -93,60 +97,52 @@ struct MainTabView: View {
             let appearance = UITabBar.appearance()
             appearance.isHidden = true
         }
-        .fullScreenCover(isPresented: $showAddSheet) {
+        .fullScreenCover(isPresented: $showNewRecordingSheet) {
             NewRecordingSheet(
                 onRecordAudio: { showRecorderScreen = true },
                 onUploadFile: { showFilePicker = true },
-                onChooseFromPhotos: { showPhotoPicker = true }
+                onChooseFromPhotos: { showVideoPicker = true }
             )
-            .presentationDetents([.height(240)])
             .presentationDragIndicator(.hidden)
             .presentationBackground(.clear)
         }
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView()
         }
+        // handle file picker, video picker logic
         .sheet(isPresented: $showFilePicker) {
             MediaFilePicker(
                 onFilePicked: { url, mediaType in
                     pendingAudioURL = url
                     showFilePicker = false
-                    showTranscriptionDetail = true
                 },
                 onCancel: {
                     showFilePicker = false
                 }
             )
         }
-        .sheet(isPresented: $showPhotoPicker) {
+        .sheet(isPresented: $showVideoPicker) {
             PhotoVideoPicker(
                 onMediaPicked: { url in
                     pendingAudioURL = url
-                    showPhotoPicker = false
-                    showTranscriptionDetail = true
+                    showVideoPicker = false
                 },
                 onCancel: {
-                    showPhotoPicker = false
+                    showVideoPicker = false
                 }
             )
         }
-        .fullScreenCover(item: Binding(
-            get: { showTranscriptionDetail ? pendingAudioURL : nil },
-            set: { newValue in
-                if newValue == nil {
-                    showTranscriptionDetail = false
-                    pendingAudioURL = nil
-                }
-            }
-        )) { audioURL in
+        .fullScreenCover(item: $pendingAudioURL) { audioURL in
             CreateRecordingView(
-                isPresented: $showTranscriptionDetail,
+                isPresented: Binding(
+                    get: { pendingAudioURL != nil },
+                    set: { if !$0 { pendingAudioURL = nil } }
+                ),
                 audioURL: audioURL,
                 folders: folders,
                 modelContext: modelContext,
                 onTranscriptionComplete: {
                     pendingAudioURL = nil
-                    showTranscriptionDetail = false
                 }
             )
         }
