@@ -7,7 +7,7 @@ struct RecordingEmptyState: View {
             
             VStack(spacing: 32) {
                 Text("Create your \nfirst recording")
-                    .font(.libreMedium(size: 24))
+                    .font(.custom("LibreBaskerville-Medium", size: 24))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)
                 
@@ -16,7 +16,7 @@ struct RecordingEmptyState: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 120)
             }
-            .padding(.bottom, 108)
+            .padding(.bottom, 48 + 60) // 48px above tab bar + tab bar height
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

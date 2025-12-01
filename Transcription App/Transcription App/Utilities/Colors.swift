@@ -24,3 +24,9 @@ extension Color {
     static let baseBlack = Color.black
     static let baseWhite = Color.white
 }
+
+extension View {
+    func defaultShadow() -> some View {
+        self.shadow(color: Color.black.opacity(0.04), radius: 20, x: 0, y: 4)
+    }
+}

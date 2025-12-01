@@ -28,26 +28,24 @@ struct CustomTopBar: View {
                 Button {
                     onLeftTap?()
                 } label: {
-                    ZStack(alignment: .leading) { // align icon left
-                        Image(leftIcon)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.warmGray400)
-                    }
-                    .frame(width: 40, height: 40) // tappable area
-                    .contentShape(Rectangle())
+                    Image(leftIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.warmGray400)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
             } else {
                 Spacer()
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
             }
             
             Spacer()
             
             // Title
             Text(title)
-                .font(.libreMedium(size: 18))
+                .font(.custom("LibreBaskerville-Regular", size: 18))
                 .foregroundColor(.baseBlack)
             
             Spacer()
@@ -60,18 +58,19 @@ struct CustomTopBar: View {
                     Image(rightIcon)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(.warmGray500)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.warmGray400)
+                        .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
+                .padding(.trailing, 8)
             } else {
                 Spacer()
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .frame(height: 64)
+        .frame(height: 68)
     }
 }
