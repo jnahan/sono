@@ -36,6 +36,8 @@ struct SearchBar: View {
         .padding(.vertical, 12)
         .background(Color.baseWhite)
         .cornerRadius(32)
+        .appShadow()
+
     }
 }
 
