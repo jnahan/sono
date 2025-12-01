@@ -16,6 +16,7 @@
 		5D214A372ED8238B0069565D /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D214A362ED8238B0069565D /* Folder.swift */; };
 		5D214A3A2ED8263B0069565D /* RecordingSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D214A392ED8263B0069565D /* RecordingSegment.swift */; };
 		5D4622D42ED83570009A454D /* CreateRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4622D32ED83570009A454D /* CreateRecordingView.swift */; };
+		5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */; };
 		5D70377C2ECD90B200D061E3 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5D70377B2ECD90B200D061E3 /* WhisperKit */; };
 		5D70377F2ECD916400D061E3 /* jfk.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5D70377E2ECD916400D061E3 /* jfk.wav */; };
 		5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */; };
@@ -58,6 +59,7 @@
 		5D214A362ED8238B0069565D /* Folder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Folder.swift; sourceTree = "<group>"; };
 		5D214A392ED8263B0069565D /* RecordingSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegment.swift; sourceTree = "<group>"; };
 		5D4622D32ED83570009A454D /* CreateRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecordingView.swift; sourceTree = "<group>"; };
+		5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5D70377E2ECD916400D061E3 /* jfk.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = jfk.wav; sourceTree = "<group>"; };
 		5D7925A82ECD8E4A002889A6 /* Transcription App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transcription App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcription_AppApp.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				5D70377D2ECD910200D061E3 /* TestRecording */,
 				5D7925B12ECD8E4B002889A6 /* Assets.xcassets */,
 				5D7925B32ECD8E4B002889A6 /* Preview Content */,
+				5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */,
 			);
 			path = "Transcription App";
 			sourceTree = "<group>";
@@ -336,6 +339,7 @@
 				5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */,
 				5D70377F2ECD916400D061E3 /* jfk.wav in Resources */,
 				5D7925B22ECD8E4B002889A6 /* Assets.xcassets in Resources */,
+				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
 			);
