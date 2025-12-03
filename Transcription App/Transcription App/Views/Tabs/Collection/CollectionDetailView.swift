@@ -14,6 +14,10 @@ struct CollectionDetailView: View {
     
     @State private var searchText = ""
     @State private var selectedRecording: Recording?
+    @State private var showMenu = false
+    @State private var editingFolder = false
+    @State private var editFolderName = ""
+    @State private var deletingFolder = false
     
     private var recordings: [Recording] {
         allRecordings.filter { $0.folder?.id == folder.id }
@@ -35,7 +39,9 @@ struct CollectionDetailView: View {
             CustomTopBar(
                 title: folder.name,
                 leftIcon: "caret-left",
-                onLeftTap: { dismiss() }
+                rightIcon: "dots-three",
+                onLeftTap: { dismiss() },
+                onRightTap: { showMenu = true }
             )
             
             if viewModel.showCopyToast {
@@ -57,6 +63,47 @@ struct CollectionDetailView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
+        .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
+            Button("Rename") {
+                editingFolder = true
+                editFolderName = folder.name
+            }
+            
+            Button("Delete", role: .destructive) {
+                deletingFolder = true
+            }
+            
+            Button("Cancel", role: .cancel) {}
+        }
+        .sheet(isPresented: $editingFolder) {
+            CollectionFormSheet(
+                isPresented: $editingFolder,
+                folderName: $editFolderName,
+                isEditing: true,
+                onSave: {
+                    folder.name = editFolderName
+                    editingFolder = false
+                }
+            )
+        }
+        .sheet(isPresented: $deletingFolder) {
+            DeleteFolderConfirmation(
+                isPresented: $deletingFolder,
+                folderName: folder.name,
+                recordingCount: recordings.count,
+                onConfirm: {
+                    // Delete all recordings in this folder
+                    for recording in recordings {
+                        modelContext.delete(recording)
+                    }
+                    
+                    // Delete the folder
+                    modelContext.delete(folder)
+                    deletingFolder = false
+                    dismiss()
+                }
+            )
+        }
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
                 .onAppear { showPlusButton.wrappedValue = false }

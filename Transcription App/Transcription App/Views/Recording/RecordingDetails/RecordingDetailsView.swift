@@ -7,11 +7,11 @@ struct RecordingDetailsView: View {
     @StateObject private var audioPlayer = AudioPlayerController()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query private var folders: [Folder]
     
     @State private var showShareSheet = false
-    @State private var showNotePopup = false  // Keep this for the overlay
-    @State private var showEditTitle = false
-    @State private var newTitle = ""
+    @State private var showNotePopup = false
+    @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var showMenu = false
     
@@ -112,7 +112,19 @@ struct RecordingDetailsView: View {
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Export Audio") {
+            Button("Copy transcription") {
+                UIPasteboard.general.string = recording.fullText
+            }
+            
+            Button("Share transcription") {
+                let activityVC = UIActivityViewController(activityItems: [recording.fullText], applicationActivities: nil)
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.keyWindow?.rootViewController {
+                    rootVC.present(activityVC, animated: true)
+                }
+            }
+            
+            Button("Export audio") {
                 if let url = recording.resolvedURL {
                     let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                     if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -123,8 +135,7 @@ struct RecordingDetailsView: View {
             }
             
             Button("Edit") {
-                showEditTitle = true
-                newTitle = recording.title
+                showEditRecording = true
             }
             
             Button("Delete", role: .destructive) {
@@ -140,21 +151,26 @@ struct RecordingDetailsView: View {
                 ShareSheet(items: [recording.fullText])
             }
         }
-        .alert("Edit Title", isPresented: $showEditTitle) {
-            TextField("Title", text: $newTitle)
-            Button("Cancel", role: .cancel) {}
-            Button("Save") {
-                recording.title = newTitle
-            }
+        .sheet(isPresented: $showEditRecording) {
+            RecordingFormView(
+                isPresented: $showEditRecording,
+                audioURL: nil,
+                existingRecording: recording,
+                folders: folders,
+                modelContext: modelContext,
+                onTranscriptionComplete: {}
+            )
         }
-        .alert("Delete Recording?", isPresented: $showDeleteConfirm) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) {
-                modelContext.delete(recording)
-                dismiss()
-            }
-        } message: {
-            Text("This action cannot be undone.")
+        .sheet(isPresented: $showDeleteConfirm) {
+            DeleteRecordingConfirmation(
+                isPresented: $showDeleteConfirm,
+                recordingTitle: recording.title,
+                onConfirm: {
+                    modelContext.delete(recording)
+                    showDeleteConfirm = false
+                    dismiss()
+                }
+            )
         }
         .onAppear {
             if let url = recording.resolvedURL {

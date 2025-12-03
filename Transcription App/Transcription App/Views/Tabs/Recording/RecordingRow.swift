@@ -11,6 +11,7 @@ struct RecordingRow: View {
     let onDelete: () -> Void
     
     @State private var showMenu = false
+    @State private var showDeleteConfirm = false
     @State private var duration: TimeInterval = 0
     
     // MARK: - Body
@@ -72,10 +73,20 @@ struct RecordingRow: View {
             }
             
             Button("Delete", role: .destructive) {
-                onDelete()
+                showDeleteConfirm = true
             }
             
             Button("Cancel", role: .cancel) {}
+        }
+        .sheet(isPresented: $showDeleteConfirm) {
+            DeleteRecordingConfirmation(
+                isPresented: $showDeleteConfirm,
+                recordingTitle: recording.title,
+                onConfirm: {
+                    onDelete()
+                    showDeleteConfirm = false
+                }
+            )
         }
     }
     

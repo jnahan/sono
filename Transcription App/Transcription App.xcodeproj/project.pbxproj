@@ -11,6 +11,7 @@
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionList.swift */; };
 		5D0ED1102EE00FC50003E775 /* DeleteFolderConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10F2EE00FC50003E775 /* DeleteFolderConfirmation.swift */; };
+		5D0ED1122EE0FDA00003E775 /* DeleteRecordingConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1112EE0FDA00003E775 /* DeleteRecordingConfirmation.swift */; };
 		5D1570632ED965F40094E13E /* CollectionsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570622ED965F40094E13E /* CollectionsRow.swift */; };
 		5D1570652ED96B0A0094E13E /* FolderPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570642ED96B0A0094E13E /* FolderPickerView.swift */; };
 		5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */; };
@@ -64,6 +65,7 @@
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionList.swift; sourceTree = "<group>"; };
 		5D0ED10F2EE00FC50003E775 /* DeleteFolderConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFolderConfirmation.swift; sourceTree = "<group>"; };
+		5D0ED1112EE0FDA00003E775 /* DeleteRecordingConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteRecordingConfirmation.swift; sourceTree = "<group>"; };
 		5D1570622ED965F40094E13E /* CollectionsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsRow.swift; sourceTree = "<group>"; };
 		5D1570642ED96B0A0094E13E /* FolderPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPickerView.swift; sourceTree = "<group>"; };
 		5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionFormSheet.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyState.swift */,
 				5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */,
 				5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */,
+				5D0ED1112EE0FDA00003E775 /* DeleteRecordingConfirmation.swift */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -436,6 +439,7 @@
 				5DB579142ED8C031002DC84D /* CopyToast.swift in Sources */,
 				5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */,
 				5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */,
+				5D0ED1122EE0FDA00003E775 /* DeleteRecordingConfirmation.swift in Sources */,
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */,
 				5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */,
