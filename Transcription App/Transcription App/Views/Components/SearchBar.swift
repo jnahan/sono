@@ -16,11 +16,11 @@ struct SearchBar: View {
                 if text.isEmpty {
                     Text(placeholder)
                         .foregroundColor(.warmGray400)
-                        .font(.system(size: 14))
+                        .font(.system(size: 16))
                 }
                 
                 TextField("", text: $text)
-                    .font(.system(size: 14))
+                    .font(.system(size: 16))
                     .foregroundColor(.baseBlack)
             }
             

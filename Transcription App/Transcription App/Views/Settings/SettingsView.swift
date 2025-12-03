@@ -5,6 +5,27 @@ struct SettingsView: View {
     @State private var audioLanguage = "English"
     @State private var selectedModel = "Tiny"
     
+    // Data for selection lists
+    private let audioLanguages = [
+        SelectionItem(emoji: nil, title: "English"),
+        SelectionItem(emoji: nil, title: "Spanish"),
+        SelectionItem(emoji: nil, title: "French"),
+        SelectionItem(emoji: nil, title: "German"),
+        SelectionItem(emoji: nil, title: "Italian"),
+        SelectionItem(emoji: nil, title: "Portuguese"),
+        SelectionItem(emoji: nil, title: "Chinese"),
+        SelectionItem(emoji: nil, title: "Japanese"),
+        SelectionItem(emoji: nil, title: "Korean")
+    ]
+    
+    private let models = [
+        SelectionItem(emoji: "✨", title: "Tiny"),
+        SelectionItem(emoji: "✨", title: "Base"),
+        SelectionItem(emoji: "✨", title: "Small"),
+        SelectionItem(emoji: "✨", title: "Medium"),
+        SelectionItem(emoji: "✨", title: "Large")
+    ]
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -20,144 +41,46 @@ struct SettingsView: View {
                     
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Top Section
+                            // Top Section: Audio Language & Model
                             VStack(spacing: 0) {
-                                // Audio Language
-                                NavigationLink(destination: AudioLanguageView(selectedLanguage: $audioLanguage)) {
-                                    HStack(spacing: 16) {
-                                        Image("text-aa")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Text("Audio language")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Text(audioLanguage)
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.warmGray500)
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
+                                NavigationLink(destination: SelectionListView(
+                                    title: "Audio Language",
+                                    items: audioLanguages,
+                                    selectedItem: $audioLanguage
+                                )) {
+                                    SettingsRow(title: "Audio language", value: audioLanguage, imageName: "text-aa")
                                 }
                                 
-                                Divider()
-                                    .padding(.leading, 60)
+                                Divider().padding(.leading, 60)
                                 
-                                // Model
-                                NavigationLink(destination: ModelSelectionView(selectedModel: $selectedModel)) {
-                                    HStack(spacing: 16) {
-                                        Image("sparkle")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Text("Model")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Text(selectedModel)
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.warmGray500)
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
+                                NavigationLink(destination: SelectionListView(
+                                    title: "Model",
+                                    items: models,
+                                    selectedItem: $selectedModel
+                                )) {
+                                    SettingsRow(title: "Model", value: selectedModel, imageName: "sparkle")
                                 }
                             }
                             .background(Color.white)
                             .cornerRadius(12)
                             .padding(.horizontal, 16)
                             
-                            // Bottom Section
+                            // Bottom Section: Feedback, Rate, Share
                             VStack(spacing: 0) {
-                                // Feedback and Support
-                                NavigationLink(destination: FeedbackSupportView()) {
-                                    HStack(spacing: 16) {
-                                        Image("seal-question")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Text("Feedback and support")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
+                                Button(action: sendFeedback) {
+                                    SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
                                 }
                                 
-                                Divider()
-                                    .padding(.leading, 60)
+                                Divider().padding(.leading, 60)
                                 
-                                // Rate App
                                 Button(action: rateApp) {
-                                    HStack(spacing: 16) {
-                                        Image("star")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Text("Rate app")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
+                                    SettingsRow(title: "Rate app", value: nil, imageName: "star")
                                 }
                                 
-                                Divider()
-                                    .padding(.leading, 60)
+                                Divider().padding(.leading, 60)
                                 
-                                // Share App
                                 Button(action: shareApp) {
-                                    HStack(spacing: 16) {
-                                        Image("export")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Text("Share app")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
+                                    SettingsRow(title: "Share app", value: nil, imageName: "export")
                                 }
                             }
                             .background(Color.white)
@@ -175,7 +98,6 @@ struct SettingsView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 24, height: 24)
-                            .foregroundColor(.accent)
                         
                         Text("SONO")
                             .font(.custom("LibreBaskerville-Regular", size: 20))
@@ -197,166 +119,23 @@ struct SettingsView: View {
         .presentationDragIndicator(.hidden)
     }
     
-    // Rate app function
+    // MARK: - Functions
     func rateApp() {
         if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID?action=write-review") {
             UIApplication.shared.open(url)
         }
     }
     
-    // Share app function
     func shareApp() {
         let appURL = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
-        let activityViewController = UIActivityViewController(
+        let activityVC = UIActivityViewController(
             activityItems: ["Check out this app!", appURL],
             applicationActivities: nil
         )
-        
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootViewController = windowScene.windows.first?.rootViewController {
-            rootViewController.present(activityViewController, animated: true)
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
         }
-    }
-}
-
-// MARK: - Audio Language Selection View
-struct AudioLanguageView: View {
-    @Binding var selectedLanguage: String
-    @Environment(\.dismiss) var dismiss
-    
-    let languages = ["English", "Spanish", "French", "German", "Italian", "Portuguese", "Chinese", "Japanese", "Korean"]
-    
-    var body: some View {
-        ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                CustomTopBar(
-                    title: "Audio language",
-                    leftIcon: "caret-left",
-                    onLeftTap: { dismiss() }
-                )
-                
-                List {
-                    ForEach(languages, id: \.self) { language in
-                        Button(action: {
-                            selectedLanguage = language
-                            dismiss()
-                        }) {
-                            HStack {
-                                Text(language)
-                                    .font(.system(size: 17))
-                                    .foregroundColor(.baseBlack)
-                                Spacer()
-                                if selectedLanguage == language {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.accent)
-                                }
-                            }
-                        }
-                        .listRowBackground(Color.white)
-                    }
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-            }
-        }
-        .navigationBarHidden(true)
-    }
-}
-
-// MARK: - Model Selection View
-struct ModelSelectionView: View {
-    @Binding var selectedModel: String
-    @Environment(\.dismiss) var dismiss
-    
-    let models = ["Tiny", "Base", "Small", "Medium", "Large"]
-    
-    var body: some View {
-        ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                CustomTopBar(
-                    title: "Model",
-                    leftIcon: "caret-left",
-                    onLeftTap: { dismiss() }
-                )
-                
-                List {
-                    ForEach(models, id: \.self) { model in
-                        Button(action: {
-                            selectedModel = model
-                            dismiss()
-                        }) {
-                            HStack {
-                                Text(model)
-                                    .font(.system(size: 17))
-                                    .foregroundColor(.baseBlack)
-                                Spacer()
-                                if selectedModel == model {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.accent)
-                                }
-                            }
-                        }
-                        .listRowBackground(Color.white)
-                    }
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-            }
-        }
-        .navigationBarHidden(true)
-    }
-}
-
-// MARK: - Feedback and Support View
-struct FeedbackSupportView: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                CustomTopBar(
-                    title: "Feedback and support",
-                    leftIcon: "caret-left",
-                    onLeftTap: { dismiss() }
-                )
-                
-                List {
-                    Button("Send Feedback") {
-                        sendFeedback()
-                    }
-                    .listRowBackground(Color.white)
-                    
-                    Button("Contact Support") {
-                        contactSupport()
-                    }
-                    .listRowBackground(Color.white)
-                    
-                    Button("Privacy Policy") {
-                        openPrivacyPolicy()
-                    }
-                    .listRowBackground(Color.white)
-                    
-                    Button("Terms of Service") {
-                        openTermsOfService()
-                    }
-                    .listRowBackground(Color.white)
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-            }
-        }
-        .navigationBarHidden(true)
     }
     
     func sendFeedback() {
@@ -364,22 +143,40 @@ struct FeedbackSupportView: View {
             UIApplication.shared.open(url)
         }
     }
+}
+
+// MARK: - Settings Row Component
+struct SettingsRow: View {
+    let title: String
+    let value: String?
+    let imageName: String
     
-    func contactSupport() {
-        if let url = URL(string: "mailto:support@yourapp.com?subject=Support Request") {
-            UIApplication.shared.open(url)
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(imageName)
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 24, height: 24)
+                .foregroundColor(.black)
+            
+            Text(title)
+                .font(.system(size: 17))
+                .foregroundColor(.baseBlack)
+            
+            Spacer()
+            
+            if let value = value {
+                Text(value)
+                    .font(.system(size: 17))
+                    .foregroundColor(.warmGray500)
+            }
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.warmGray400)
         }
-    }
-    
-    func openPrivacyPolicy() {
-        if let url = URL(string: "https://yourapp.com/privacy") {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    func openTermsOfService() {
-        if let url = URL(string: "https://yourapp.com/terms") {
-            UIApplication.shared.open(url)
-        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
     }
 }

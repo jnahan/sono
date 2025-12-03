@@ -82,13 +82,13 @@ struct CollectionDetailView: View {
     private var recordingsList: some View {
         Group {
             if recordings.isEmpty {
-                EmptyStateView(
-                    icon: "mic.slash",
-                    title: "No Recordings",
-                    description: "This folder is empty",
-                    actionTitle: nil,
-                    action: nil
-                )
+                VStack(spacing: 16) {
+                    Text(folder.name + " is empty")
+                        .font(.libreMedium(size: 24))
+                }
+               .frame(maxWidth: 280)
+               .frame(maxHeight: .infinity)
+               Spacer()
             } else {
                 List {
                     ForEach(filteredRecordings) { recording in
