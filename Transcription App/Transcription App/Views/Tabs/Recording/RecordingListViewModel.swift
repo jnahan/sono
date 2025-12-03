@@ -8,7 +8,6 @@ class RecordingListViewModel: ObservableObject {
     
     // MARK: - Edit State
     @Published var editingRecording: Recording?
-    @Published var newRecordingTitle = ""
     
     // MARK: - Toast State
     @Published var showCopyToast = false
@@ -32,21 +31,13 @@ class RecordingListViewModel: ObservableObject {
     
     func editRecording(_ recording: Recording) {
         editingRecording = recording
-        newRecordingTitle = recording.title
     }
     
     func deleteRecording(_ recording: Recording) {
         modelContext?.delete(recording)
     }
     
-    func saveEdit() {
-        guard let editing = editingRecording else { return }
-        editing.title = newRecordingTitle
-        editingRecording = nil
-    }
-    
     func cancelEdit() {
         editingRecording = nil
-        newRecordingTitle = ""
     }
 }

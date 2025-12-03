@@ -51,9 +51,10 @@ struct RecorderView: View {
                     }
                 }
             )) { audioURL in
-                CreateRecordingView(
+                RecordingFormView(
                     isPresented: $showTranscriptionDetail,
                     audioURL: audioURL,
+                    existingRecording: nil,
                     folders: folders,
                     modelContext: modelContext,
                     onTranscriptionComplete: {

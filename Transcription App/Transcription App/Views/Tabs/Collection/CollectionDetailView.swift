@@ -5,6 +5,7 @@ struct CollectionDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var allRecordings: [Recording]
+    @Query private var folders: [Folder]
     
     @StateObject private var viewModel = RecordingListViewModel()
     
@@ -30,40 +31,27 @@ struct CollectionDetailView: View {
     }
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                CustomTopBar(
-                    title: folder.name,
-                    leftIcon: "caret-left",
-                    onLeftTap: { dismiss() }
-                )
-                
-                if viewModel.showCopyToast {
-                    CopyToast()
-                        .zIndex(1)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 10)
-                }
-                
-                VStack(alignment: .leading, spacing: 16) {
-                    if !recordings.isEmpty {
-                        SearchBar(text: $searchText, placeholder: "Search recordings...")
-                            .padding(.horizontal, 20)
-                    }
-                    
-                    recordingsList
-                }
+        VStack(spacing: 0) {
+            CustomTopBar(
+                title: folder.name,
+                leftIcon: "caret-left",
+                onLeftTap: { dismiss() }
+            )
+            
+            if viewModel.showCopyToast {
+                CopyToast()
+                    .zIndex(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
             }
             
-            if viewModel.editingRecording != nil {
-                EditRecordingOverlay(
-                    isPresented: Binding(
-                        get: { viewModel.editingRecording != nil },
-                        set: { if !$0 { viewModel.cancelEdit() } }
-                    ),
-                    newTitle: $viewModel.newRecordingTitle,
-                    onSave: viewModel.saveEdit
-                )
+            VStack(alignment: .leading, spacing: 16) {
+                if !recordings.isEmpty {
+                    SearchBar(text: $searchText, placeholder: "Search recordings...")
+                        .padding(.horizontal, 20)
+                }
+                
+                recordingsList
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
@@ -73,6 +61,21 @@ struct CollectionDetailView: View {
             RecordingDetailsView(recording: recording)
                 .onAppear { showPlusButton.wrappedValue = false }
                 .onDisappear { showPlusButton.wrappedValue = true }
+        }
+        .navigationDestination(item: $viewModel.editingRecording) { recording in
+            RecordingFormView(
+                isPresented: Binding(
+                    get: { viewModel.editingRecording != nil },
+                    set: { if !$0 { viewModel.cancelEdit() } }
+                ),
+                audioURL: nil,
+                existingRecording: recording,
+                folders: folders,
+                modelContext: modelContext,
+                onTranscriptionComplete: {}
+            )
+            .onAppear { showPlusButton.wrappedValue = false }
+            .onDisappear { showPlusButton.wrappedValue = true }
         }
         .onAppear {
             viewModel.configure(modelContext: modelContext)

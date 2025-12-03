@@ -5,6 +5,7 @@ struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.showPlusButton) private var showPlusButton
     @Query private var recordings: [Recording]
+    @Query private var folders: [Folder]
     
     @StateObject private var viewModel = RecordingListViewModel()
     
@@ -56,17 +57,6 @@ struct RecordingsView: View {
                         recordingsList
                     }
                 }
-                
-                if viewModel.editingRecording != nil {
-                    EditRecordingOverlay(
-                        isPresented: Binding(
-                            get: { viewModel.editingRecording != nil },
-                            set: { if !$0 { viewModel.cancelEdit() } }
-                        ),
-                        newTitle: $viewModel.newRecordingTitle,
-                        onSave: viewModel.saveEdit
-                    )
-                }
             }
             .onChange(of: searchText) { oldValue, newValue in
                 updateFilteredRecordings()
@@ -85,6 +75,21 @@ struct RecordingsView: View {
                 RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
                     .onDisappear { showPlusButton.wrappedValue = true }
+            }
+            .navigationDestination(item: $viewModel.editingRecording) { recording in
+                RecordingFormView(
+                    isPresented: Binding(
+                        get: { viewModel.editingRecording != nil },
+                        set: { if !$0 { viewModel.cancelEdit() } }
+                    ),
+                    audioURL: nil,
+                    existingRecording: recording,
+                    folders: folders,
+                    modelContext: modelContext,
+                    onTranscriptionComplete: {}
+                )
+                .onAppear { showPlusButton.wrappedValue = false }
+                .onDisappear { showPlusButton.wrappedValue = true }
             }
             .background(Color.warmGray50)
             .navigationBarHidden(true)

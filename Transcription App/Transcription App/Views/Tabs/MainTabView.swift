@@ -129,12 +129,13 @@ struct MainTabView: View {
             )
         }
         .fullScreenCover(item: $pendingAudioURL) { audioURL in
-            CreateRecordingView(
+            RecordingFormView(
                 isPresented: Binding(
                     get: { pendingAudioURL != nil },
                     set: { if !$0 { pendingAudioURL = nil } }
                 ),
                 audioURL: audioURL,
+                existingRecording: nil,
                 folders: folders,
                 modelContext: modelContext,
                 onTranscriptionComplete: {

@@ -2,9 +2,10 @@ import SwiftUI
 import SwiftData
 import Foundation
 
-struct CreateRecordingView: View {
+struct RecordingFormView: View {
     @Binding var isPresented: Bool
-    let audioURL: URL
+    let audioURL: URL?
+    let existingRecording: Recording?
     let folders: [Folder]
     let modelContext: ModelContext
     let onTranscriptionComplete: () -> Void
@@ -18,6 +19,11 @@ struct CreateRecordingView: View {
     @State private var transcribedSegments: [RecordingSegment] = []
     @State private var showFolderPicker = false
     @State private var isTranscribing = false
+    @Environment(\.dismiss) private var dismiss
+    
+    private var isEditing: Bool {
+        existingRecording != nil
+    }
     
     var body: some View {
         ZStack {
@@ -26,21 +32,33 @@ struct CreateRecordingView: View {
             
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: 8) {
-                    Text("Transcribing audio")
-                        .font(.custom("LibreBaskerville-Regular", size: 24))
-                        .foregroundColor(.baseBlack)
-                    
-                    Text("Please do not close the app\nuntil transcription is complete")
-                        .font(.system(size: 16))
-                        .foregroundColor(.warmGray500)
-                        .multilineTextAlignment(.center)
+                if isEditing {
+                    CustomTopBar(
+                        title: "Edit Recording",
+                        leftIcon: "caret-left",
+                        onLeftTap: {
+                            isPresented = false
+                            dismiss()
+                        }
+                    )
+                    .padding(.top, 12)
+                } else {
+                    VStack(spacing: 8) {
+                        Text("Transcribing audio")
+                            .font(.custom("LibreBaskerville-Regular", size: 24))
+                            .foregroundColor(.baseBlack)
+                        
+                        Text("Please do not close the app\nuntil transcription is complete")
+                            .font(.system(size: 16))
+                            .foregroundColor(.warmGray500)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 32)
+                    .padding(.bottom, 32)
                 }
-                .padding(.top, 32)
-                .padding(.bottom, 32)
                 
-                // Waveform animation
-                if isTranscribing {
+                // Waveform animation (only for new recordings)
+                if isTranscribing && !isEditing {
                     HStack(spacing: 4) {
                         ForEach(0..<20) { _ in
                             RoundedRectangle(cornerRadius: 2)
@@ -95,14 +113,19 @@ struct CreateRecordingView: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, isEditing ? 24 : 0)
                 
                 Spacer()
                 
                 // Save button
                 Button {
-                    saveRecording()
+                    if isEditing {
+                        saveEdit()
+                    } else {
+                        saveRecording()
+                    }
                 } label: {
-                    Text("Save transcription")
+                    Text(isEditing ? "Save changes" : "Save transcription")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -124,18 +147,30 @@ struct CreateRecordingView: View {
             )
         }
         .onAppear {
-            title = audioURL.deletingPathExtension().lastPathComponent
-            startTranscription()
+            if let recording = existingRecording {
+                // Pre-populate for editing
+                title = recording.title
+                selectedFolder = recording.folder
+                note = recording.notes ?? ""
+                transcribedText = recording.fullText
+                transcribedLanguage = recording.language
+            } else if let url = audioURL {
+                // New recording
+                title = url.deletingPathExtension().lastPathComponent
+                startTranscription()
+            }
         }
+        .navigationBarHidden(true)
     }
     
     private func startTranscription() {
+        guard let url = audioURL else { return }
         isTranscribing = true
         transcriptionError = nil
         
         Task {
             do {
-                let result = try await TranscriptionService.shared.transcribe(audioURL: audioURL)
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url)
                 
                 await MainActor.run {
                     transcribedText = result.text
@@ -159,9 +194,11 @@ struct CreateRecordingView: View {
     }
     
     private func saveRecording() {
+        guard let url = audioURL else { return }
+        
         let recording = Recording(
             title: title,
-            fileURL: audioURL,
+            fileURL: url,
             fullText: transcribedText,
             language: transcribedLanguage,
             notes: note,
@@ -174,5 +211,16 @@ struct CreateRecordingView: View {
         
         onTranscriptionComplete()
         isPresented = false
+    }
+    
+    private func saveEdit() {
+        guard let recording = existingRecording else { return }
+        
+        recording.title = title
+        recording.folder = selectedFolder
+        recording.notes = note
+        
+        isPresented = false
+        dismiss()
     }
 }
