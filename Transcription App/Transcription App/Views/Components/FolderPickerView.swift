@@ -66,8 +66,10 @@ struct FolderPickerView: View {
                                     .fill(Color.accentLight)
                                     .frame(width: 40, height: 40)
                                 
-                                Image(systemName: "waveform")
-                                    .font(.system(size: 24))
+                                Image("waveform")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
                                     .foregroundColor(.accent)
                             }
                             
@@ -78,8 +80,10 @@ struct FolderPickerView: View {
                             Spacer()
                             
                             if selectedFolder?.id == folder.id {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 20, weight: .semibold))
+                                Image("check")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
                                     .foregroundColor(.accent)
                             }
                         }
@@ -106,10 +110,11 @@ struct FolderPickerView: View {
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.hidden)
         .sheet(isPresented: $showCreateFolder) {
-            CreateFolderSheet(
+            CollectionFormSheet(
                 isPresented: $showCreateFolder,
                 folderName: $newFolderName,
-                onCreate: {
+                isEditing: false,
+                onSave: {
                     if !newFolderName.isEmpty {
                         let newFolder = Folder(name: newFolderName)
                         modelContext.insert(newFolder)

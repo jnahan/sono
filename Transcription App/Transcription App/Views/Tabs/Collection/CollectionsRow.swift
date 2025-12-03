@@ -1,10 +1,11 @@
 import SwiftUI
 
-
-// MARK: - Folder Row Component
 struct CollectionsRow: View {
     let folder: Folder
     let recordingCount: Int
+    let onRename: () -> Void
+    let onDelete: () -> Void
+    
     @State private var showMenu = false
     
     var body: some View {
@@ -50,11 +51,11 @@ struct CollectionsRow: View {
         .padding(.vertical, 12)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
             Button("Rename") {
-                // Handle rename
+                onRename()
             }
             
             Button("Delete", role: .destructive) {
-                // Handle delete
+                onDelete()
             }
             
             Button("Cancel", role: .cancel) {}

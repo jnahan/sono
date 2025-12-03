@@ -10,9 +10,10 @@
 		5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */; };
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionList.swift */; };
+		5D0ED1102EE00FC50003E775 /* DeleteFolderConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10F2EE00FC50003E775 /* DeleteFolderConfirmation.swift */; };
 		5D1570632ED965F40094E13E /* CollectionsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570622ED965F40094E13E /* CollectionsRow.swift */; };
 		5D1570652ED96B0A0094E13E /* FolderPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570642ED96B0A0094E13E /* FolderPickerView.swift */; };
-		5D1570672ED96BEE0094E13E /* CreateFolderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570662ED96BEE0094E13E /* CreateFolderSheet.swift */; };
+		5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */; };
 		5D1570692EDA0F450094E13E /* TopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570682EDA0F450094E13E /* TopBar.swift */; };
 		5D15706B2EDA154A0094E13E /* AudioPlayerControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D15706A2EDA154A0094E13E /* AudioPlayerControls.swift */; };
 		5D15706D2EDA172F0094E13E /* NoteOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D15706C2EDA172F0094E13E /* NoteOverlay.swift */; };
@@ -62,9 +63,10 @@
 		5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppButtonStyle.swift; sourceTree = "<group>"; };
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionList.swift; sourceTree = "<group>"; };
+		5D0ED10F2EE00FC50003E775 /* DeleteFolderConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteFolderConfirmation.swift; sourceTree = "<group>"; };
 		5D1570622ED965F40094E13E /* CollectionsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsRow.swift; sourceTree = "<group>"; };
 		5D1570642ED96B0A0094E13E /* FolderPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPickerView.swift; sourceTree = "<group>"; };
-		5D1570662ED96BEE0094E13E /* CreateFolderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderSheet.swift; sourceTree = "<group>"; };
+		5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionFormSheet.swift; sourceTree = "<group>"; };
 		5D1570682EDA0F450094E13E /* TopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBar.swift; sourceTree = "<group>"; };
 		5D15706A2EDA154A0094E13E /* AudioPlayerControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerControls.swift; sourceTree = "<group>"; };
 		5D15706C2EDA172F0094E13E /* NoteOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteOverlay.swift; sourceTree = "<group>"; };
@@ -257,11 +259,12 @@
 		5DB5790E2ED8BF5E002DC84D /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				5D1570662ED96BEE0094E13E /* CreateFolderSheet.swift */,
+				5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */,
 				5DB579132ED8C031002DC84D /* CopyToast.swift */,
 				5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */,
 				5D1570642ED96B0A0094E13E /* FolderPickerView.swift */,
 				5D1570682EDA0F450094E13E /* TopBar.swift */,
+				5D0ED10F2EE00FC50003E775 /* DeleteFolderConfirmation.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -445,6 +448,7 @@
 				5D1570632ED965F40094E13E /* CollectionsRow.swift in Sources */,
 				5D962F222ECE87ED00049626 /* Recorder.swift in Sources */,
 				5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */,
+				5D0ED1102EE00FC50003E775 /* DeleteFolderConfirmation.swift in Sources */,
 				5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */,
 				5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */,
 				5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */,
@@ -466,7 +470,7 @@
 				5D1570652ED96B0A0094E13E /* FolderPickerView.swift in Sources */,
 				5DB579042ED84651002DC84D /* MainTabView.swift in Sources */,
 				5DDA7CCA2EDD842100AFB6C0 /* View+Shadow.swift in Sources */,
-				5D1570672ED96BEE0094E13E /* CreateFolderSheet.swift in Sources */,
+				5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */,
 				5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */,
 				5DB579102ED8BF6E002DC84D /* RecordingRow.swift in Sources */,
 			);

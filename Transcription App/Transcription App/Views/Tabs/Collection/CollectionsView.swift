@@ -12,6 +12,9 @@ struct CollectionsView: View {
     @State private var searchText = ""
     @State private var selectedFolder: Folder?
     @State private var showSettings = false
+    @State private var editingFolder: Folder?
+    @State private var editFolderName = ""
+    @State private var deletingFolder: Folder?
     
     private var filteredFolders: [Folder] {
         if searchText.isEmpty {
@@ -62,7 +65,14 @@ struct CollectionsView: View {
                                 } label: {
                                     CollectionsRow(
                                         folder: folder,
-                                        recordingCount: recordingCount(for: folder)
+                                        recordingCount: recordingCount(for: folder),
+                                        onRename: {
+                                            editingFolder = folder
+                                            editFolderName = folder.name
+                                        },
+                                        onDelete: {
+                                            deletingFolder = folder
+                                        }
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -85,11 +95,56 @@ struct CollectionsView: View {
                     .onDisappear { showPlusButton.wrappedValue = true }
             }
             .sheet(isPresented: $showCreateFolder) {
-                CreateFolderSheet(
+                CollectionFormSheet(
                     isPresented: $showCreateFolder,
                     folderName: $newFolderName,
-                    onCreate: createFolder
+                    isEditing: false,
+                    onSave: createFolder
                 )
+            }
+            .sheet(isPresented: Binding(
+                get: { editingFolder != nil },
+                set: { if !$0 { editingFolder = nil } }
+            )) {
+                CollectionFormSheet(
+                    isPresented: Binding(
+                        get: { editingFolder != nil },
+                        set: { if !$0 { editingFolder = nil } }
+                    ),
+                    folderName: $editFolderName,
+                    isEditing: true,
+                    onSave: {
+                        editingFolder?.name = editFolderName
+                        editingFolder = nil
+                    }
+                )
+            }
+            .sheet(isPresented: Binding(
+                get: { deletingFolder != nil },
+                set: { if !$0 { deletingFolder = nil } }
+            )) {
+                if let folder = deletingFolder {
+                    let folderRecordingCount = recordings.filter { $0.folder?.id == folder.id }.count
+                    DeleteFolderConfirmation(
+                        isPresented: Binding(
+                            get: { deletingFolder != nil },
+                            set: { if !$0 { deletingFolder = nil } }
+                        ),
+                        folderName: folder.name,
+                        recordingCount: folderRecordingCount,
+                        onConfirm: {
+                            // Delete all recordings in this folder
+                            let recordingsInFolder = recordings.filter { $0.folder?.id == folder.id }
+                            for recording in recordingsInFolder {
+                                modelContext.delete(recording)
+                            }
+                            
+                            // Now delete the folder
+                            modelContext.delete(folder)
+                            deletingFolder = nil
+                        }
+                    )
+                }
             }
         }
     }
@@ -99,10 +154,9 @@ struct CollectionsView: View {
     }
     
     private func deleteFolders(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(filteredFolders[index])
-            }
+        // Get the first folder from offsets and show confirmation
+        if let index = offsets.first {
+            deletingFolder = filteredFolders[index]
         }
     }
     

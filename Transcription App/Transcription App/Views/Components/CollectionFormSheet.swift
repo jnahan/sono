@@ -1,10 +1,11 @@
 import SwiftUI
 import SwiftData
 
-struct CreateFolderSheet: View {
+struct CollectionFormSheet: View {
     @Binding var isPresented: Bool
     @Binding var folderName: String
-    let onCreate: () -> Void
+    let isEditing: Bool
+    let onSave: () -> Void
     @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
@@ -17,7 +18,7 @@ struct CreateFolderSheet: View {
                 .padding(.bottom, 20)
             
             // Title
-            Text("Create folder")
+            Text(isEditing ? "Rename folder" : "Create folder")
                 .font(.custom("LibreBaskerville-Regular", size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.bottom, 32)
@@ -33,29 +34,34 @@ struct CreateFolderSheet: View {
                     .submitLabel(.done)
                     .onSubmit {
                         if !folderName.isEmpty {
-                            onCreate()
+                            onSave()
                             isPresented = false
                         }
                     }
             }
             .padding(.bottom, 32)
             
-            // Create button
+            // Save button
             Button {
-                onCreate()
+                onSave()
                 isPresented = false
             } label: {
-                Text("Create folder")
+                Text(isEditing ? "Save changes" : "Create folder")
             }
             .disabled(folderName.isEmpty)
             .buttonStyle(AppButtonStyle())
         }
-        .background(Color.warmGray50)
+        .background(Color.warmGray100)
         .presentationDetents([.height(280)])
         .presentationDragIndicator(.hidden)
-        .presentationBackgroundInteraction(.enabled)
+        .presentationBackground(Color.warmGray100)
+        .presentationCornerRadius(24)
         .onAppear {
-            isTextFieldFocused = true
+            #if !os(macOS)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isTextFieldFocused = true
+            }
+            #endif
         }
     }
 }
