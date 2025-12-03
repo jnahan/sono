@@ -34,13 +34,6 @@ struct NoteOverlay: View {
                     
                     // Note content
                     VStack(spacing: 8) {
-                        // Push pin icon
-                        Image("push-pin-fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.accent)
-                        
                         // Note text
                         Text(noteText.isEmpty ? "No notes" : noteText)
                             .font(.system(size: 16))
