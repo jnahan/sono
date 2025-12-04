@@ -83,7 +83,9 @@ struct CollectionDetailView: View {
                 onSave: {
                     folder.name = editFolderName
                     editingFolder = false
-                }
+                },
+                existingFolders: folders,
+                currentFolder: folder
             )
         }
         .sheet(isPresented: $deletingFolder) {

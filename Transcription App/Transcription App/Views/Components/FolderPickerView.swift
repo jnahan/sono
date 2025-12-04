@@ -58,7 +58,12 @@ struct FolderPickerView: View {
                 // Existing folders
                 ForEach(folders) { folder in
                     Button {
-                        selectedFolder = folder
+                        // Toggle: if clicking the same folder, deselect it
+                        if selectedFolder?.id == folder.id {
+                            selectedFolder = nil
+                        } else {
+                            selectedFolder = folder
+                        }
                     } label: {
                         HStack(spacing: 16) {
                             ZStack {
@@ -121,7 +126,9 @@ struct FolderPickerView: View {
                         selectedFolder = newFolder
                         newFolderName = ""
                     }
-                }
+                },
+                existingFolders: folders,
+                currentFolder: nil
             )
         }
     }

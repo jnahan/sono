@@ -21,10 +21,31 @@ struct RecordingFormView: View {
     @State private var showFolderPicker = false
     @State private var isTranscribing = false
     @State private var showExitConfirmation = false
+    
+    // Validation state
+    @State private var titleError: String? = nil
+    @State private var noteError: String? = nil
+    
     @Environment(\.dismiss) private var dismiss
+    
+    // Validation constants
+    private let maxTitleLength = 50
+    private let maxNoteLength = 200
     
     private var isEditing: Bool {
         existingRecording != nil
+    }
+    
+    private var isFormValid: Bool {
+        validateTitle() && validateNote()
+    }
+    
+    private var saveButtonText: String {
+        if isEditing {
+            return "Save changes"
+        } else {
+            return "Save transcription"
+        }
     }
     
     var body: some View {
@@ -90,61 +111,76 @@ struct RecordingFormView: View {
                     .padding(.bottom, 32)
                 }
                 
-                // Form fields
-                VStack(spacing: 16) {
-                    // Title field
-                    VStack(alignment: .leading, spacing: 8) {
-                        InputLabel(text: "Title")
-                        InputField(text: $title, placeholder: "Title")
+                ScrollView {
+                    // Form fields
+                    VStack(spacing: 24) {
+                        // Title field
+                        VStack(alignment: .leading, spacing: 8) {
+                            InputLabel(text: "Title")
+                            InputField(
+                                text: $title,
+                                placeholder: "Title",
+                                error: titleError
+                            )
+                            .onChange(of: title) { oldValue, newValue in
+                                validateTitleWithError()
+                            }
+                        }
+                        
+                        // Folder field
+                        VStack(alignment: .leading, spacing: 8) {
+                            InputLabel(text: "Folder")
+                            InputField(
+                                text: Binding(
+                                    get: { selectedFolder?.name ?? "" },
+                                    set: { _ in }
+                                ),
+                                placeholder: "Select folder",
+                                showChevron: true,
+                                onTap: { showFolderPicker = true }
+                            )
+                        }
+                        
+                        // Note field
+                        VStack(alignment: .leading, spacing: 8) {
+                            InputLabel(text: "Note")
+                            InputField(
+                                text: $note,
+                                placeholder: "Write a note for yourself...",
+                                isMultiline: true,
+                                height: 200,
+                                error: noteError
+                            )
+                            .onChange(of: note) { oldValue, newValue in
+                                validateNoteWithError()
+                            }
+                        }
                     }
-                    
-                    // Folder field
-                    VStack(alignment: .leading, spacing: 8) {
-                        InputLabel(text: "Folder")
-                        InputField(
-                            text: Binding(
-                                get: { selectedFolder?.name ?? "" },
-                                set: { _ in }
-                            ),
-                            placeholder: "Select folder",
-                            showChevron: true,
-                            onTap: { showFolderPicker = true }
-                        )
-                    }
-                    
-                    // Note field
-                    VStack(alignment: .leading, spacing: 8) {
-                        InputLabel(text: "Note")
-                        InputField(
-                            text: $note,
-                            placeholder: "Write a note for yourself...",
-                            isMultiline: true,
-                            height: 200
-                        )
-                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, isEditing ? 24 : 0)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, isEditing ? 24 : 0)
                 
                 Spacer()
                 
                 // Save button
                 Button {
-                    if isEditing {
-                        saveEdit()
-                    } else {
-                        saveRecording()
+                    if isFormValid {
+                        if isEditing {
+                            saveEdit()
+                        } else {
+                            saveRecording()
+                        }
                     }
                 } label: {
-                    Text(isEditing ? "Save changes" : "Save transcription")
+                    Text(saveButtonText)
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
-                        .background(title.isEmpty || isTranscribing ? Color.warmGray400 : Color.black)
+                        .background((isTranscribing || !isFormValid) ? Color.warmGray400 : Color.black)
                         .cornerRadius(16)
                 }
-                .disabled(title.isEmpty || isTranscribing)
+                .disabled(isTranscribing || !isFormValid)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 32)
             }
@@ -187,9 +223,50 @@ struct RecordingFormView: View {
                 title = url.deletingPathExtension().lastPathComponent
                 startTranscription()
             }
+            
+            // Validate immediately on appear
+            validateTitleWithError()
+            validateNoteWithError()
         }
         .navigationBarHidden(true)
     }
+    
+    // MARK: - Validation Functions
+    
+    private func validateTitle() -> Bool {
+        return !title.isEmpty && title.count <= maxTitleLength
+    }
+    
+    private func validateNote() -> Bool {
+        return note.count <= maxNoteLength
+    }
+    
+    @discardableResult
+    private func validateTitleWithError() -> Bool {
+        if title.isEmpty {
+            titleError = "Title is required"
+            return false
+        } else if title.count > maxTitleLength {
+            titleError = "Title must be less than \(maxTitleLength) characters"
+            return false
+        } else {
+            titleError = nil
+            return true
+        }
+    }
+    
+    @discardableResult
+    private func validateNoteWithError() -> Bool {
+        if note.count > maxNoteLength {
+            noteError = "Note must be less than \(maxNoteLength) characters"
+            return false
+        } else {
+            noteError = nil
+            return true
+        }
+    }
+    
+    // MARK: - Transcription
     
     private func startTranscription() {
         guard let url = audioURL else { return }
@@ -220,6 +297,8 @@ struct RecordingFormView: View {
             }
         }
     }
+    
+    // MARK: - Save Functions
     
     private func saveRecording() {
         guard let url = audioURL else { return }

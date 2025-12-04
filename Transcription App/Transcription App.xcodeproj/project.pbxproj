@@ -137,7 +137,6 @@
 			isa = PBXGroup;
 			children = (
 				5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */,
-				5D0ED10B2EDFD5670003E775 /* Input.swift */,
 			);
 			path = Styles;
 			sourceTree = "<group>";
@@ -259,6 +258,7 @@
 		5DB5790E2ED8BF5E002DC84D /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				5D0ED10B2EDFD5670003E775 /* Input.swift */,
 				5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */,
 				5DB579132ED8C031002DC84D /* CopyToast.swift */,
 				5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */,

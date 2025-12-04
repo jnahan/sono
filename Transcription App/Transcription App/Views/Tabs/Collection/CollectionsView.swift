@@ -99,9 +99,12 @@ struct CollectionsView: View {
                     isPresented: $showCreateFolder,
                     folderName: $newFolderName,
                     isEditing: false,
-                    onSave: createFolder
+                    onSave: createFolder,
+                    existingFolders: folders,
+                    currentFolder: nil
                 )
             }
+
             .sheet(isPresented: Binding(
                 get: { editingFolder != nil },
                 set: { if !$0 { editingFolder = nil } }
@@ -116,7 +119,9 @@ struct CollectionsView: View {
                     onSave: {
                         editingFolder?.name = editFolderName
                         editingFolder = nil
-                    }
+                    },
+                    existingFolders: folders,
+                    currentFolder: editingFolder
                 )
             }
             .sheet(isPresented: Binding(
