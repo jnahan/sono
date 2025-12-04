@@ -11,6 +11,7 @@
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionList.swift */; };
 		5D0ED1162EE0FF2D0003E775 /* Confirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1152EE0FF2D0003E775 /* Confirmation.swift */; };
+		5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */ = {isa = PBXBuildFile; fileRef = 5D0ED1172EE118DF0003E775 /* EdgeCases.md */; };
 		5D1570632ED965F40094E13E /* CollectionsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570622ED965F40094E13E /* CollectionsRow.swift */; };
 		5D1570652ED96B0A0094E13E /* FolderPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570642ED96B0A0094E13E /* FolderPickerView.swift */; };
 		5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */; };
@@ -64,6 +65,7 @@
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionList.swift; sourceTree = "<group>"; };
 		5D0ED1152EE0FF2D0003E775 /* Confirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Confirmation.swift; sourceTree = "<group>"; };
+		5D0ED1172EE118DF0003E775 /* EdgeCases.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = EdgeCases.md; sourceTree = "<group>"; };
 		5D1570622ED965F40094E13E /* CollectionsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsRow.swift; sourceTree = "<group>"; };
 		5D1570642ED96B0A0094E13E /* FolderPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPickerView.swift; sourceTree = "<group>"; };
 		5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionFormSheet.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				5D7925B32ECD8E4B002889A6 /* Preview Content */,
 				5DE4CA742EDD37D20039A2AA /* Assets.xcassets */,
 				5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */,
+				5D0ED1172EE118DF0003E775 /* EdgeCases.md */,
 			);
 			path = "Transcription App";
 			sourceTree = "<group>";
@@ -421,6 +424,7 @@
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
 				5DE4CA732EDD37AF0039A2AA /* Assets.xcassets in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
+				5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
