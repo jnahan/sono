@@ -41,7 +41,7 @@ struct CollectionsView: View {
                     
                     if !collections.isEmpty {
                         SearchBar(text: $searchText, placeholder: "Search collections...")
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, AppConstants.UI.Spacing.large)
                     }
                     
                     if collections.isEmpty {
@@ -66,7 +66,7 @@ struct CollectionsView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.warmGray50)
-                                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+                                .listRowInsets(EdgeInsets(top: 10, leading: AppConstants.UI.Spacing.large, bottom: 10, trailing: AppConstants.UI.Spacing.large))
                             }
                             .onDelete(perform: deleteCollections)
                         }

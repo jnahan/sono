@@ -70,7 +70,7 @@ struct RecordingDetailsView: View {
                                 .lineSpacing(4)
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.top, 24)
                     .safeAreaInset(edge: .bottom) {
                         Color.clear.frame(height: 164)
@@ -113,7 +113,6 @@ struct RecordingDetailsView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: showNotePopup)
         .navigationBarHidden(true)
-        .toolbar(.hidden, for: .tabBar)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
             Button("Copy transcription") {
                 UIPasteboard.general.string = recording.fullText
@@ -164,6 +163,7 @@ struct RecordingDetailsView: View {
                 }
             )
         }
+        .toolbar(.hidden, for: .tabBar)
         .onAppear {
             if let url = recording.resolvedURL {
                 audioPlayer.loadAudio(url: url)

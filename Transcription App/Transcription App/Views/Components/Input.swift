@@ -51,8 +51,8 @@ struct InputField: View {
                             Text(placeholder)
                                 .font(.system(size: 17))
                                 .foregroundColor(.warmGray400)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 20)
+                                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                                .padding(.vertical, AppConstants.UI.Spacing.large)
                         }
                         
                         TextEditor(text: $text)

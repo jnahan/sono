@@ -45,7 +45,7 @@ struct ConfirmationSheet: View {
                         .background(Color.red)
                         .cornerRadius(16)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
                 
                 Button {
                     isPresented = false
@@ -56,7 +56,7 @@ struct ConfirmationSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
             }
             .padding(.bottom, 20)
         }

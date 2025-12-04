@@ -37,7 +37,7 @@ struct AudioPlayerControls: View {
                         .monospacedDigit()
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, AppConstants.UI.Spacing.large)
             
             // Bottom Action Buttons - Full width with spacing
             HStack(spacing: 0) {
@@ -130,7 +130,7 @@ struct AudioPlayerControls: View {
                     }
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, AppConstants.UI.Spacing.large)
             .padding(.bottom, 28)
         }
         .background(Color.warmGray100)

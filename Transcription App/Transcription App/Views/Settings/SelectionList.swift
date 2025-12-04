@@ -62,5 +62,6 @@ struct SelectionListView: View {
         }
         .background(Color.warmGray50)
         .navigationBarHidden(true)
+        .toolbar(.hidden, for: .tabBar)
     }
 }

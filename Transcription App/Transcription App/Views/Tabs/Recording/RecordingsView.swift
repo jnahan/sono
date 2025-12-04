@@ -40,7 +40,7 @@ struct RecordingsView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         if !recordings.isEmpty {
                             SearchBar(text: $searchText, placeholder: "Search recordings")
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, AppConstants.UI.Spacing.large)
                         }
                         
                         recordingsList
@@ -106,7 +106,7 @@ struct RecordingsView: View {
                         }
                         .buttonStyle(.plain)
                         .listRowBackground(Color.warmGray50)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                        .listRowInsets(EdgeInsets(top: 0, leading: AppConstants.UI.Spacing.large, bottom: 0, trailing: AppConstants.UI.Spacing.large))
                         .listRowSpacing(24)
                         .listRowSeparator(.hidden)
                     }

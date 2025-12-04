@@ -92,7 +92,7 @@ struct RecordingFormView: View {
                     .padding(.vertical, 16)
                     .background(Color.black)
                     .cornerRadius(12)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.bottom, 32)
                 }
                 
@@ -135,7 +135,7 @@ struct RecordingFormView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.top, viewModel.isEditing ? 24 : 0)
                 }
                 
@@ -158,16 +158,9 @@ struct RecordingFormView: View {
                     }
                 } label: {
                     Text(viewModel.saveButtonText)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(viewModel.isTranscribing ? Color.warmGray400 : Color.black)
-                        .cornerRadius(16)
                 }
+                .buttonStyle(AppButtonStyle())
                 .disabled(viewModel.isTranscribing)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
             }
         }
         .sheet(isPresented: $viewModel.showCollectionPicker) {
@@ -197,6 +190,7 @@ struct RecordingFormView: View {
             viewModel.startTranscriptionIfNeeded()
         }
         .navigationBarHidden(true)
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
