@@ -56,11 +56,6 @@ class TranscriptionService {
             segments: segments
         )
     }
-    
-    /// Resets the WhisperKit instance (useful for memory management)
-    func reset() {
-        whisperKit = nil
-    }
 }
 
 // MARK: - Models

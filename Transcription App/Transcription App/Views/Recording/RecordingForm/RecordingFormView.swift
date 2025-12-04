@@ -14,7 +14,6 @@ struct RecordingFormView: View {
     @State private var title: String = ""
     @State private var selectedFolder: Folder? = nil
     @State private var note: String = ""
-    @State private var transcriptionError: String? = nil
     @State private var transcribedText: String = ""
     @State private var transcribedLanguage: String = ""
     @State private var transcribedSegments: [RecordingSegment] = []
@@ -279,7 +278,6 @@ struct RecordingFormView: View {
     private func startTranscription() {
         guard let url = audioURL else { return }
         isTranscribing = true
-        transcriptionError = nil
         
         Task {
             do {
@@ -299,7 +297,8 @@ struct RecordingFormView: View {
                 }
             } catch {
                 await MainActor.run {
-                    transcriptionError = error.localizedDescription
+                    // TODO: Show error to user in future enhancement
+                    print("Transcription error: \(error.localizedDescription)")
                     isTranscribing = false
                 }
             }
