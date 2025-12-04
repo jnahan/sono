@@ -4,7 +4,7 @@ import AVFoundation
 
 struct RecordingDetailsView: View {
     let recording: Recording
-    @StateObject private var audioPlayer = AudioPlayerController()
+    @StateObject private var audioPlayer = Player()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var collections: [Collection]
@@ -213,81 +213,6 @@ struct RecordingDetailsView: View {
     }
 }
 
-
-// MARK: - Audio Player Controller
-class AudioPlayerController: ObservableObject {
-    @Published var isPlaying = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var duration: TimeInterval = 0
-    
-    private var player: AVAudioPlayer?
-    private var timer: Timer?
-    
-    func loadAudio(url: URL) {
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            print("❌ Audio file missing at path:", url.path)
-            return
-        }
-
-        do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.prepareToPlay()
-            duration = player?.duration ?? 0
-        } catch {
-            print("❌ Failed to load audio:", error)
-        }
-    }
-
-    
-    func play(url: URL) {
-        if player == nil {
-            loadAudio(url: url)
-        }
-        player?.play()
-        isPlaying = true
-        startTimer()
-    }
-    
-    func pause() {
-        player?.pause()
-        isPlaying = false
-        stopTimer()
-    }
-    
-    func stop() {
-        player?.stop()
-        isPlaying = false
-        currentTime = 0
-        stopTimer()
-    }
-    
-    func seek(to time: TimeInterval) {
-        player?.currentTime = time
-        currentTime = time
-    }
-    
-    func skip(by seconds: TimeInterval) {
-        let newTime = max(0, min(duration, currentTime + seconds))
-        seek(to: newTime)
-    }
-    
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            guard let self = self, let player = self.player else { return }
-            self.currentTime = player.currentTime
-            
-            if !player.isPlaying && self.isPlaying {
-                self.isPlaying = false
-                self.stopTimer()
-            }
-        }
-    }
-    
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
-    }
-}
 
 // MARK: - Share Sheet
 struct ShareSheet: UIViewControllerRepresentable {

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AudioPlayerControls: View {
-    @ObservedObject var audioPlayer: AudioPlayerController
+    @ObservedObject var audioPlayer: Player
     let audioURL: URL?
     let fullText: String
     var onNotePressed: () -> Void
@@ -12,12 +12,15 @@ struct AudioPlayerControls: View {
             // Progress Bar
             VStack(spacing: 12) {
                 CustomSlider(
-                    value: $audioPlayer.currentTime,
+                    value: Binding(
+                        get: { audioPlayer.currentTime },
+                        set: { newTime in
+                            audioPlayer.seek(toTime: newTime)
+                        }
+                    ),
                     range: 0...max(audioPlayer.duration, 0.1)
                 ) { editing in
-                    if !editing {
-                        audioPlayer.seek(to: audioPlayer.currentTime)
-                    }
+                    // Seeking is handled in the setter above
                 }
                 
                 HStack {
@@ -70,12 +73,8 @@ struct AudioPlayerControls: View {
                     
                     // Play/Pause
                     Button {
-                        if audioPlayer.isPlaying {
-                            audioPlayer.pause()
-                        } else {
-                            if let url = audioURL {
-                                audioPlayer.play(url: url)
-                            }
+                        if let url = audioURL {
+                            audioPlayer.play(url)
                         }
                     } label: {
                         Image(audioPlayer.isPlaying ? "pause-fill" : "play-fill")
