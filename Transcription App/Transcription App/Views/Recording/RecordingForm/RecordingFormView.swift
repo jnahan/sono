@@ -25,6 +25,7 @@ struct RecordingFormView: View {
     // Validation state
     @State private var titleError: String? = nil
     @State private var noteError: String? = nil
+    @State private var hasAttemptedSubmit = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -41,7 +42,9 @@ struct RecordingFormView: View {
     }
     
     private var saveButtonText: String {
-        if isEditing {
+        if isTranscribing && !isEditing {
+            return "Processing recording"
+        } else if isEditing {
             return "Save changes"
         } else {
             return "Save transcription"
@@ -122,9 +125,6 @@ struct RecordingFormView: View {
                                 placeholder: "Title",
                                 error: titleError
                             )
-                            .onChange(of: title) { oldValue, newValue in
-                                validateTitleWithError()
-                            }
                         }
                         
                         // Folder field
@@ -151,9 +151,6 @@ struct RecordingFormView: View {
                                 height: 200,
                                 error: noteError
                             )
-                            .onChange(of: note) { oldValue, newValue in
-                                validateNoteWithError()
-                            }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -164,6 +161,9 @@ struct RecordingFormView: View {
                 
                 // Save button
                 Button {
+                    hasAttemptedSubmit = true
+                    validateTitleWithError()
+                    validateNoteWithError()
                     if isFormValid {
                         if isEditing {
                             saveEdit()
@@ -177,10 +177,10 @@ struct RecordingFormView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
-                        .background((isTranscribing || !isFormValid) ? Color.warmGray400 : Color.black)
+                        .background(isTranscribing ? Color.warmGray400 : Color.black)
                         .cornerRadius(16)
                 }
-                .disabled(isTranscribing || !isFormValid)
+                .disabled(isTranscribing)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 32)
             }
@@ -223,10 +223,6 @@ struct RecordingFormView: View {
                 title = url.deletingPathExtension().lastPathComponent
                 startTranscription()
             }
-            
-            // Validate immediately on appear
-            validateTitleWithError()
-            validateNoteWithError()
         }
         .navigationBarHidden(true)
     }
@@ -243,26 +239,38 @@ struct RecordingFormView: View {
     
     @discardableResult
     private func validateTitleWithError() -> Bool {
-        if title.isEmpty {
-            titleError = "Title is required"
-            return false
-        } else if title.count > maxTitleLength {
-            titleError = "Title must be less than \(maxTitleLength) characters"
-            return false
+        if hasAttemptedSubmit {
+            if title.isEmpty {
+                titleError = "Title is required"
+                return false
+            } else if title.count > maxTitleLength {
+                titleError = "Title must be less than \(maxTitleLength) characters"
+                return false
+            } else {
+                titleError = nil
+                return true
+            }
         } else {
+            // Don't show errors until submit is attempted
             titleError = nil
-            return true
+            return validateTitle()
         }
     }
     
     @discardableResult
     private func validateNoteWithError() -> Bool {
-        if note.count > maxNoteLength {
-            noteError = "Note must be less than \(maxNoteLength) characters"
-            return false
+        if hasAttemptedSubmit {
+            if note.count > maxNoteLength {
+                noteError = "Note must be less than \(maxNoteLength) characters"
+                return false
+            } else {
+                noteError = nil
+                return true
+            }
         } else {
+            // Don't show errors until submit is attempted
             noteError = nil
-            return true
+            return validateNote()
         }
     }
     
