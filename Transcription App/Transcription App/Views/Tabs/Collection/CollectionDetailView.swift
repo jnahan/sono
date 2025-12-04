@@ -62,7 +62,7 @@ struct CollectionDetailView: View {
         }
         .background(Color.warmGray50.ignoresSafeArea())
         .navigationBarHidden(true)
-        .toolbar(.hidden, for: .tabBar)
+        .environment(\.showPlusButton, showPlusButton)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
             Button("Rename") {
                 editingCollection = true
@@ -110,8 +110,6 @@ struct CollectionDetailView: View {
         }
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
-                .onAppear { showPlusButton.wrappedValue = false }
-                .onDisappear { showPlusButton.wrappedValue = true }
         }
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(
@@ -126,11 +124,12 @@ struct CollectionDetailView: View {
                 onTranscriptionComplete: {},
                 onExit: nil
             )
-            .onAppear { showPlusButton.wrappedValue = false }
-            .onDisappear { showPlusButton.wrappedValue = true }
         }
         .onAppear {
             viewModel.configure(modelContext: modelContext)
+            showPlusButton.wrappedValue = false
+            // Reset navigation state when returning to this view
+            selectedRecording = nil
         }
     }
     

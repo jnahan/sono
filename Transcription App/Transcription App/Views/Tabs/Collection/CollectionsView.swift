@@ -78,10 +78,15 @@ struct CollectionsView: View {
             }
             .background(Color.warmGray50.ignoresSafeArea())
             .navigationBarHidden(true)
+            .onAppear {
+                // Reset navigation state when returning to this tab
+                selectedCollection = nil
+                // Show tab bar on root view
+                showPlusButton.wrappedValue = true
+            }
             .navigationDestination(item: $selectedCollection) { collection in
                 CollectionDetailView(collection: collection, showPlusButton: showPlusButton)
                     .onAppear { showPlusButton.wrappedValue = false }
-                    .onDisappear { showPlusButton.wrappedValue = true }
             }
             .sheet(isPresented: $showCreateCollection) {
                 CollectionFormSheet(

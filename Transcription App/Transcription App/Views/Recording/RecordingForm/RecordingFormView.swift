@@ -190,7 +190,6 @@ struct RecordingFormView: View {
             viewModel.startTranscriptionIfNeeded()
         }
         .navigationBarHidden(true)
-        .toolbar(.hidden, for: .tabBar)
     }
 }
 

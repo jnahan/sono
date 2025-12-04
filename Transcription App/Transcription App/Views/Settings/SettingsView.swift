@@ -115,7 +115,6 @@ struct SettingsView: View {
                 }
             }
             .navigationBarHidden(true)
-            .toolbar(.hidden, for: .tabBar)
         }
         .presentationDragIndicator(.hidden)
     }

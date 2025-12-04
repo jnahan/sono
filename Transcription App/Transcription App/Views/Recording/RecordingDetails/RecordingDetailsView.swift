@@ -163,7 +163,6 @@ struct RecordingDetailsView: View {
                 }
             )
         }
-        .toolbar(.hidden, for: .tabBar)
         .onAppear {
             if let url = recording.resolvedURL {
                 audioPlayer.loadAudio(url: url)

@@ -56,6 +56,10 @@ struct RecordingsView: View {
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 updateFilteredRecordings()
+                // Reset navigation state when returning to this tab
+                selectedRecording = nil
+                // Show tab bar on root view
+                showPlusButton.wrappedValue = true
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -63,7 +67,6 @@ struct RecordingsView: View {
             .navigationDestination(item: $selectedRecording) { recording in
                 RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
-                    .onDisappear { showPlusButton.wrappedValue = true }
             }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(
@@ -79,7 +82,6 @@ struct RecordingsView: View {
                     onExit: nil
                 )
                 .onAppear { showPlusButton.wrappedValue = false }
-                .onDisappear { showPlusButton.wrappedValue = true }
             }
             .background(Color.warmGray50)
             .navigationBarHidden(true)
