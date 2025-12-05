@@ -151,7 +151,6 @@
 			isa = PBXGroup;
 			children = (
 				5D4622D32ED83570009A454D /* RecordingFormView.swift */,
-				5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */,
 			);
 			path = RecordingForm;
 			sourceTree = "<group>";
@@ -190,6 +189,7 @@
 				5D962F272ECE935500049626 /* Player.swift */,
 				5D962F212ECE87ED00049626 /* Recorder.swift */,
 				5DB579242ED8D143002DC84D /* TranscriptionService.swift */,
+				5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -213,15 +213,17 @@
 		5D7925AA2ECD8E4A002889A6 /* Transcription App */ = {
 			isa = PBXGroup;
 			children = (
+				5DB579232ED8D041002DC84D /* App */,
 				5D0ED1192EE131650003E775 /* Helpers */,
 				5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */,
 				5D0ED1082EDFD0F90003E775 /* Styles */,
 				5DDA7CC42EDD837200AFB6C0 /* Extensions */,
 				5DB579282ED8EC99002DC84D /* Fonts */,
-				5DB579232ED8D041002DC84D /* App */,
 				5D7925BB2ECD8E5A002889A6 /* Models */,
 				5D962F292ECEBAB200049626 /* Views */,
 				5D7037802ECD91B400D061E3 /* Service */,
+				5D0ED1302EE144650003E775 /* ViewModels */,
+				5D0ED1312EE134930003E775 /* Core */,
 				5D70377D2ECD910200D061E3 /* TestRecording */,
 				5D7925B32ECD8E4B002889A6 /* Preview Content */,
 				5DE4CA742EDD37D20039A2AA /* Assets.xcassets */,
@@ -245,7 +247,6 @@
 				5D7925BC2ECD8E6B002889A6 /* Recording.swift */,
 				5D214A362ED8238B0069565D /* Collection.swift */,
 				5D214A392ED8263B0069565D /* RecordingSegment.swift */,
-				5D0ED1262EE134920003E775 /* AppConstants.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -266,7 +267,7 @@
 			isa = PBXGroup;
 			children = (
 				5DDA7CCE2EDD858E00AFB6C0 /* Collection */,
-				5DDA7CCD2EDD858100AFB6C0 /* Recording */,
+				5DDA7CCD2EDD858100AFB6C0 /* RecordingsList */,
 				5DB579032ED84651002DC84D /* MainTabView.swift */,
 				5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */,
 			);
@@ -287,8 +288,6 @@
 			isa = PBXGroup;
 			children = (
 				5D962F2A2ECEBAC000049626 /* SettingsView.swift */,
-				5D0ED10D2EE004090003E775 /* SelectionList.swift */,
-				5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -304,6 +303,7 @@
 				5D1570682EDA0F450094E13E /* TopBar.swift */,
 				5D0ED1152EE0FF2D0003E775 /* Confirmation.swift */,
 				5D0ED12C2EE1454A0003E775 /* EmptyStateGradient.swift */,
+				5D0ED10D2EE004090003E775 /* SelectionList.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -346,17 +346,16 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
-		5DDA7CCD2EDD858100AFB6C0 /* Recording */ = {
+		5DDA7CCD2EDD858100AFB6C0 /* RecordingsList */ = {
 			isa = PBXGroup;
 			children = (
 				5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */,
-				5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */,
 				5DB5790F2ED8BF6E002DC84D /* RecordingRow.swift */,
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyState.swift */,
 				5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */,
 				5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */,
 			);
-			path = Recording;
+			path = RecordingsList;
 			sourceTree = "<group>";
 		};
 		5DDA7CCE2EDD858E00AFB6C0 /* Collection */ = {
@@ -389,6 +388,23 @@
 				5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */,
 			);
 			path = RecordingDetails;
+			sourceTree = "<group>";
+		};
+		5D0ED1302EE144650003E775 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */,
+				5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		5D0ED1312EE134930003E775 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				5D0ED1262EE134920003E775 /* AppConstants.swift */,
+			);
+			path = Core;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
