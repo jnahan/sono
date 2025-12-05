@@ -187,14 +187,6 @@ struct SettingsView: View {
                             .cornerRadius(12)
                             .padding(.horizontal, 16)
                             
-                            // Model Section
-                            VStack(spacing: 0) {
-                                SettingsRow(title: "Model", value: "Tiny", imageName: "sparkle", showChevron: false)
-                            }
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal, 16)
-                            
                             // Bottom Section: Feedback, Rate, Share
                             VStack(spacing: 0) {
                                 Button(action: sendFeedback) {

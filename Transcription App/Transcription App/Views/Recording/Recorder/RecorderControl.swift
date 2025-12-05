@@ -9,16 +9,91 @@ import UIKit
 struct RecorderControl: View {
     @StateObject private var rec = Recorder()
     @StateObject private var player = Player()
+    @StateObject private var liveTranscription = LiveTranscriptionService()
     @State private var micDenied = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
     @State private var frozenMeterHistory: [Float] = []  // Freeze history when recording stops
+    @State private var frozenTranscription: String = ""  // Freeze transcription when recording stops
     
+    // Configuration
+    let isLiveTranscriptionEnabled: Bool
     var onFinishRecording: ((URL) -> Void)?
+    
+    init(isLiveTranscriptionEnabled: Bool = false, onFinishRecording: ((URL) -> Void)? = nil) {
+        self.isLiveTranscriptionEnabled = isLiveTranscriptionEnabled
+        self.onFinishRecording = onFinishRecording
+    }
     
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
+                // Live transcription display at top (only when enabled)
+                if isLiveTranscriptionEnabled {
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 0) {
+                                // Show loading state when model is not ready
+                                if liveTranscription.isLoadingModel {
+                                    HStack(spacing: 8) {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                        Text("Loading model...")
+                                            .font(.custom("Inter-Regular", size: 18))
+                                            .foregroundColor(.warmGray400)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                } else if !liveTranscription.isModelLoaded && !rec.isRecording && frozenTranscription.isEmpty {
+                                    Text("Preparing...")
+                                        .font(.custom("Inter-Regular", size: 18))
+                                        .foregroundColor(.warmGray400)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
+                                    // Show frozen transcription when stopped, live when recording
+                                    let displayText = rec.isRecording ? 
+                                        (liveTranscription.confirmedText + liveTranscription.hypothesisText) : 
+                                        frozenTranscription
+                                    
+                                    if !displayText.isEmpty {
+                                        HStack(alignment: .top, spacing: 0) {
+                                            if rec.isRecording {
+                                                // Show confirmed text in normal color
+                                                Text(liveTranscription.confirmedText)
+                                                    .font(.custom("Inter-Regular", size: 18))
+                                                    .foregroundColor(.baseBlack)
+                                                
+                                                // Show hypothesis text in lighter color
+                                                Text(liveTranscription.hypothesisText)
+                                                    .font(.custom("Inter-Regular", size: 18))
+                                                    .foregroundColor(.warmGray400)
+                                            } else {
+                                                Text(displayText)
+                                                    .font(.custom("Inter-Regular", size: 18))
+                                                    .foregroundColor(.baseBlack)
+                                            }
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .id("transcriptionEnd")
+                                    } else if rec.isRecording {
+                                        Text("Listening...")
+                                            .font(.custom("Inter-Regular", size: 18))
+                                            .foregroundColor(.warmGray400)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 16)
+                        }
+                        .frame(maxHeight: geometry.size.height * 0.35)
+                        .onChange(of: liveTranscription.confirmedText + liveTranscription.hypothesisText) { _, _ in
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                proxy.scrollTo("transcriptionEnd", anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+                
                 Spacer()
                 
                 // Timer display and waveform section
@@ -101,7 +176,11 @@ struct RecorderControl: View {
                                 .frame(width: 72, height: 72)
                                 .appShadow()
                             
-                            if rec.isRecording {
+                            if liveTranscription.isLoadingModel && isLiveTranscriptionEnabled {
+                                // Loading model: show progress
+                                ProgressView()
+                                    .scaleEffect(1.2)
+                            } else if rec.isRecording {
                                 // Recording: red square
                                 RoundedRectangle(cornerRadius: 4)
                                     .fill(Color.accent)
@@ -121,6 +200,7 @@ struct RecorderControl: View {
                             }
                         }
                     }
+                    .disabled(isLiveTranscriptionEnabled && liveTranscription.isLoadingModel)
                     
                     // Invisible spacer for balance
                     HStack(spacing: 8) {
@@ -138,6 +218,10 @@ struct RecorderControl: View {
         .task {
             rec.requestPermission { ok in
                 micDenied = (ok == false)
+            }
+            // Preload model for faster live transcription (only when enabled)
+            if isLiveTranscriptionEnabled {
+                try? await liveTranscription.preloadModel()
             }
         }
         .onChange(of: rec.isRecording) { _, isRecording in
@@ -166,24 +250,47 @@ struct RecorderControl: View {
     private func startRecording() {
         player.stop()
         elapsedTime = 0
+        frozenTranscription = ""
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             rec.start()
+            // Start live transcription if enabled
+            if isLiveTranscriptionEnabled {
+                Task {
+                    do {
+                        try await liveTranscription.startTranscription()
+                    } catch {
+                        print("Live transcription error: \(error)")
+                    }
+                }
+            }
         }
     }
     
     private func stopRecording() {
         frozenMeterHistory = rec.meterHistory
+        if isLiveTranscriptionEnabled {
+            frozenTranscription = liveTranscription.getFinalTranscription()
+            liveTranscription.stopTranscription()
+        }
         rec.stop()
     }
     
     private func resetRecording() {
         rec.reset()
+        if isLiveTranscriptionEnabled {
+            liveTranscription.reset()
+            frozenTranscription = ""
+        }
         elapsedTime = 0
-        frozenMeterHistory = []  // Clear frozen history on reset
+        frozenMeterHistory = []
     }
     
     private func finishRecording() {
         if rec.isRecording {
+            if isLiveTranscriptionEnabled {
+                frozenTranscription = liveTranscription.getFinalTranscription()
+                liveTranscription.stopTranscription()
+            }
             rec.stop()
         }
         if let fileURL = rec.fileURL {

@@ -6,6 +6,7 @@ struct NewRecordingSheet: View {
     
     // MARK: - Callbacks
     var onRecordAudio: () -> Void
+    var onLiveTranscription: () -> Void
     var onUploadFile: () -> Void
     var onChooseFromPhotos: () -> Void
     
@@ -63,6 +64,20 @@ struct NewRecordingSheet: View {
             Divider()
                 .padding(.leading, 60)
             
+            ActionButtonWithBadge(
+                iconName: "waveform",
+                title: "Live transcription",
+                badge: "BETA",
+                tint: .accent,
+                action: {
+                    dismiss()
+                    onLiveTranscription()
+                }
+            )
+            
+            Divider()
+                .padding(.leading, 60)
+            
             ActionButton(
                 iconName: "file",
                 title: "Upload file",
@@ -112,6 +127,43 @@ private struct ActionButton: View {
                 Text(title)
                     .font(.body)
                     .foregroundColor(.primary)
+
+                Spacer()
+            }
+            .padding()
+            .background(Color(UIColor.systemBackground))
+        }
+    }
+}
+
+// MARK: - Action Button with Badge
+private struct ActionButtonWithBadge: View {
+    let iconName: String
+    let title: String
+    let badge: String
+    let tint: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: iconName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(tint)
+
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                
+                Text(badge)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.accent)
+                    .cornerRadius(4)
 
                 Spacer()
             }

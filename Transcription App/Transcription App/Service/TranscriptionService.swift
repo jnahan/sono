@@ -25,8 +25,10 @@ class TranscriptionService {
     func preloadModel() async {
         guard !isLoadingModel else { return }
         
+        let modelName = "tiny"
+        
         // Only preload if we don't already have the model loaded
-        guard whisperKit == nil || currentModelName != "tiny" else {
+        guard whisperKit == nil || currentModelName != modelName else {
             return
         }
         
@@ -34,8 +36,8 @@ class TranscriptionService {
         defer { isLoadingModel = false }
         
         do {
-            whisperKit = try await WhisperKit(WhisperKitConfig(model: "tiny"))
-            currentModelName = "tiny"
+            whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
+            currentModelName = modelName
         } catch {
             // Don't throw - preloading is optional
         }
@@ -202,8 +204,15 @@ class TranscriptionService {
         let settings = SettingsManager.shared
         let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
         
-        // Perform transcription with segment-level timestamps only
-        var options = DecodingOptions(wordTimestamps: false)
+        // DecodingOptions for file transcription (not live)
+        var options = DecodingOptions(
+            usePrefillPrompt: true,
+            usePrefillCache: true,
+            skipSpecialTokens: true,
+            withoutTimestamps: false,           // We want timestamps for segments
+            wordTimestamps: false,
+            suppressBlank: true                 // No blank outputs
+        )
         
         if let langCode = finalLanguageCode {
             options.language = langCode

@@ -8,9 +8,18 @@ class SettingsManager {
     // MARK: - Keys
     private let audioLanguageKey = "audioLanguage"
     private let showTimestampsKey = "showTimestamps"
+    private let whisperModelKey = "whisperModel"
     
     // MARK: - Defaults
     private let defaultLanguage = "Auto"
+    private let defaultModel = "base"
+    
+    // MARK: - Available Models
+    static let availableModels: [(id: String, name: String, description: String)] = [
+        ("tiny", "Tiny", "Fastest, basic quality"),
+        ("base", "Base", "Balanced speed & quality"),
+        ("small", "Small", "Better quality, slower")
+    ]
     
     // MARK: - Initialization
     private init() {}
@@ -41,6 +50,23 @@ class SettingsManager {
         set {
             UserDefaults.standard.set(newValue, forKey: showTimestampsKey)
         }
+    }
+    
+    // MARK: - Model Settings
+    
+    /// The selected Whisper model for transcription
+    var whisperModel: String {
+        get {
+            UserDefaults.standard.string(forKey: whisperModelKey) ?? defaultModel
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: whisperModelKey)
+        }
+    }
+    
+    /// Get display name for a model
+    func modelDisplayName(for modelId: String) -> String {
+        Self.availableModels.first { $0.id == modelId }?.name ?? modelId.capitalized
     }
     
     // MARK: - Helper Methods

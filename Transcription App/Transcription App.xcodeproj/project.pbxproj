@@ -57,6 +57,7 @@
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
+		5DB579302EE5A1000002DC84D /* LiveTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5792F2EE5A1000002DC84D /* LiveTranscriptionService.swift */; };
 		5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */; };
 		5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */; };
 		5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */; };
@@ -121,6 +122,7 @@
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
+		5DB5792F2EE5A1000002DC84D /* LiveTranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTranscriptionService.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
 		5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LibreBaskerville-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Transcription-App-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -190,6 +192,7 @@
 				5D962F272ECE935500049626 /* Player.swift */,
 				5D962F212ECE87ED00049626 /* Recorder.swift */,
 				5DB579242ED8D143002DC84D /* TranscriptionService.swift */,
+				5DB5792F2EE5A1000002DC84D /* LiveTranscriptionService.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -524,6 +527,7 @@
 				5DDA7CCA2EDD842100AFB6C0 /* View+Shadow.swift in Sources */,
 				5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */,
 				5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */,
+				5DB579302EE5A1000002DC84D /* LiveTranscriptionService.swift in Sources */,
 				5DB579102ED8BF6E002DC84D /* RecordingRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
