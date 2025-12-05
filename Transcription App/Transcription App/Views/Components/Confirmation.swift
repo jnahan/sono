@@ -38,25 +38,15 @@ struct ConfirmationSheet: View {
                     isPresented = false
                 } label: {
                     Text(confirmButtonText)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(Color.red)
-                        .cornerRadius(16)
                 }
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .buttonStyle(WarningButtonStyle())
                 
                 Button {
                     isPresented = false
                 } label: {
                     Text(cancelButtonText)
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(.baseBlack)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
                 }
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .buttonStyle(GhostButtonStyle())
             }
             .padding(.bottom, 20)
         }
