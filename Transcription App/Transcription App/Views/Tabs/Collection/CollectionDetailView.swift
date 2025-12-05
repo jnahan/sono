@@ -21,6 +21,7 @@ struct CollectionDetailView: View {
     
     private var recordings: [Recording] {
         allRecordings.filter { $0.collection?.id == collection.id }
+            .sorted { $0.recordedAt > $1.recordedAt }
     }
     
     private var filteredRecordings: [Recording] {

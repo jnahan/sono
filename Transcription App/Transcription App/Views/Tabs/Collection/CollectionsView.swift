@@ -17,10 +17,12 @@ struct CollectionsView: View {
     @State private var deletingCollection: Collection?
     
     private var filteredCollections: [Collection] {
+        let sortedCollections = collections.sorted { $0.createdAt > $1.createdAt }
+        
         if searchText.isEmpty {
-            return collections
+            return sortedCollections
         } else {
-            return collections.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return sortedCollections.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     

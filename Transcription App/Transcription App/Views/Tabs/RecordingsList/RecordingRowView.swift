@@ -51,6 +51,11 @@ struct RecordingRowView: View {
             .buttonStyle(.plain)
         }
         .padding(.vertical, 12)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.warmGray200)
+                .frame(height: 1)
+        }
         .onAppear {
             loadDuration()
         }

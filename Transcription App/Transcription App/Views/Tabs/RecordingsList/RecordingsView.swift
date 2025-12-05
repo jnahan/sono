@@ -123,10 +123,12 @@ struct RecordingsView: View {
     }
     
     private func updateFilteredRecordings() {
+        let sortedRecordings = recordings.sorted { $0.recordedAt > $1.recordedAt }
+        
         if searchText.isEmpty {
-            filteredRecordings = recordings
+            filteredRecordings = sortedRecordings
         } else {
-            filteredRecordings = recordings.filter {
+            filteredRecordings = sortedRecordings.filter {
                 $0.title.localizedCaseInsensitiveContains(searchText) ||
                 $0.fullText.localizedCaseInsensitiveContains(searchText)
             }

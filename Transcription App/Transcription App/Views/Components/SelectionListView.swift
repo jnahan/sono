@@ -77,7 +77,7 @@ struct SelectionListView: View {
                     .buttonStyle(.plain)
                     .listRowBackground(Color.warmGray50)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .listRowSeparatorTint(Color.warmGray300)
+                    .listRowSeparatorTint(Color.warmGray200)
                 }
             }
             .listStyle(.plain)

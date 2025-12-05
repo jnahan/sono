@@ -61,6 +61,7 @@ struct NewRecordingSheet: View {
             )
             
             Divider()
+                .background(Color.warmGray200)
                 .padding(.leading, 60)
             
             ActionButton(
@@ -74,6 +75,7 @@ struct NewRecordingSheet: View {
             )
             
             Divider()
+                .background(Color.warmGray200)
                 .padding(.leading, 60)
             
             ActionButton(
