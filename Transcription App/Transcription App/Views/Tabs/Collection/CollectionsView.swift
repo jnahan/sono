@@ -69,6 +69,7 @@ struct CollectionsView: View {
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.warmGray50)
                                 .listRowInsets(EdgeInsets(top: 10, leading: AppConstants.UI.Spacing.large, bottom: 10, trailing: AppConstants.UI.Spacing.large))
+                                .listRowSeparator(.hidden)
                             }
                             .onDelete(perform: deleteCollections)
                         }

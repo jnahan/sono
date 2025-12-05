@@ -60,10 +60,6 @@ struct NewRecordingSheet: View {
                 }
             )
             
-            Divider()
-                .background(Color.warmGray200)
-                .padding(.leading, 60)
-            
             ActionButton(
                 iconName: "file",
                 title: "Upload file",
@@ -73,10 +69,6 @@ struct NewRecordingSheet: View {
                     onUploadFile()
                 }
             )
-            
-            Divider()
-                .background(Color.warmGray200)
-                .padding(.leading, 60)
             
             ActionButton(
                 iconName: "video-camera",

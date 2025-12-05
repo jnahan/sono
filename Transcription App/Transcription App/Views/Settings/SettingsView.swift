@@ -142,10 +142,6 @@ struct SettingsView: View {
                                     SettingsRow(title: "Audio language", value: audioLanguage, imageName: "text-aa")
                                 }
                                 
-                                Divider()
-                                    .background(Color.warmGray200)
-                                    .padding(.leading, 60)
-                                
                                 NavigationLink(destination: SelectionListView(
                                     title: "Timestamps",
                                     items: [
@@ -203,17 +199,9 @@ struct SettingsView: View {
                                     SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
                                 }
                                 
-                                Divider()
-                                    .background(Color.warmGray200)
-                                    .padding(.leading, 60)
-                                
                                 Button(action: rateApp) {
                                     SettingsRow(title: "Rate app", value: nil, imageName: "star")
                                 }
-                                
-                                Divider()
-                                    .background(Color.warmGray200)
-                                    .padding(.leading, 60)
                                 
                                 Button(action: shareApp) {
                                     SettingsRow(title: "Share app", value: nil, imageName: "export")
