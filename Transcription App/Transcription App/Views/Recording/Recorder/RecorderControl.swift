@@ -44,9 +44,9 @@ struct RecorderControl: View {
                             Spacer()
                                 .frame(width: 3)  // Exact width of white line
                         }
-                        .frame(width: geometry.size.width / 2)
+                        .frame(width: geometry.size.width.isFinite ? geometry.size.width / 2 : 0)
                         .padding(.top, 80)
-                        .offset(x: -geometry.size.width / 4)
+                        .offset(x: geometry.size.width.isFinite ? -geometry.size.width / 4 : 0)
                         
                         // Vertical line on top - centered and fully opaque
                         Rectangle()

@@ -45,7 +45,6 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
             
             result.itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, error in
                 guard let url = url, error == nil else {
-                    print("❌ Failed to load video: \(error?.localizedDescription ?? "Unknown error")")
                     DispatchQueue.main.async {
                         self.onCancel?()
                     }
@@ -75,14 +74,11 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
                 
                 try fileManager.copyItem(at: sourceURL, to: destinationURL)
                 
-                print("✅ Video imported from library: \(destinationURL.lastPathComponent)")
-                
                 DispatchQueue.main.async {
                     self.onMediaPicked(destinationURL)
                 }
                 
             } catch {
-                print("❌ Error copying video: \(error)")
                 DispatchQueue.main.async {
                     self.onCancel?()
                 }

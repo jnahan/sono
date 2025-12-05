@@ -46,13 +46,21 @@ struct CustomSlider: View {
     }
     
     private func thumbPosition(in width: CGFloat) -> CGFloat {
-        let percentage = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
-        return width * CGFloat(percentage)
+        guard width > 0, range.upperBound > range.lowerBound else { return 0 }
+        let rangeSize = range.upperBound - range.lowerBound
+        let percentage = (value - range.lowerBound) / rangeSize
+        let clampedPercentage = max(0, min(1, percentage))
+        let position = width * CGFloat(clampedPercentage)
+        return position.isFinite ? position : 0
     }
     
     private func updateValue(from xPosition: CGFloat, in width: CGFloat) {
+        guard width > 0, range.upperBound > range.lowerBound else { return }
         let percentage = max(0, min(1, xPosition / width))
-        let newValue = range.lowerBound + (range.upperBound - range.lowerBound) * TimeInterval(percentage)
+        guard percentage.isFinite else { return }
+        let rangeSize = range.upperBound - range.lowerBound
+        let newValue = range.lowerBound + rangeSize * TimeInterval(percentage)
+        guard newValue.isFinite else { return }
         value = newValue
     }
 }

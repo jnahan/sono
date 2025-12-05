@@ -20,7 +20,6 @@ final class Player: ObservableObject {
     /// Preload an audio file without playing it
     func loadAudio(url: URL) {
         guard FileManager.default.fileExists(atPath: url.path) else {
-            print("❌ Audio file missing at path:", url.path)
             return
         }
         
@@ -32,7 +31,7 @@ final class Player: ObservableObject {
             currentTime = 0
             progress = 0
         } catch {
-            print("❌ Failed to load audio:", error)
+            // Failed to load audio - error handled silently
         }
     }
     

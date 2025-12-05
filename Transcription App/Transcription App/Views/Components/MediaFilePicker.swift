@@ -58,7 +58,6 @@ struct MediaFilePicker: UIViewControllerRepresentable {
             guard let url = urls.first else { return }
             
             guard url.startAccessingSecurityScopedResource() else {
-                print("Failed to access security-scoped resource")
                 return
             }
             
@@ -90,14 +89,12 @@ struct MediaFilePicker: UIViewControllerRepresentable {
                 
                 try fileManager.copyItem(at: url, to: finalURL)
                 
-                print("✅ \(mediaType == .video ? "Video" : "Audio") file imported: \(finalURL.lastPathComponent)")
-                
                 DispatchQueue.main.async {
                     self.parent.onFilePicked(finalURL, mediaType)
                 }
                 
             } catch {
-                print("Error copying file: \(error)")
+                // Error copying file - handled silently
             }
         }
         

@@ -50,12 +50,13 @@ private struct BarView: View {
     var body: some View {
         let normalizedValue = CGFloat(value.isFinite ? value : 0)
         let cappedValue = max(minHeight, min(normalizedValue, 1))
-        let barHeight = max(0, min(height, cappedValue * height))
+        let calculatedHeight = cappedValue * height
+        let barHeight = max(0, min(height, calculatedHeight.isFinite ? calculatedHeight : 0))
         
         Rectangle()
             .fill(Color.accent)
-            .frame(width: width, height: barHeight)
+            .frame(width: width.isFinite ? width : 0, height: barHeight.isFinite ? barHeight : 0)
             .cornerRadius(1.5)
-            .frame(height: height, alignment: .center)
+            .frame(height: height.isFinite ? height : 0, alignment: .center)
     }
 }

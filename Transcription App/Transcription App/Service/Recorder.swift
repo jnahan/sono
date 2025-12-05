@@ -65,7 +65,7 @@ final class Recorder: ObservableObject {
             
             startMetering()
         } catch {
-            print("Recording start failed:", error)
+            // Recording start failed - error handled silently
         }
     }
     

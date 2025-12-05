@@ -67,9 +67,9 @@ struct ConfirmationSheet: View {
         // Message: estimate based on text length and width
         // Assuming ~40 characters per line at 16pt font with 24pt horizontal padding
         let screenWidth: CGFloat = UIScreen.main.bounds.width
-        let availableWidth = screenWidth - 48 // 24pt padding on each side
+        let availableWidth = max(1, screenWidth - 48) // 24pt padding on each side, ensure > 0
         let estimatedLineHeight: CGFloat = 22 // 16pt font with line spacing
-        let charactersPerLine = Int(availableWidth / 9) // rough estimate
+        let charactersPerLine = max(1, Int(availableWidth / 9)) // rough estimate, ensure > 0
         let lineCount = max(1, (message.count / charactersPerLine) + (message.count % charactersPerLine > 0 ? 1 : 0))
         let messageHeight = CGFloat(lineCount) * estimatedLineHeight + 32 // + bottom padding
         
@@ -80,7 +80,8 @@ struct ConfirmationSheet: View {
         
         let totalHeight = dragHandleHeight + titleHeight + messageHeight + buttonsHeight
         
-        // Add some safe area padding at bottom
-        return totalHeight + 20
+        // Add some safe area padding at bottom, ensure result is finite
+        let finalHeight = totalHeight + 20
+        return finalHeight.isFinite ? finalHeight : 300 // fallback to reasonable default
     }
 }

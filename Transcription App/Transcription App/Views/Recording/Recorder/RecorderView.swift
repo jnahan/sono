@@ -36,7 +36,6 @@ struct RecorderView: View {
                     )
                     
                     RecorderControl(onFinishRecording: { url in
-                        print("=== RecorderControl finished with URL: \(url)")
                         pendingAudioURL = url
                         showTranscriptionDetail = true
                     })

@@ -97,7 +97,7 @@ struct RecordingRow: View {
                     self.duration = duration
                 }
             } catch {
-                print("Error loading duration: \(error)")
+                // Error loading duration - handled silently
             }
         }
     }
