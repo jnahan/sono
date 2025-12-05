@@ -169,29 +169,18 @@ struct RecordingDetailsView: View {
         .animation(.easeInOut(duration: 0.2), value: showNotePopup)
         .navigationBarHidden(true)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Copy transcription") {
-                UIPasteboard.general.string = recording.fullText
-            }
-            
-            Button("Share transcription") {
-                ShareHelper.shareText(recording.fullText)
-            }
-            
-            Button("Export audio") {
-                if let url = recording.resolvedURL {
-                    ShareHelper.shareFile(at: url)
+            RecordingMenuActions.confirmationDialogButtons(
+                recording: recording,
+                onCopy: {
+                    UIPasteboard.general.string = recording.fullText
+                },
+                onEdit: {
+                    showEditRecording = true
+                },
+                onDelete: {
+                    showDeleteConfirm = true
                 }
-            }
-            
-            Button("Edit") {
-                showEditRecording = true
-            }
-            
-            Button("Delete", role: .destructive) {
-                showDeleteConfirm = true
-            }
-            
-            Button("Cancel", role: .cancel) {}
+            )
         }
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(

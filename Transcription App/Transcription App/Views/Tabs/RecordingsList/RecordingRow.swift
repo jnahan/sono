@@ -55,27 +55,12 @@ struct RecordingRow: View {
             loadDuration()
         }
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Copy transcription") {
-                onCopy()
-            }
-            
-            Button("Share transcription") {
-                shareTranscription()
-            }
-            
-            Button("Export audio") {
-                exportAudio()
-            }
-            
-            Button("Edit") {
-                onEdit()
-            }
-            
-            Button("Delete", role: .destructive) {
-                showDeleteConfirm = true
-            }
-            
-            Button("Cancel", role: .cancel) {}
+            RecordingMenuActions.confirmationDialogButtons(
+                recording: recording,
+                onCopy: onCopy,
+                onEdit: onEdit,
+                onDelete: { showDeleteConfirm = true }
+            )
         }
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
@@ -117,12 +102,4 @@ struct RecordingRow: View {
         }
     }
     
-    private func shareTranscription() {
-        ShareHelper.shareText(recording.fullText)
-    }
-    
-    private func exportAudio() {
-        guard let url = recording.resolvedURL else { return }
-        ShareHelper.shareFile(at: url)
-    }
 }

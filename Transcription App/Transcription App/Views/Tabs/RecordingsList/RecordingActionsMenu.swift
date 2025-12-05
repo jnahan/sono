@@ -41,23 +41,11 @@ struct RecordingActionsMenu: View {
     
     // MARK: - Actions
     private func shareTranscription() {
-        presentActivityViewController(items: [recording.fullText])
+        ShareHelper.shareText(recording.fullText)
     }
     
     private func exportAudio() {
         guard let url = recording.resolvedURL else { return }
-        presentActivityViewController(items: [url])
-    }
-    
-    private func presentActivityViewController(items: [Any]) {
-        let activityVC = UIActivityViewController(
-            activityItems: items,
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.keyWindow?.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
+        ShareHelper.shareFile(at: url)
     }
 }

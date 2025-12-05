@@ -53,6 +53,7 @@
 		5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */; };
 		5DB579142ED8C031002DC84D /* CopyToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579132ED8C031002DC84D /* CopyToast.swift */; };
 		5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */; };
+		5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */; };
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
@@ -115,6 +116,7 @@
 		5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRecordingOverlay.swift; sourceTree = "<group>"; };
 		5DB579132ED8C031002DC84D /* CopyToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToast.swift; sourceTree = "<group>"; };
 		5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingActionsMenu.swift; sourceTree = "<group>"; };
+		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
@@ -260,7 +262,6 @@
 				5DB5790B2ED8BAA0002DC84D /* Tabs */,
 				5DB5790C2ED8BAB5002DC84D /* Recording */,
 				5DB5790E2ED8BF5E002DC84D /* Components */,
-				5DB5791B2ED8CAE9002DC84D /* Pickers */,
 				5DB5790D2ED8BB20002DC84D /* Settings */,
 			);
 			path = Views;
@@ -307,17 +308,11 @@
 				5D0ED1152EE0FF2D0003E775 /* Confirmation.swift */,
 				5D0ED12C2EE1454A0003E775 /* EmptyStateGradient.swift */,
 				5D0ED10D2EE004090003E775 /* SelectionList.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		5DB5791B2ED8CAE9002DC84D /* Pickers */ = {
-			isa = PBXGroup;
-			children = (
+				5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */,
 				5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */,
 				5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */,
 			);
-			path = Pickers;
+			path = Components;
 			sourceTree = "<group>";
 		};
 		5DB579232ED8D041002DC84D /* App */ = {
@@ -476,6 +471,7 @@
 				5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */,
 				5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */,
 				5DB579142ED8C031002DC84D /* CopyToast.swift in Sources */,
+				5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */,
 				5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */,
 				5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */,
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
