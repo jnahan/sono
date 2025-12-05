@@ -17,3 +17,4 @@ struct EmptyStateGradient: View {
         .ignoresSafeArea(edges: .top)
     }
 }
+

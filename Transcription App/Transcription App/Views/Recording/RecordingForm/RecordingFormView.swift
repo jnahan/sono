@@ -74,28 +74,6 @@ struct RecordingFormView: View {
                     .padding(.bottom, 32)
                 }
                 
-                // Waveform animation (only for new recordings)
-                if viewModel.isTranscribing && !viewModel.isEditing {
-                    HStack(spacing: 4) {
-                        ForEach(0..<20) { _ in
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.accent)
-                                .frame(width: 3, height: CGFloat.random(in: 20...60))
-                        }
-                        
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.accent)
-                            .padding(.leading, 8)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 16)
-                    .background(Color.black)
-                    .cornerRadius(12)
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    .padding(.bottom, 32)
-                }
-                
                 ScrollView {
                     // Form fields
                     VStack(spacing: 24) {
