@@ -76,15 +76,7 @@ struct RecordingDetailsView: View {
                     TabButton(
                         title: "Summary",
                         isSelected: selectedTab == .summary,
-                        action: {
-                            selectedTab = .summary
-                            // Generate summary if needed when tab is first clicked
-                            if (recording.summary?.isEmpty ?? true) && !viewModel.isGeneratingSummary {
-                                Task {
-                                    await viewModel.generateSummaryIfNeeded(modelContext: modelContext)
-                                }
-                            }
-                        }
+                        action: { selectedTab = .summary }
                     )
                 }
                 .padding(.horizontal, AppConstants.UI.Spacing.large)
@@ -266,113 +258,9 @@ struct RecordingDetailsView: View {
     
     // MARK: - Summary View
     
+    // Remove the old summaryView computed property and replace with:
     private var summaryView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if viewModel.isGeneratingSummary {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.2)
-                        Text("Generating summary...")
-                            .font(.custom("Inter-Regular", size: 16))
-                            .foregroundColor(.warmGray500)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 60)
-                } else if let error = viewModel.summaryError {
-                    VStack(spacing: 20) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 32))
-                                .foregroundColor(.warmGray400)
-                            Text(error)
-                                .font(.custom("Inter-Regular", size: 16))
-                                .foregroundColor(.warmGray500)
-                                .multilineTextAlignment(.center)
-                        }
-                        
-                        Button(action: {
-                            Task {
-                                await viewModel.generateSummary(modelContext: modelContext)
-                            }
-                        }) {
-                            Text("Generate Summary")
-                                .font(.interSemiBold(size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.baseBlack)
-                                .cornerRadius(8)
-                        }
-                        .disabled(viewModel.isGeneratingSummary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 40)
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                } else if let summary = recording.summary, !summary.isEmpty {
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Spacer()
-                            Button(action: {
-                                Task {
-                                    await viewModel.generateSummary(modelContext: modelContext)
-                                }
-                            }) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: 14))
-                                    Text("Regenerate")
-                                        .font(.custom("Inter-Regular", size: 14))
-                                }
-                                .foregroundColor(.warmGray600)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.warmGray100)
-                                .cornerRadius(6)
-                            }
-                            .disabled(viewModel.isGeneratingSummary)
-                        }
-                        
-                        Text(summary)
-                            .font(.custom("Inter-Regular", size: 16))
-                            .foregroundColor(.baseBlack)
-                    }
-                } else {
-                    VStack(spacing: 20) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "doc.text")
-                                .font(.system(size: 32))
-                                .foregroundColor(.warmGray400)
-                            Text("No summary available")
-                                .font(.custom("Inter-Regular", size: 16))
-                                .foregroundColor(.warmGray500)
-                        }
-                        
-                        Button(action: {
-                            Task {
-                                await viewModel.generateSummary(modelContext: modelContext)
-                            }
-                        }) {
-                            Text("Generate Summary")
-                                .font(.interSemiBold(size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.baseBlack)
-                                .cornerRadius(8)
-                        }
-                        .disabled(viewModel.isGeneratingSummary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 40)
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
-            .padding(.top, 24)
-            .padding(.bottom, 180)
-        }
+        SummaryView(recording: recording)
     }
     
     // MARK: - Helper Methods

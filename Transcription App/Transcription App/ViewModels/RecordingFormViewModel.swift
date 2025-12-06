@@ -38,7 +38,15 @@ class RecordingFormViewModel: ObservableObject {
     }
     
     var isFormValid: Bool {
-        validateTitle() && validateNote()
+        // For new recordings, ensure transcription is complete and has text
+        if !isEditing {
+            return validateTitle() && 
+                   validateNote() && 
+                   !isTranscribing && 
+                   !transcribedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        // For editing, just validate title and note
+        return validateTitle() && validateNote()
     }
     
     var saveButtonText: String {
@@ -176,6 +184,20 @@ class RecordingFormViewModel: ObservableObject {
     func saveRecording(modelContext: ModelContext, onComplete: () -> Void) {
         guard let url = audioURL else { return }
         
+        // Ensure transcription is complete before saving
+        guard !isTranscribing else {
+            print("⚠️ [RecordingForm] Cannot save: transcription still in progress")
+            return
+        }
+        
+        // Ensure we have transcribed text
+        guard !transcribedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ [RecordingForm] Cannot save: transcribedText is empty")
+            return
+        }
+        
+        print("💾 [RecordingForm] Saving recording with fullText length: \(transcribedText.count)")
+        
         // Create recording first (without segments)
         let recording = Recording(
             title: title.trimmed,
@@ -196,6 +218,14 @@ class RecordingFormViewModel: ObservableObject {
         for segment in transcribedSegments {
             modelContext.insert(segment)
             recording.segments.append(segment)
+        }
+        
+        // Save the context to persist the recording
+        do {
+            try modelContext.save()
+            print("✅ [RecordingForm] Recording saved successfully with fullText: \(recording.fullText.count) chars")
+        } catch {
+            print("❌ [RecordingForm] Failed to save recording: \(error)")
         }
         
         onComplete()

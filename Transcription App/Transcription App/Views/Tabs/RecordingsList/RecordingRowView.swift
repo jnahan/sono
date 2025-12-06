@@ -30,10 +30,17 @@ struct RecordingRowView: View {
                     .lineLimit(1)
                 
                 // Transcript preview
-                Text(recording.fullText)
-                    .font(.system(size: 14))
-                    .foregroundColor(.warmGray600)
-                    .lineLimit(3)
+                if !recording.fullText.isEmpty {
+                    Text(recording.fullText)
+                        .font(.system(size: 14))
+                        .foregroundColor(.warmGray600)
+                        .lineLimit(3)
+                } else {
+                    Text("No transcription available")
+                        .font(.system(size: 14))
+                        .foregroundColor(.warmGray400)
+                        .italic()
+                }
             }
             
             Spacer()

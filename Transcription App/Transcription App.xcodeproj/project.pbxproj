@@ -23,7 +23,10 @@
 		5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */; };
 		5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */; };
 		5D12FFF02EE33C7400F1FAE2 /* LLM in Frameworks */ = {isa = PBXBuildFile; productRef = 5D12FFEF2EE33C7400F1FAE2 /* LLM */; };
-		5D12FFF52EE3419600F1FAE2 /* Qwen3-0.6B-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5D12FFF42EE3419500F1FAE2 /* Qwen3-0.6B-Q4_K_M.gguf */; };
+		5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF72EE3500100F1FAE2 /* LLMService.swift */; };
+		5D12FFF82EE3500200F1FAE2 /* RecordingDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */; };
+		5D12FFFC2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */; };
+		5D12FFFE2EE3B9F000F1FAE2 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */; };
 		5D1570632ED965F40094E13E /* CollectionsRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570622ED965F40094E13E /* CollectionsRowView.swift */; };
 		5D1570652ED96B0A0094E13E /* CollectionPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570642ED96B0A0094E13E /* CollectionPickerSheet.swift */; };
 		5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */; };
@@ -69,8 +72,6 @@
 		5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */; };
 		5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */; };
 		5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DE4CA742EDD37D20039A2AA /* Assets.xcassets */; };
-		5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF72EE3500100F1FAE2 /* LLMService.swift */; };
-		5D12FFF82EE3500200F1FAE2 /* RecordingDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,7 +90,10 @@
 		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
 		5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateGradientView.swift; sourceTree = "<group>"; };
 		5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
-		5D12FFF42EE3419500F1FAE2 /* Qwen3-0.6B-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Qwen3-0.6B-Q4_K_M.gguf"; sourceTree = "<group>"; };
+		5D12FFF72EE3500100F1FAE2 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
+		5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsViewModel.swift; sourceTree = "<group>"; };
+		5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"; sourceTree = "<group>"; };
+		5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5D1570622ED965F40094E13E /* CollectionsRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsRowView.swift; sourceTree = "<group>"; };
 		5D1570642ED96B0A0094E13E /* CollectionPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionPickerSheet.swift; sourceTree = "<group>"; };
 		5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionFormSheet.swift; sourceTree = "<group>"; };
@@ -136,8 +140,6 @@
 		5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailView.swift; sourceTree = "<group>"; };
 		5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEmptyStateView.swift; sourceTree = "<group>"; };
 		5DE4CA742EDD37D20039A2AA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		5D12FFF72EE3500100F1FAE2 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
-		5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,7 +203,7 @@
 		5D12FFF12EE3411000F1FAE2 /* LLM */ = {
 			isa = PBXGroup;
 			children = (
-				5D12FFF42EE3419500F1FAE2 /* Qwen3-0.6B-Q4_K_M.gguf */,
+				5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */,
 			);
 			path = LLM;
 			sourceTree = "<group>";
@@ -403,6 +405,7 @@
 				5D15706A2EDA154A0094E13E /* AudioPlayerControls.swift */,
 				5D15706C2EDA172F0094E13E /* NoteOverlay.swift */,
 				5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */,
+				5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */,
 			);
 			path = RecordingDetails;
 			sourceTree = "<group>";
@@ -474,11 +477,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */,
+				5D12FFFC2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */,
 				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
-				5D12FFF52EE3419600F1FAE2 /* Qwen3-0.6B-Q4_K_M.gguf in Resources */,
 				5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -519,6 +522,7 @@
 				5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */,
 				5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */,
 				5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */,
+				5D12FFFE2EE3B9F000F1FAE2 /* SummaryView.swift in Sources */,
 				5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */,
 				5D962F282ECE935500049626 /* Player.swift in Sources */,
 				5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */,
