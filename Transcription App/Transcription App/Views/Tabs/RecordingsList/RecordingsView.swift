@@ -100,7 +100,7 @@ struct RecordingsView: View {
                         } label: {
                             RecordingRowView(
                                 recording: recording,
-                                player: viewModel.player,
+                                player: AudioPlayerManager.shared.player,
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
                                 onDelete: { viewModel.deleteRecording(recording) }
@@ -117,7 +117,7 @@ struct RecordingsView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .background(Color.warmGray50)
-                .contentMargins(.bottom, 80, for: .scrollContent)
+                .contentMargins(.bottom, 120, for: .scrollContent)
             }
         }
     }
