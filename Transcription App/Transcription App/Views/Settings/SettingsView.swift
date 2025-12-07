@@ -278,7 +278,7 @@ struct SettingsView: View {
                     
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Audio Language Section
+                            // Settings Section: Audio Language, Model, Timestamps
                             VStack(spacing: 0) {
                                 NavigationLink(destination: SelectionListView(
                                     title: "Audio Language",
@@ -294,57 +294,31 @@ struct SettingsView: View {
                                 }
                                 
                                 NavigationLink(destination: SelectionListView(
-                                    title: "Timestamps",
-                                    items: [
-                                        SelectionItem(title: "On", description: nil),
-                                        SelectionItem(title: "Off", description: nil)
-                                    ],
-                                    selectedItem: Binding(
-                                        get: { showTimestamps ? "On" : "Off" },
-                                        set: { newValue in
-                                            showTimestamps = (newValue == "On")
-                                        }
-                                    )
-                                )) {
-                                    HStack(spacing: 16) {
-                                        Image("clock")
-                                            .renderingMode(.template)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.black)
-                                        
-                                        Text("Timestamps")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.baseBlack)
-                                        
-                                        Spacer()
-                                        
-                                        Text(showTimestamps ? "On" : "Off")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(.warmGray500)
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray400)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 16)
-                                }
-                            }
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal, 16)
-                            
-                            // Model Section
-                            VStack(spacing: 0) {
-                                NavigationLink(destination: SelectionListView(
                                     title: "Model",
                                     items: modelOptions,
                                     selectedItem: $transcriptionModel
                                 )) {
                                     SettingsRow(title: "Model", value: transcriptionModel, imageName: "sparkle")
                                 }
+                                
+                                HStack(spacing: 16) {
+                                    Image("clock")
+                                        .renderingMode(.template)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.black)
+                                    
+                                    Text("Timestamps")
+                                        .font(.system(size: 17))
+                                        .foregroundColor(.baseBlack)
+                                    
+                                    Spacer()
+                                    
+                                    CustomSwitch(isOn: $showTimestamps)
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
                             }
                             .background(Color.white)
                             .cornerRadius(12)
