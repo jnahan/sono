@@ -113,6 +113,9 @@ struct RecordingDetailsView: View {
                             } else {
                                 ShareHelper.shareText(recording.fullText)
                             }
+                        },
+                        onAIPressed: {
+                            selectedTab = .askSono
                         }
                     )
                 }

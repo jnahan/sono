@@ -6,6 +6,7 @@ struct AudioPlayerControls: View {
     let fullText: String
     var onNotePressed: () -> Void
     var onSharePressed: () -> Void
+    var onAIPressed: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
@@ -37,10 +38,17 @@ struct AudioPlayerControls: View {
                         .monospacedDigit()
                 }
             }
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 32)
             
-            // Bottom Action Buttons - Full width with spacing
+            // Bottom Action Buttons - Evenly spaced
             HStack(spacing: 0) {
+                // AI/Sparkle button - switches to Ask Sono tab (furthest left)
+                IconButton(icon: "sparkle") {
+                    onAIPressed()
+                }
+                
+                Spacer()
+                
                 // Note button
                 IconButton(icon: "note") {
                     onNotePressed()
@@ -58,10 +66,10 @@ struct AudioPlayerControls: View {
                         .resizable()
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 32, height: 32)
                         .foregroundColor(.baseBlack)
                 }
-                .frame(width: 56, height: 56)
+                .frame(width: 64, height: 64)
                 .background(
                     Circle()
                         .fill(Color.white)
@@ -70,20 +78,19 @@ struct AudioPlayerControls: View {
                 
                 Spacer()
                 
-                // Copy and Share buttons group
-                HStack(spacing: 16) {
-                    // Copy button
-                    IconButton(icon: "copy") {
-                        UIPasteboard.general.string = fullText
-                    }
-                    
-                    // Export/Share button
-                    IconButton(icon: "export") {
-                        onSharePressed()
-                    }
+                // Copy button
+                IconButton(icon: "copy") {
+                    UIPasteboard.general.string = fullText
+                }
+                
+                Spacer()
+                
+                // Export/Share button
+                IconButton(icon: "export") {
+                    onSharePressed()
                 }
             }
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 32)
             .padding(.bottom, 28)
         }
         .background(Color.warmGray100)
