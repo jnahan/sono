@@ -71,7 +71,6 @@ struct CollectionsView: View {
                                 .listRowInsets(EdgeInsets(top: 10, leading: AppConstants.UI.Spacing.large, bottom: 10, trailing: AppConstants.UI.Spacing.large))
                                 .listRowSeparator(.hidden)
                             }
-                            .onDelete(perform: deleteCollections)
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
@@ -143,7 +142,7 @@ struct CollectionsView: View {
                             for recording in recordingsInCollection {
                                 modelContext.delete(recording)
                             }
-                            
+
                             // Now delete the collection
                             modelContext.delete(collection)
                             deletingCollection = nil
@@ -153,16 +152,9 @@ struct CollectionsView: View {
             }
         }
     }
-    
+
     private func recordingCount(for collection: Collection) -> Int {
         recordings.filter { $0.collection?.id == collection.id }.count
-    }
-    
-    private func deleteCollections(offsets: IndexSet) {
-        // Get the first collection from offsets and show confirmation
-        if let index = offsets.first {
-            deletingCollection = filteredCollections[index]
-        }
     }
     
     private func createCollection() {
