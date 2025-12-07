@@ -358,16 +358,18 @@ struct RecordingDetailsView: View {
     }
     
     // MARK: - Summary View
-    
+
     // Remove the old summaryView computed property and replace with:
     private var summaryView: some View {
         SummaryView(recording: recording)
+            .id(recording.id)  // Force view recreation when recording changes
     }
     
     // MARK: - Ask Sono View
-    
+
     private var askSonoView: some View {
         AskSonoView(recording: recording)
+            .id(recording.id)  // Force view recreation when recording changes
     }
     
     // MARK: - Transcription
