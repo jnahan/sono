@@ -307,8 +307,8 @@ struct SettingsView: View {
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 24, height: 24)
-                                        .foregroundColor(.black)
-                                    
+                                        .foregroundColor(.baseBlack)
+
                                     Text("Timestamps")
                                         .font(.system(size: 17))
                                         .foregroundColor(.baseBlack)
@@ -429,8 +429,8 @@ struct SettingsRow: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
-                .foregroundColor(.black)
-            
+                .foregroundColor(.baseBlack)
+
             Text(title)
                 .font(.system(size: 17))
                 .foregroundColor(.baseBlack)

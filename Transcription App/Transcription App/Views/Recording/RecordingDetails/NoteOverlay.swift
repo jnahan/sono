@@ -27,7 +27,7 @@ struct NoteOverlay: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.title3)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.warmGray600)
                                 .padding()
                         }
                     }
@@ -42,7 +42,7 @@ struct NoteOverlay: View {
                             .padding(.horizontal, 24)
                     }
                     .padding(.vertical, 24)
-                    .background(Color(UIColor.systemBackground))
+                    .background(Color.baseWhite)
                     .cornerRadius(12)
                     .padding()
                 }

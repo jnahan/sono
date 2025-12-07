@@ -10,9 +10,10 @@ struct RecordingFormView: View {
     let modelContext: ModelContext
     let onTranscriptionComplete: () -> Void
     let onExit: (() -> Void)?
-    
+
     @StateObject private var viewModel: RecordingFormViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     
     init(
         isPresented: Binding<Bool>,
@@ -37,7 +38,7 @@ struct RecordingFormView: View {
         ZStack {
             Color.warmGray50
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 // Header
                 if viewModel.isEditing {
@@ -106,7 +107,7 @@ struct RecordingFormView: View {
                             InputLabel(text: "Note")
                             InputField(
                                 text: $viewModel.note,
-                                placeholder: "Write a note for yourself...",
+                                placeholder: "Add a note",
                                 isMultiline: true,
                                 height: 200,
                                 error: viewModel.noteError
@@ -116,7 +117,8 @@ struct RecordingFormView: View {
                     .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.top, viewModel.isEditing ? 24 : 0)
                 }
-                
+                .scrollDismissesKeyboard(.interactively)
+
                 Spacer()
                 
                 // Save button
@@ -165,7 +167,22 @@ struct RecordingFormView: View {
         }
         .onAppear {
             viewModel.setupForm()
+            // Auto-save recording before starting transcription for crash recovery
+            if !viewModel.isEditing {
+                viewModel.autoSaveRecording(modelContext: modelContext)
+                viewModel.markTranscriptionStarted(modelContext: modelContext)
+            }
             viewModel.startTranscriptionIfNeeded()
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            // Save recording state when app goes to background
+            if newPhase == .background && !viewModel.isEditing {
+                print("📱 [RecordingForm] App backgrounded - saving recording state")
+                // Save current state even if transcription is still in progress
+                viewModel.saveRecording(modelContext: modelContext) {
+                    // No-op: just ensuring state is saved
+                }
+            }
         }
         .navigationBarHidden(true)
     }

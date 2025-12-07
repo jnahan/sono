@@ -17,7 +17,7 @@ struct CustomSwitch: View {
                 
                 // Circle
                 Circle()
-                    .fill(isOn ? Color.white : Color.warmGray400)
+                    .fill(isOn ? Color.baseWhite : Color.warmGray400)
                     .frame(width: 24, height: 24)
                     .offset(x: isOn ? 10 : -10) // 2px from edges: ON = 48/2 - 24/2 - 2 = 10, OFF = -48/2 + 24/2 + 2 = -10
             }

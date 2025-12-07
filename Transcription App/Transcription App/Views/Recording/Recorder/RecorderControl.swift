@@ -9,11 +9,12 @@ import UIKit
 struct RecorderControl: View {
     @StateObject private var rec = Recorder()
     @StateObject private var player = Player()
+    @ObservedObject var state: RecorderControlState
     @State private var micDenied = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
     @State private var frozenMeterHistory: [Float] = []  // Freeze history when recording stops
-    
+
     var onFinishRecording: ((URL) -> Void)?
     
     var body: some View {
@@ -28,7 +29,7 @@ struct RecorderControl: View {
                         .foregroundColor(.warmGray700)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.white)
+                        .background(Color.baseWhite)
                         .cornerRadius(32)
                     
                     ZStack(alignment: .top) {
@@ -50,7 +51,7 @@ struct RecorderControl: View {
                         
                         // Vertical line on top - centered and fully opaque
                         Rectangle()
-                            .fill(Color.white)
+                            .fill(Color.baseWhite)
                             .frame(width: 3, height: 240)
                     }
                 }
@@ -97,7 +98,7 @@ struct RecorderControl: View {
                     } label: {
                         ZStack {
                             Circle()
-                                .fill(Color.white)
+                                .fill(Color.baseWhite)
                                 .frame(width: 72, height: 72)
                                 .appShadow()
                             
@@ -117,7 +118,7 @@ struct RecorderControl: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 32, height: 32)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.baseBlack)
                             }
                         }
                     }
@@ -146,6 +147,24 @@ struct RecorderControl: View {
                 frozenMeterHistory = []  // Clear frozen history when starting new recording
             } else {
                 stopTimer()
+            }
+        }
+        .onChange(of: rec.fileURL) { _, newURL in
+            // Update shared state so RecorderView can auto-save if needed
+            state.currentFileURL = newURL
+        }
+        .onChange(of: rec.wasInterrupted) { _, interrupted in
+            if interrupted {
+                // Recording was interrupted - trigger immediate save notification
+                state.shouldAutoSave = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            // App is about to go to background - stop recording to save audio
+            if rec.isRecording {
+                print("⚠️ [RecorderControl] App backgrounding - stopping recording")
+                stopRecording()
+                state.shouldAutoSave = true
             }
         }
         .alert("Microphone Access Needed", isPresented: $micDenied) {

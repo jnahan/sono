@@ -37,7 +37,7 @@ struct InputField: View {
                             }
                         }
                         .padding(16)
-                        .background(Color.white)
+                        .background(Color.baseWhite)
                         .cornerRadius(12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
@@ -51,33 +51,47 @@ struct InputField: View {
                             Text(placeholder)
                                 .font(.system(size: 17))
                                 .foregroundColor(.warmGray400)
-                                .padding(.horizontal, AppConstants.UI.Spacing.large)
-                                .padding(.vertical, AppConstants.UI.Spacing.large)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 12)
                         }
-                        
+
                         TextEditor(text: $text)
                             .font(.system(size: 17))
+                            .foregroundColor(.baseBlack)
+                            .tint(.baseBlack)
                             .padding(12)
                             .scrollContentBackground(.hidden)
-                            .background(Color.white)
-                            .cornerRadius(12)
                             .frame(height: height ?? 200)
+                            .scrollDismissesKeyboard(.interactively)
                     }
+                    .background(Color.baseWhite)
+                    .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(error != nil ? Color.red : Color.clear, lineWidth: 1)
                     )
                 } else {
                     // TextField
-                    TextField(placeholder, text: $text)
-                        .font(.system(size: 17))
-                        .padding(16)
-                        .background(Color.white)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(error != nil ? Color.red : Color.clear, lineWidth: 1)
-                        )
+                    ZStack(alignment: .leading) {
+                        if text.isEmpty {
+                            Text(placeholder)
+                                .font(.system(size: 17))
+                                .foregroundColor(.warmGray400)
+                                .padding(.leading, 16)
+                        }
+
+                        TextField("", text: $text)
+                            .font(.system(size: 17))
+                            .foregroundColor(.baseBlack)
+                            .tint(.baseBlack)
+                            .padding(16)
+                    }
+                    .background(Color.baseWhite)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(error != nil ? Color.red : Color.clear, lineWidth: 1)
+                    )
                 }
             }
             

@@ -56,7 +56,7 @@ struct SelectionListView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.title)
                                     .font(.system(size: 16))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.baseBlack)
                                 
                                 if let description = item.description {
                                     Text(description)

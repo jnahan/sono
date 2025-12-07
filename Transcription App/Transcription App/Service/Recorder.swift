@@ -11,15 +11,21 @@ final class Recorder: ObservableObject {
     @Published var isRecording = false
     @Published var meterLevel: Float = 0
     @Published var meterHistory: [Float] = []
-    
+    @Published var wasInterrupted = false // Track if recording was interrupted
+
     // MARK: - Configuration
     var meterInterval: TimeInterval = 0.03
     var maxHistoryCount: Int = 80
-    
+
     // MARK: - Private Properties
     private var recorder: AVAudioRecorder?
     private var meterTimer: AnyCancellable?
     private(set) var fileURL: URL?
+
+    // MARK: - Initialization
+    init() {
+        setupAudioSessionInterruptionHandling()
+    }
     
     // MARK: - Public Methods
     func requestPermission(_ done: @escaping (Bool) -> Void) {
@@ -134,5 +140,82 @@ final class Recorder: ObservableObject {
         fileURL = nil  // Clear the file URL
         meterLevel = 0
         meterHistory.removeAll()
+        wasInterrupted = false
+    }
+
+    // MARK: - Audio Session Interruption Handling
+    private func setupAudioSessionInterruptionHandling() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioSessionInterruption(_:)),
+            name: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+
+        // Also observe route changes (e.g., headphones unplugged)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteChange(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: AVAudioSession.sharedInstance()
+        )
+    }
+
+    @objc private func handleAudioSessionInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+
+        switch type {
+        case .began:
+            // Interruption began (phone call, alarm, etc.)
+            if isRecording {
+                print("⚠️ [Recorder] Audio session interrupted - stopping recording")
+                wasInterrupted = true
+                stop()
+            }
+
+        case .ended:
+            // Interruption ended
+            guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else {
+                return
+            }
+            let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+
+            if options.contains(.shouldResume) {
+                print("ℹ️ [Recorder] Audio session interruption ended - can resume")
+                // We don't auto-resume recording, let user decide
+            }
+
+        @unknown default:
+            break
+        }
+    }
+
+    @objc private func handleRouteChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
+            return
+        }
+
+        switch reason {
+        case .oldDeviceUnavailable:
+            // Headphones unplugged or audio device removed
+            if isRecording {
+                print("⚠️ [Recorder] Audio device removed - stopping recording")
+                wasInterrupted = true
+                stop()
+            }
+
+        default:
+            break
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

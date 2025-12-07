@@ -56,6 +56,7 @@ struct RecordingsView: View {
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 updateFilteredRecordings()
+                recoverIncompleteRecordings()
                 // Reset navigation state when returning to this tab
                 selectedRecording = nil
                 // Show tab bar on root view
@@ -131,6 +132,31 @@ struct RecordingsView: View {
                 $0.title.localizedCaseInsensitiveContains(searchText) ||
                 $0.fullText.localizedCaseInsensitiveContains(searchText)
             }
+        }
+    }
+
+    /// Detect and recover incomplete recordings on app launch
+    private func recoverIncompleteRecordings() {
+        let incompleteRecordings = recordings.filter { recording in
+            recording.status == .inProgress
+        }
+
+        guard !incompleteRecordings.isEmpty else { return }
+
+        print("🔄 [Recovery] Found \(incompleteRecordings.count) incomplete recording(s)")
+
+        for recording in incompleteRecordings {
+            // Mark as failed with explanation
+            recording.status = .failed
+            recording.failureReason = "Recording was interrupted. The app may have been closed or an error occurred during transcription."
+            print("⚠️ [Recovery] Marked recording '\(recording.title)' as failed")
+        }
+
+        do {
+            try modelContext.save()
+            print("✅ [Recovery] Successfully updated incomplete recordings")
+        } catch {
+            print("❌ [Recovery] Failed to save recovered recordings: \(error)")
         }
     }
 }

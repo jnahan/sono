@@ -42,7 +42,7 @@ struct NewRecordingSheet: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.title3)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.warmGray600)
                     .padding()
             }
         }
@@ -80,7 +80,7 @@ struct NewRecordingSheet: View {
                 }
             )
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color.baseWhite)
         .cornerRadius(12)
         .padding()
     }
@@ -105,12 +105,12 @@ private struct ActionButton: View {
 
                 Text(title)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.baseBlack)
 
                 Spacer()
             }
             .padding()
-            .background(Color(UIColor.systemBackground))
+            .background(Color.baseWhite)
         }
     }
 }

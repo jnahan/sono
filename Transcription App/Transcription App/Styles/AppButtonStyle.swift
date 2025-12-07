@@ -6,12 +6,12 @@ struct AppButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.interSemiBold(size: 16))
-            .foregroundColor(.white)
+            .foregroundColor(.baseWhite)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 16)
             .padding(.horizontal, 64)
             .background(
-                (isEnabled ? Color.black : Color.warmGray400)
+                (isEnabled ? Color.baseBlack : Color.warmGray400)
                    .opacity(configuration.isPressed ? 0.7 : 1)
             )
             .cornerRadius(.infinity)
@@ -27,7 +27,7 @@ struct WarningButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.interSemiBold(size: 16))
-            .foregroundColor(.white)
+            .foregroundColor(.baseWhite)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 16)
             .padding(.horizontal, 64)

@@ -7,7 +7,7 @@ struct EditRecordingOverlay: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.baseBlack.opacity(0.4)
                 .ignoresSafeArea()
                 .onTapGesture { isPresented = false }
             

@@ -1,6 +1,14 @@
 import Foundation
 import SwiftData
 
+/// Represents the status of a recording's transcription
+enum TranscriptionStatus: String, Codable {
+    case notStarted     // Recording saved but transcription hasn't started
+    case inProgress     // Transcription is currently running
+    case completed      // Transcription completed successfully
+    case failed         // Transcription failed or was interrupted
+}
+
 /// Represents a single audio recording with its transcription
 /// Contains the audio file, full transcribed text, segments with timestamps,
 /// optional notes, and optional folder organization
@@ -8,6 +16,7 @@ import SwiftData
 class Recording {
     // MARK: - Identifiers
     @Attribute(.unique) var id: UUID
+    var schemaVersion: Int = 2 // Track schema version for future migrations
     
     // MARK: - Basic Info
     var title: String
@@ -21,6 +30,9 @@ class Recording {
     var fullText: String // Complete transcription
     @Relationship(deleteRule: .cascade)
     var segments: [RecordingSegment] = [] // Timestamped segments
+    var transcriptionStatus: String = TranscriptionStatus.completed.rawValue // Default to completed for existing recordings
+    var failureReason: String? = nil // Description of why transcription failed
+    var transcriptionStartedAt: Date? = nil // When transcription began
     
     // MARK: - User Notes
     var notes: String
@@ -33,6 +45,11 @@ class Recording {
     var collection: Collection?
     
     // MARK: - Computed Properties
+    var status: TranscriptionStatus {
+        get { TranscriptionStatus(rawValue: transcriptionStatus) ?? .notStarted }
+        set { transcriptionStatus = newValue.rawValue }
+    }
+
     var resolvedURL: URL? {
         guard let appSupportDir = try? FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false) else {
@@ -73,11 +90,15 @@ class Recording {
         summary: String? = nil,
         segments: [RecordingSegment] = [],
         collection: Collection? = nil,
-        recordedAt: Date
+        recordedAt: Date,
+        transcriptionStatus: TranscriptionStatus = .completed,
+        failureReason: String? = nil,
+        transcriptionStartedAt: Date? = nil
     ) {
         self.id = UUID()
+        self.schemaVersion = 2
         self.title = title
-        
+
         // Store relative path from Application Support directory
         if let appSupportDir = try? FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false),
@@ -88,7 +109,7 @@ class Recording {
             // Fallback to absolute path if we can't determine relative path
             self.filePath = fileURL.path
         }
-        
+
         self.fullText = fullText
         self.language = language
         self.notes = notes
@@ -96,5 +117,8 @@ class Recording {
         self.segments = segments
         self.collection = collection
         self.recordedAt = recordedAt
+        self.transcriptionStatus = transcriptionStatus.rawValue
+        self.failureReason = failureReason
+        self.transcriptionStartedAt = transcriptionStartedAt
     }
 }

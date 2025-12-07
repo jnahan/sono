@@ -140,6 +140,7 @@ struct CollectionDetailView: View {
                 VStack(spacing: 16) {
                     Text(collection.name + " is empty")
                         .font(.libreMedium(size: 24))
+                        .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: 280)

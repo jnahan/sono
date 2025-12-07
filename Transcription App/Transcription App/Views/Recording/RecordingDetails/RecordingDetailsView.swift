@@ -14,13 +14,16 @@ struct RecordingDetailsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var collections: [Collection]
-    
+
     @State private var showNotePopup = false
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var showMenu = false
     @State private var currentActiveSegmentId: UUID?
     @State private var selectedTab: RecordingDetailTab = .transcript
+    @State private var isTranscribing = false
+    @State private var transcriptionError: String?
+    @State private var showWarningToast = false
     
     private var showTimestamps: Bool {
         SettingsManager.shared.showTimestamps
@@ -52,14 +55,42 @@ struct RecordingDetailsView: View {
                         Text(TimeFormatter.relativeDate(from: recording.recordedAt))
                             .font(.system(size: 14))
                             .foregroundColor(.warmGray500)
-                        
+
                         Text(recording.title)
                             .font(.custom("LibreBaskerville-Medium", size: 24))
+                            .foregroundColor(.baseBlack)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                     }
                 }
-                
+
+                // Warning Toast for incomplete transcription
+                if showWarningToast {
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.orange)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Transcription Incomplete")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.baseBlack)
+
+                            Text(recording.failureReason ?? "This recording was interrupted and needs to be transcribed.")
+                                .font(.system(size: 12))
+                                .foregroundColor(.warmGray600)
+                        }
+
+                        Spacer()
+                    }
+                    .padding(16)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    .padding(.top, 16)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
                 // Tab Selector
                 HStack(spacing: 0) {
                     TabButton(
@@ -67,13 +98,13 @@ struct RecordingDetailsView: View {
                         isSelected: selectedTab == .transcript,
                         action: { selectedTab = .transcript }
                     )
-                    
+
                     TabButton(
                         title: "Summary",
                         isSelected: selectedTab == .summary,
                         action: { selectedTab = .summary }
                     )
-                    
+
                     TabButton(
                         title: "Ask Sono",
                         isSelected: selectedTab == .askSono,
@@ -176,6 +207,13 @@ struct RecordingDetailsView: View {
             if let url = recording.resolvedURL {
                 audioPlayer.loadAudio(url: url)
             }
+
+            // Show warning toast if recording is incomplete
+            if recording.status == .failed || recording.status == .notStarted {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showWarningToast = true
+                }
+            }
         }
         .onDisappear {
             audioPlayer.stop()
@@ -183,12 +221,63 @@ struct RecordingDetailsView: View {
     }
     
     // MARK: - Transcript View
-    
+
     private var transcriptView: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    if showTimestamps && !recording.segments.isEmpty {
+                    // Transcribe button for incomplete recordings
+                    if recording.status == .failed || recording.status == .notStarted {
+                        VStack(spacing: 16) {
+                            Text(recording.fullText.isEmpty ? "No transcription available" : "Partial transcription available")
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray500)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 24)
+
+                            Button {
+                                startTranscription()
+                            } label: {
+                                HStack {
+                                    if isTranscribing {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
+                                        Text("Transcribing...")
+                                    } else {
+                                        Image(systemName: "waveform")
+                                        Text("Transcribe Recording")
+                                    }
+                                }
+                            }
+                            .buttonStyle(AppButtonStyle())
+                            .disabled(isTranscribing)
+                            .padding(.horizontal, AppConstants.UI.Spacing.large)
+
+                            if let error = transcriptionError {
+                                Text(error)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.red)
+                                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                            }
+
+                            // Show partial text if available
+                            if !recording.fullText.isEmpty {
+                                Divider()
+                                    .padding(.vertical, 16)
+
+                                Text("Partial Transcript:")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.warmGray500)
+
+                                Text(recording.fullText)
+                                    .font(.custom("Inter-Regular", size: 16))
+                                    .foregroundColor(.warmGray400)
+                                    .opacity(0.7)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    } else if showTimestamps && !recording.segments.isEmpty {
                         // Show segments with timestamps when enabled
                         ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
                             let isActive = audioPlayer.isPlaying && 
@@ -203,6 +292,7 @@ struct RecordingDetailsView: View {
                                 
                                 Text(attributedText(for: segment.text, isActive: isActive))
                                     .font(.custom("Inter-Regular", size: 16))
+                                    .foregroundColor(.baseBlack)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .id(segment.id)
@@ -277,15 +367,79 @@ struct RecordingDetailsView: View {
         AskSonoView(recording: recording)
     }
     
+    // MARK: - Transcription
+
+    private func startTranscription() {
+        guard let url = recording.resolvedURL else {
+            transcriptionError = "Audio file not found"
+            return
+        }
+
+        isTranscribing = true
+        transcriptionError = nil
+        recording.status = .inProgress
+        recording.transcriptionStartedAt = Date()
+        recording.failureReason = nil
+
+        Task {
+            do {
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url)
+
+                await MainActor.run {
+                    // Update recording with transcription
+                    recording.fullText = result.text
+                    recording.language = result.language
+                    recording.status = .completed
+                    recording.failureReason = nil
+
+                    // Clear existing segments and add new ones
+                    recording.segments.removeAll()
+                    for segment in result.segments {
+                        let recordingSegment = RecordingSegment(
+                            start: segment.start,
+                            end: segment.end,
+                            text: segment.text
+                        )
+                        modelContext.insert(recordingSegment)
+                        recording.segments.append(recordingSegment)
+                    }
+
+                    // Save to database
+                    do {
+                        try modelContext.save()
+                        isTranscribing = false
+                        withAnimation {
+                            showWarningToast = false
+                        }
+                        print("✅ [RecordingDetails] Transcription completed successfully")
+                    } catch {
+                        isTranscribing = false
+                        transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
+                        recording.status = .failed
+                        recording.failureReason = transcriptionError
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isTranscribing = false
+                    transcriptionError = "Transcription failed: \(error.localizedDescription)"
+                    recording.status = .failed
+                    recording.failureReason = transcriptionError
+                    try? modelContext.save()
+                }
+            }
+        }
+    }
+
     // MARK: - Helper Methods
-    
+
     private func attributedText(for text: String, isActive: Bool) -> AttributedString {
         var attributedString = AttributedString(text)
         
         // Set font and color using attribute container
         var container = AttributeContainer()
         container.font = UIFont(name: "Inter-Regular", size: 16) ?? .systemFont(ofSize: 16)
-        container.foregroundColor = UIColor.black
+        container.foregroundColor = UIColor(Color.baseBlack)
         
         if isActive {
             container.backgroundColor = UIColor(Color.accentLight)

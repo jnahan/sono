@@ -70,7 +70,7 @@ struct MainTabView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "plus")
                                             .font(.system(size: 20, weight: .semibold))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.baseWhite)
                                     }
                                     .frame(width: 120, height: 48)
                                     .background(Color.baseBlack)

@@ -9,7 +9,7 @@ struct RecordingEmptyStateView: View {
                 Text("Create your \nfirst recording")
                     .font(.libreMedium(size: 24))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.black)
+                    .foregroundColor(.baseBlack)
                 
                 Image("curly-arrow")
                     .resizable()

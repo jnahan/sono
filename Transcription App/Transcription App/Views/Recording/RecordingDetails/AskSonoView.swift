@@ -23,7 +23,7 @@ struct AskSonoView: View {
         ZStack {
             Color.warmGray50
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 // Chat Messages
                 ScrollViewReader { proxy in
@@ -62,6 +62,7 @@ struct AskSonoView: View {
                         .padding(.horizontal, AppConstants.UI.Spacing.large)
                         .padding(.vertical, 16)
                     }
+                    .scrollDismissesKeyboard(.interactively)
                     .onChange(of: viewModel.messages.count) { _, _ in
                         if let lastMessage = viewModel.messages.last {
                             withAnimation {
@@ -84,41 +85,50 @@ struct AskSonoView: View {
                     
                     HStack(spacing: 12) {
                         // Text Input
-                        HStack(spacing: 8) {
-                            TextField("Ask me anything...", text: $viewModel.userPrompt, axis: .vertical)
+                        ZStack(alignment: .leading) {
+                            if viewModel.userPrompt.isEmpty {
+                                Text("Ask me anything...")
+                                    .font(.custom("Inter-Regular", size: 16))
+                                    .foregroundColor(.warmGray400)
+                                    .padding(.leading, 16)
+                                    .padding(.top, 12)
+                            }
+
+                            TextField("", text: $viewModel.userPrompt, axis: .vertical)
                                 .font(.custom("Inter-Regular", size: 16))
                                 .foregroundColor(.baseBlack)
+                                .tint(.baseBlack)
                                 .focused($isInputFocused)
                                 .lineLimit(1...5)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 12)
-                                .background(Color.white)
-                                .cornerRadius(24)
-                            
-                            // Send Button
-                            Button(action: {
-                                Task {
-                                    await viewModel.sendPrompt()
-                                }
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(viewModel.userPrompt.isEmpty || viewModel.isProcessing ? Color.warmGray400 : Color.accent)
-                                        .frame(width: 44, height: 44)
-                                    
-                                    if viewModel.isProcessing {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                            .scaleEffect(0.7)
-                                    } else {
-                                        Image(systemName: "paperplane.fill")
-                                            .font(.system(size: 16))
-                                            .foregroundColor(.white)
-                                    }
+                        }
+                        .background(Color.baseWhite)
+                        .cornerRadius(24)
+
+                        // Send Button
+                        Button(action: {
+                            Task {
+                                await viewModel.sendPrompt()
+                            }
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(viewModel.userPrompt.isEmpty || viewModel.isProcessing ? Color.warmGray400 : Color.accent)
+                                    .frame(width: 44, height: 44)
+
+                                if viewModel.isProcessing {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
+                                        .scaleEffect(0.7)
+                                } else {
+                                    Image(systemName: "paperplane.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.baseWhite)
                                 }
                             }
-                            .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
                         }
+                        .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
                     }
                     .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.vertical, 12)
