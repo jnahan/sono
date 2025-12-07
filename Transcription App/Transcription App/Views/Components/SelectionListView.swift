@@ -2,8 +2,8 @@ import SwiftUI
 
 struct SelectionItem: Identifiable {
     let id = UUID()
-    let emoji: String?   // Optional emoji
     let title: String
+    let description: String?  // Optional description text
 }
 
 struct SelectionListView: View {
@@ -23,7 +23,10 @@ struct SelectionListView: View {
         if searchText.isEmpty {
             return items
         } else {
-            return items.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            return items.filter { item in
+                item.title.localizedCaseInsensitiveContains(searchText) ||
+                (item.description?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
         }
     }
     
@@ -50,14 +53,17 @@ struct SelectionListView: View {
                         dismiss()
                     }) {
                         HStack(spacing: 12) {
-                            if let emoji = item.emoji {
-                                Text(emoji)
-                                    .font(.system(size: 24))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.title)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.black)
+                                
+                                if let description = item.description {
+                                    Text(description)
+                                        .font(.interMedium(size: 14))
+                                        .foregroundColor(.warmGray400)
+                                }
                             }
-                            
-                            Text(item.title)
-                                .font(.system(size: 16))
-                                .foregroundColor(.black)
                             
                             Spacer()
                             
