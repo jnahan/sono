@@ -88,13 +88,6 @@ final class Player: ObservableObject {
         progress = player.duration > 0 ? time / player.duration : 0
     }
     
-    /// Skip forward or backward by a number of seconds
-    func skip(by seconds: TimeInterval) {
-        guard let player else { return }
-        let newTime = max(0, min(duration, currentTime + seconds))
-        seek(toTime: newTime)
-    }
-    
     // MARK: - Private Methods
     private func startUpdatingProgress() {
         stopUpdatingProgress()

@@ -41,92 +41,45 @@ struct AudioPlayerControls: View {
             
             // Bottom Action Buttons - Full width with spacing
             HStack(spacing: 0) {
-                // Note button group (icon + text)
-                Button {
+                // Note button
+                IconButton(icon: "note") {
                     onNotePressed()
+                }
+                
+                Spacer()
+                
+                // Center playback controls - Play/Pause only
+                Button {
+                    if let url = audioURL {
+                        audioPlayer.play(url)
+                    }
                 } label: {
-                    HStack(spacing: 6) {
-                        Image("note")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                        Text("Note")
-                            .font(.system(size: 14))
-                    }
-                    .foregroundColor(.warmGray500)
+                    Image(audioPlayer.isPlaying ? "pause-fill" : "play-fill")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.baseBlack)
                 }
+                .frame(width: 56, height: 56)
+                .background(
+                    Circle()
+                        .fill(Color.white)
+                )
+                .appShadow()
                 
                 Spacer()
                 
-                // Center playback controls
-                HStack(spacing: 20) {
-                    // Rewind button
-                    Button {
-                        audioPlayer.skip(by: -15)
-                    } label: {
-                        Image("clock-counter-clockwise")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 28, height: 28)
-                            .foregroundColor(.warmGray700)
-                    }
-                    
-                    // Play/Pause
-                    Button {
-                        if let url = audioURL {
-                            audioPlayer.play(url)
-                        }
-                    } label: {
-                        Image(audioPlayer.isPlaying ? "pause-fill" : "play-fill")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 28, height: 28)
-                            .foregroundColor(.baseBlack)
-                    }
-                    .frame(width: 56, height: 56)
-                    .background(
-                        Circle()
-                            .fill(Color.white)
-                    )
-                    .appShadow()
-                    
-                    // Forward button
-                    Button {
-                        audioPlayer.skip(by: 15)
-                    } label: {
-                        Image("clock-clockwise")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 28, height: 28)
-                            .foregroundColor(.warmGray700)
-                    }
-                }
-                
-                Spacer()
-                
-                // Copy and Export buttons group
+                // Copy and Share buttons group
                 HStack(spacing: 16) {
                     // Copy button
-                    Button {
+                    IconButton(icon: "copy") {
                         UIPasteboard.general.string = fullText
-                    } label: {
-                        Image("copy")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.warmGray500)
                     }
                     
                     // Export/Share button
-                    Button {
+                    IconButton(icon: "export") {
                         onSharePressed()
-                    } label: {
-                        Image("export")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.warmGray500)
                     }
                 }
             }

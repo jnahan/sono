@@ -95,25 +95,27 @@ struct RecordingDetailsView: View {
                 Spacer()
             }
             
-            // Audio Player Controls (Fixed at bottom)
-            VStack {
-                Spacer()
-                
-                AudioPlayerControls(
-                    audioPlayer: audioPlayer,
-                    audioURL: recording.resolvedURL,
-                    fullText: recording.fullText,
-                    onNotePressed: {
-                        showNotePopup = true
-                    },
-                    onSharePressed: {
-                        if let url = recording.resolvedURL {
-                            ShareHelper.shareItems([recording.fullText, url])
-                        } else {
-                            ShareHelper.shareText(recording.fullText)
+            // Audio Player Controls (Fixed at bottom) - Only show in transcript tab
+            if selectedTab == .transcript {
+                VStack {
+                    Spacer()
+                    
+                    AudioPlayerControls(
+                        audioPlayer: audioPlayer,
+                        audioURL: recording.resolvedURL,
+                        fullText: recording.fullText,
+                        onNotePressed: {
+                            showNotePopup = true
+                        },
+                        onSharePressed: {
+                            if let url = recording.resolvedURL {
+                                ShareHelper.shareItems([recording.fullText, url])
+                            } else {
+                                ShareHelper.shareText(recording.fullText)
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
             
             // Note Overlay

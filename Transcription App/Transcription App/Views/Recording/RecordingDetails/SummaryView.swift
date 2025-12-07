@@ -27,7 +27,7 @@ struct SummaryView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, AppConstants.UI.Spacing.large)
             .padding(.top, 24)
-            .padding(.bottom, 180)
+            .padding(.bottom, 24)
         }
     }
     

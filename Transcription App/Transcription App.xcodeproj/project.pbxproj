@@ -44,6 +44,7 @@
 		5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D7925B42ECD8E4B002889A6 /* Preview Assets.xcassets */; };
 		5D7925BD2ECD8E6C002889A6 /* Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925BC2ECD8E6B002889A6 /* Recording.swift */; };
 		5D92712A2EE4DD2800A34B12 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5D9271292EE4DD2800A34B12 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */; };
+		5D92712C2EE50DC900A34B12 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92712B2EE50DC900A34B12 /* IconButton.swift */; };
 		5D962F222ECE87ED00049626 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F212ECE87ED00049626 /* Recorder.swift */; };
 		5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */; };
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
@@ -113,6 +114,7 @@
 		5D7925B42ECD8E4B002889A6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5D7925BC2ECD8E6B002889A6 /* Recording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recording.swift; sourceTree = "<group>"; };
 		5D9271292EE4DD2800A34B12 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"; sourceTree = "<group>"; };
+		5D92712B2EE50DC900A34B12 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		5D962F212ECE87ED00049626 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderVisualizer.swift; sourceTree = "<group>"; };
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
@@ -337,6 +339,7 @@
 				5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */,
 				5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */,
 				5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */,
+				5D92712B2EE50DC900A34B12 /* IconButton.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -542,6 +545,7 @@
 				5DB579082ED8475F002DC84D /* NewRecordingSheet.swift in Sources */,
 				5D7925BD2ECD8E6C002889A6 /* Recording.swift in Sources */,
 				5DDA7CCC2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift in Sources */,
+				5D92712C2EE50DC900A34B12 /* IconButton.swift in Sources */,
 				5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */,
 				5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */,
 				5D15706D2EDA172F0094E13E /* NoteOverlay.swift in Sources */,

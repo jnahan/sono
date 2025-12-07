@@ -1,10 +1,18 @@
 import SwiftUI
 import SwiftData
 
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    let text: String
+    let isUser: Bool
+    let timestamp: Date = Date()
+}
+
 struct AskSonoView: View {
     let recording: Recording
     @StateObject private var viewModel: AskSonoViewModel
     @Environment(\.modelContext) private var modelContext
+    @FocusState private var isInputFocused: Bool
     
     init(recording: Recording) {
         self.recording = recording
@@ -12,108 +20,176 @@ struct AskSonoView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Heading
-                Text("How can I help you")
-                    .font(.libreMedium(size: 24))
-                    .foregroundColor(.baseBlack)
-                    .padding(.top, 24)
-                
-                // Input Field
-                VStack(alignment: .leading, spacing: 12) {
-                    InputField(
-                        text: $viewModel.userPrompt,
-                        placeholder: "Ask me anything",
-                        isMultiline: true,
-                        height: 120
-                    )
-                    
-                    // Send Button
-                    Button(action: {
-                        Task {
-                            await viewModel.sendPrompt()
-                        }
-                    }) {
-                        HStack {
-                            if viewModel.isProcessing {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .scaleEffect(0.8)
+        ZStack {
+            Color.warmGray50
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Chat Messages
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            if viewModel.messages.isEmpty {
+                                // Empty state
+                                VStack(spacing: 12) {
+                                    Text("How can I help you")
+                                        .font(.libreMedium(size: 24))
+                                        .foregroundColor(.baseBlack)
+                                        .padding(.top, 40)
+                                }
+                            } else {
+                                // Chat messages
+                                ForEach(viewModel.messages) { message in
+                                    messageBubble(message: message)
+                                        .id(message.id)
+                                }
+                                
+                                // Loading indicator
+                                if viewModel.isProcessing {
+                                    HStack {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                        Text("Thinking...")
+                                            .font(.custom("Inter-Regular", size: 14))
+                                            .foregroundColor(.warmGray500)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, AppConstants.UI.Spacing.large)
+                                    .padding(.top, 8)
+                                }
                             }
-                            Text(viewModel.isProcessing ? "Processing..." : "Send")
-                                .font(.interSemiBold(size: 16))
-                                .foregroundColor(.white)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(viewModel.userPrompt.isEmpty || viewModel.isProcessing ? Color.warmGray400 : Color.accent)
-                        .cornerRadius(8)
+                        .padding(.horizontal, AppConstants.UI.Spacing.large)
+                        .padding(.vertical, 16)
                     }
-                    .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
+                    .onChange(of: viewModel.messages.count) { _, _ in
+                        if let lastMessage = viewModel.messages.last {
+                            withAnimation {
+                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                    .onChange(of: viewModel.isProcessing) { _, isProcessing in
+                        if !isProcessing, let lastMessage = viewModel.messages.last {
+                            withAnimation {
+                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                            }
+                        }
+                    }
                 }
                 
-                // Response Area
-                if viewModel.isProcessing {
-                    loadingView
-                } else if let error = viewModel.error {
-                    errorView(error: error)
-                } else if let response = viewModel.response, !response.isEmpty {
-                    responseView(response: response)
+                // Input Area
+                VStack(spacing: 0) {
+                    Divider()
+                    
+                    HStack(spacing: 12) {
+                        // Text Input
+                        HStack(spacing: 8) {
+                            TextField("Ask me anything...", text: $viewModel.userPrompt, axis: .vertical)
+                                .font(.custom("Inter-Regular", size: 16))
+                                .foregroundColor(.baseBlack)
+                                .focused($isInputFocused)
+                                .lineLimit(1...5)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color.white)
+                                .cornerRadius(24)
+                            
+                            // Send Button
+                            Button(action: {
+                                Task {
+                                    await viewModel.sendPrompt()
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(viewModel.userPrompt.isEmpty || viewModel.isProcessing ? Color.warmGray400 : Color.accent)
+                                        .frame(width: 44, height: 44)
+                                    
+                                    if viewModel.isProcessing {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                            .scaleEffect(0.7)
+                                    } else {
+                                        Image(systemName: "paperplane.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
+                        }
+                    }
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    .padding(.vertical, 12)
+                    .background(Color.warmGray50)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
-            .padding(.bottom, 180)
         }
     }
     
-    // MARK: - Subviews
+    // MARK: - Message Bubble
     
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.2)
-            Text("Thinking...")
-                .font(.custom("Inter-Regular", size: 16))
+    @ViewBuilder
+    private func messageBubble(message: ChatMessage) -> some View {
+        if message.isUser {
+            // User message - right aligned, pink bubble
+            HStack {
+                Spacer(minLength: 60)
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(message.text)
+                        .font(.custom("Inter-Regular", size: 16))
+                        .foregroundColor(.baseBlack)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.accentLight)
+                        .cornerRadius(20)
+                }
+            }
+        } else {
+            // AI message - left aligned, white bubble with actions
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(message.text)
+                            .font(.custom("Inter-Regular", size: 16))
+                            .foregroundColor(.baseBlack)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                    }
+                    
+                    Spacer(minLength: 60)
+                }
+                
+                // Action buttons
+                HStack(spacing: 16) {
+                    actionButton(icon: "doc.on.doc", action: {
+                        UIPasteboard.general.string = message.text
+                    })
+                    
+                    actionButton(icon: "arrow.clockwise", action: {
+                        viewModel.resendLastMessage()
+                    })
+                    
+                    actionButton(icon: "square.and.arrow.up", action: {
+                        ShareHelper.shareText(message.text)
+                    })
+                }
+                .padding(.leading, 4)
+            }
+        }
+    }
+    
+    private func actionButton(icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
                 .foregroundColor(.warmGray500)
+                .frame(width: 24, height: 24)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
-    }
-    
-    private func errorView(error: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Error")
-                .font(.interSemiBold(size: 16))
-                .foregroundColor(.red)
-            
-            Text(error)
-                .font(.custom("Inter-Regular", size: 16))
-                .foregroundColor(.warmGray500)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.warmGray100)
-        .cornerRadius(12)
-        .padding(.top, 8)
-    }
-    
-    private func responseView(response: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Response")
-                .font(.interSemiBold(size: 16))
-                .foregroundColor(.baseBlack)
-            
-            Text(response)
-                .font(.custom("Inter-Regular", size: 16))
-                .foregroundColor(.baseBlack)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .padding(.top, 8)
     }
 }
 
@@ -124,7 +200,7 @@ class AskSonoViewModel: ObservableObject {
     // MARK: - Published Properties
     
     @Published var userPrompt: String = ""
-    @Published var response: String?
+    @Published var messages: [ChatMessage] = []
     @Published var isProcessing: Bool = false
     @Published var error: String?
     
@@ -142,7 +218,8 @@ class AskSonoViewModel: ObservableObject {
     
     /// Sends the user's prompt to the LLM with transcription context
     func sendPrompt() async {
-        guard !userPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let promptText = userPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !promptText.isEmpty else {
             return
         }
         
@@ -151,9 +228,15 @@ class AskSonoViewModel: ObservableObject {
             return
         }
         
+        // Add user message to chat
+        let userMessage = ChatMessage(text: promptText, isUser: true)
+        messages.append(userMessage)
+        
+        // Clear input
+        userPrompt = ""
+        
         isProcessing = true
         error = nil
-        response = nil
         
         do {
             // Truncate long transcriptions to fit context window
@@ -176,7 +259,7 @@ class AskSonoViewModel: ObservableObject {
             Transcription:
             \(transcriptionText)
             
-            Question: \(userPrompt)
+            Question: \(promptText)
             """
             
             let llmResponse = try await LLMService.shared.getCompletion(
@@ -193,12 +276,34 @@ class AskSonoViewModel: ObservableObject {
                 return
             }
             
-            response = trimmedResponse
+            // Add AI response to chat
+            let aiMessage = ChatMessage(text: trimmedResponse, isUser: false)
+            messages.append(aiMessage)
             
         } catch {
             self.error = "Failed to get response: \(error.localizedDescription)"
+            // Add error message to chat
+            let errorMessage = ChatMessage(text: "Sorry, I encountered an error. Please try again.", isUser: false)
+            messages.append(errorMessage)
         }
         
         isProcessing = false
+    }
+    
+    /// Resends the last user message
+    func resendLastMessage() {
+        guard let lastUserMessage = messages.last(where: { $0.isUser }) else {
+            return
+        }
+        
+        // Remove the last AI response if it exists
+        if let lastIndex = messages.indices.last, !messages[lastIndex].isUser {
+            messages.removeLast()
+        }
+        
+        userPrompt = lastUserMessage.text
+        Task {
+            await sendPrompt()
+        }
     }
 }
