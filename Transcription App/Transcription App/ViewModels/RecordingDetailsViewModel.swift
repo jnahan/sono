@@ -77,7 +77,14 @@ class RecordingDetailsViewModel: ObservableObject {
             
             recording.summary = finalSummary
             
-            try modelContext.save()
+            // Save asynchronously to avoid blocking main thread
+            await MainActor.run {
+                do {
+                    try modelContext.save()
+                } catch {
+                    summaryError = "Failed to save summary: \(error.localizedDescription)"
+                }
+            }
             
         } catch {
             summaryError = "Failed to generate summary: \(error.localizedDescription)"

@@ -411,8 +411,10 @@ struct RecordingDetailsView: View {
                         modelContext.insert(recordingSegment)
                         recording.segments.append(recordingSegment)
                     }
-
-                    // Save to database
+                }
+                
+                // Save to database asynchronously to avoid blocking main thread
+                await Task { @MainActor in
                     do {
                         try modelContext.save()
                         transcriptionProgress = 1.0
@@ -436,6 +438,10 @@ struct RecordingDetailsView: View {
                     transcriptionError = "Transcription failed: \(error.localizedDescription)"
                     recording.status = .failed
                     recording.failureReason = transcriptionError
+                }
+                
+                // Save asynchronously to avoid blocking main thread
+                await Task { @MainActor in
                     try? modelContext.save()
                 }
             }

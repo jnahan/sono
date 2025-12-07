@@ -210,8 +210,16 @@ struct RecorderControl: View {
             rec.stop()
         }
         if let fileURL = rec.fileURL {
+            // Verify the file actually exists before proceeding
+            guard FileManager.default.fileExists(atPath: fileURL.path) else {
+                print("❌ [RecorderControl] Recording file does not exist at: \(fileURL.path)")
+                // Don't proceed if file doesn't exist
+                return
+            }
             // Model will be loaded when transcription starts - no need to block here
             onFinishRecording?(fileURL)
+        } else {
+            print("❌ [RecorderControl] No file URL available after recording")
         }
     }
     

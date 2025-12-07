@@ -146,11 +146,14 @@ struct RecorderView: View {
 
         modelContext.insert(recording)
 
-        do {
-            try modelContext.save()
-            print("✅ [RecorderView] Auto-saved interrupted recording")
-        } catch {
-            print("❌ [RecorderView] Failed to auto-save recording: \(error)")
+        // Perform save operation asynchronously to avoid blocking main thread
+        Task { @MainActor in
+            do {
+                try modelContext.save()
+                print("✅ [RecorderView] Auto-saved interrupted recording")
+            } catch {
+                print("❌ [RecorderView] Failed to auto-save recording: \(error)")
+            }
         }
     }
 }

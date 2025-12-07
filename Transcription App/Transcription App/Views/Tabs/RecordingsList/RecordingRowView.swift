@@ -9,6 +9,11 @@ struct RecordingRowView: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     
+    // Selection mode properties
+    var isSelectionMode: Bool = false
+    var isSelected: Bool = false
+    var onSelectionToggle: (() -> Void)? = nil
+    
     @StateObject private var audioManager = AudioPlayerManager.shared
     @State private var showMenu = false
     @State private var showDeleteConfirm = false
@@ -18,6 +23,33 @@ struct RecordingRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
+                // Check circle (only in selection mode)
+                if isSelectionMode {
+                    Button {
+                        onSelectionToggle?()
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .stroke(isSelected ? Color.accent : Color.warmGray300, lineWidth: 2)
+                                .frame(width: 24, height: 24)
+                            
+                            if isSelected {
+                                Circle()
+                                    .fill(Color.accent)
+                                    .frame(width: 24, height: 24)
+                                
+                                Image("check-bold")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 16, height: 16)
+                                    .foregroundColor(.baseWhite)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+                
                 // Recording Info
                 VStack(alignment: .leading, spacing: 4) {
                     // Date with time
@@ -48,38 +80,40 @@ struct RecordingRowView: View {
                 Spacer()
             }
             
-            // Action buttons row
-            HStack(spacing: 16) {
-                // Play button with duration
-                Button {
-                    AudioPlayerManager.shared.playRecording(recording)
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(audioManager.player.isPlaying && audioManager.currentRecording?.id == recording.id ? "pause-fill" : "play-fill")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 16, height: 16)
-                            .foregroundColor(.baseBlack)
-                        
-                        Text("Play \(formattedDuration)")
-                            .font(.interMedium(size: 14))
-                            .foregroundColor(.baseBlack)
+            // Action buttons row (hidden in selection mode)
+            if !isSelectionMode {
+                HStack(spacing: 16) {
+                    // Play button with duration
+                    Button {
+                        AudioPlayerManager.shared.playRecording(recording)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(audioManager.player.isPlaying && audioManager.currentRecording?.id == recording.id ? "pause-fill" : "play-fill")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 16, height: 16)
+                                .foregroundColor(.baseBlack)
+                            
+                            Text("Play \(formattedDuration)")
+                                .font(.interMedium(size: 14))
+                                .foregroundColor(.baseBlack)
+                        }
                     }
+                    .buttonStyle(.plain)
+                    
+                    // Copy button
+                    IconButton(icon: "copy") {
+                        onCopy()
+                    }
+                    
+                    // Dots three menu button
+                    IconButton(icon: "dots-three-bold") {
+                        showMenu = true
+                    }
+                    
+                    Spacer()
                 }
-                .buttonStyle(.plain)
-                
-                // Copy button
-                IconButton(icon: "copy") {
-                    onCopy()
-                }
-                
-                // Dots three menu button
-                IconButton(icon: "dots-three-bold") {
-                    showMenu = true
-                }
-                
-                Spacer()
             }
         }
         .padding(.vertical, 12)

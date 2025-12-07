@@ -43,7 +43,12 @@ final class Recorder: ObservableObject {
     func start() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+            
+            // Deactivate session first to ensure clean state (avoids conflicts with other audio operations)
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+            
+            // Set category and activate
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
             
             let dir = try FileManager.default
@@ -54,7 +59,6 @@ final class Recorder: ObservableObject {
             
             let timestamp = ISO8601DateFormatter().string(from: .now).replacingOccurrences(of: ":", with: "-")
             let url = dir.appendingPathComponent("\(timestamp).m4a")
-            fileURL = url
             
             let settings: [String: Any] = [
                 AVFormatIDKey: kAudioFormatMPEG4AAC,
@@ -64,20 +68,48 @@ final class Recorder: ObservableObject {
             ]
             
             recorder = try AVAudioRecorder(url: url, settings: settings)
-            recorder?.isMeteringEnabled = true
-            recorder?.record()
-            playStartFeedback()
-            isRecording = true
             
+            // Prepare the recorder before starting
+            guard let recorder = recorder, recorder.prepareToRecord() else {
+                print("❌ [Recorder] Failed to prepare recorder")
+                self.recorder = nil
+                return
+            }
+            
+            recorder.isMeteringEnabled = true
+            
+            // Actually start recording and verify it started
+            guard recorder.record() else {
+                print("❌ [Recorder] Failed to start recording - recorder.record() returned false")
+                self.recorder = nil
+                return
+            }
+            
+            // Only set fileURL and isRecording if recording actually started
+            fileURL = url
+            isRecording = true
+            playStartFeedback()
             startMetering()
+            
+            print("✅ [Recorder] Recording started successfully at: \(url.lastPathComponent)")
         } catch {
-            // Recording start failed - error handled silently
+            print("❌ [Recorder] Failed to start recording: \(error.localizedDescription)")
+            print("   [Recorder] Error details: \(error)")
+            // Reset state on failure
+            recorder = nil
+            fileURL = nil
+            isRecording = false
         }
     }
     
     func stop() {
         stopMetering()
-        recorder?.stop()
+        if let recorder = recorder, recorder.isRecording {
+            recorder.stop()
+            print("✅ [Recorder] Recording stopped. File exists: \(fileURL != nil && FileManager.default.fileExists(atPath: fileURL?.path ?? ""))")
+        } else {
+            print("⚠️ [Recorder] Stop called but recorder was not recording")
+        }
         playStopFeedback()
         isRecording = false
         recorder = nil

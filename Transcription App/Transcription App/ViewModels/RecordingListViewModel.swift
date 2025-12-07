@@ -40,4 +40,11 @@ class RecordingListViewModel: ObservableObject {
     func cancelEdit() {
         editingRecording = nil
     }
+    
+    func displayCopyToast() {
+        withAnimation { showCopyToast = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation { self.showCopyToast = false }
+        }
+    }
 }

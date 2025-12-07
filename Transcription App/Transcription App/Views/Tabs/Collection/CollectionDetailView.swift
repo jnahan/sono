@@ -18,6 +18,10 @@ struct CollectionDetailView: View {
     @State private var editingCollection = false
     @State private var editCollectionName = ""
     @State private var deletingCollection = false
+    @State private var isSelectionMode = false
+    @State private var selectedRecordings: Set<UUID> = []
+    @State private var showMoveToCollection = false
+    @State private var showDeleteConfirm = false
     
     private var recordings: [Recording] {
         allRecordings.filter { $0.collection?.id == collection.id }
@@ -36,29 +40,71 @@ struct CollectionDetailView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            CustomTopBar(
-                title: collection.name,
-                leftIcon: "caret-left",
-                rightIcon: "dots-three-bold",
-                onLeftTap: { dismiss() },
-                onRightTap: { showMenu = true }
-            )
-            
-            if viewModel.showCopyToast {
-                CopyToastView()
-                    .zIndex(1)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 10)
-            }
-            
-            VStack(alignment: .leading, spacing: 16) {
-                if !recordings.isEmpty {
-                    SearchBar(text: $searchText, placeholder: "Search recordings...")
-                        .padding(.horizontal, 20)
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                CustomTopBar(
+                    title: isSelectionMode ? "\(selectedRecordings.count) selected" : collection.name,
+                    leftIcon: isSelectionMode ? "x" : "caret-left",
+                    rightIcon: isSelectionMode ? nil : (filteredRecordings.isEmpty ? "dots-three-bold" : "check-circle"),
+                    onLeftTap: {
+                        if isSelectionMode {
+                            // Exit selection mode
+                            isSelectionMode = false
+                            selectedRecordings.removeAll()
+                        } else {
+                            dismiss()
+                        }
+                    },
+                    onRightTap: {
+                        if isSelectionMode {
+                            // Shouldn't happen, but handle it
+                        } else if !filteredRecordings.isEmpty {
+                            // Enter selection mode
+                            isSelectionMode = true
+                        } else {
+                            showMenu = true
+                        }
+                    }
+                )
+                
+                if viewModel.showCopyToast {
+                    CopyToastView()
+                        .zIndex(1)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 10)
                 }
                 
-                recordingsList
+                VStack(alignment: .leading, spacing: 16) {
+                    if !recordings.isEmpty {
+                        SearchBar(text: $searchText, placeholder: "Search recordings...")
+                            .padding(.horizontal, 20)
+                    }
+                    
+                    recordingsList
+                }
+            }
+            
+            // Mass action buttons (fixed at bottom, 8px above safe area, only in selection mode)
+            if isSelectionMode && !selectedRecordings.isEmpty {
+                VStack(spacing: 0) {
+                    // Gradient fade at top of buttons
+                    LinearGradient(
+                        colors: [Color.warmGray50.opacity(0), Color.warmGray50],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 20)
+                    
+                    Divider()
+                        .background(Color.warmGray200)
+                    
+                    massActionButtons
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .padding(.bottom, 8)
+                        .background(Color.warmGray50)
+                }
+                .padding(.bottom, 8)
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
@@ -126,12 +172,122 @@ struct CollectionDetailView: View {
                 onExit: nil
             )
         }
+        .sheet(isPresented: $showMoveToCollection) {
+            CollectionPickerSheet(
+                collections: collections,
+                selectedCollection: .constant(nil),
+                modelContext: modelContext,
+                isPresented: $showMoveToCollection,
+                recordings: selectedRecordingsArray,
+                onMassMoveComplete: {
+                    isSelectionMode = false
+                    selectedRecordings.removeAll()
+                },
+                showRemoveFromCollection: true
+            )
+        }
+        .sheet(isPresented: $showDeleteConfirm) {
+            ConfirmationSheet(
+                isPresented: $showDeleteConfirm,
+                title: "Delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")?",
+                message: "Are you sure you want to delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")? This action cannot be undone.",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel",
+                onConfirm: {
+                    deleteSelectedRecordings()
+                    showDeleteConfirm = false
+                    isSelectionMode = false
+                    selectedRecordings.removeAll()
+                }
+            )
+        }
         .onAppear {
             viewModel.configure(modelContext: modelContext)
             showPlusButton.wrappedValue = false
             // Reset navigation state when returning to this view
             selectedRecording = nil
         }
+    }
+    
+    // MARK: - Selection Mode
+    
+    private var selectedRecordingsArray: [Recording] {
+        filteredRecordings.filter { selectedRecordings.contains($0.id) }
+    }
+    
+    private var massActionButtons: some View {
+        HStack(spacing: 12) {
+            // Delete button
+            Button {
+                showDeleteConfirm = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16, weight: .medium))
+                    Text("Delete")
+                        .font(.interMedium(size: 16))
+                }
+                .foregroundColor(.baseWhite)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.accent)
+                .cornerRadius(12)
+            }
+            
+            // Copy button
+            Button {
+                copySelectedRecordings()
+            } label: {
+                HStack(spacing: 8) {
+                    Image("copy")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                    Text("Copy")
+                        .font(.interMedium(size: 16))
+                }
+                .foregroundColor(.baseBlack)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.warmGray200)
+                .cornerRadius(12)
+            }
+            
+            // Move to collection button
+            Button {
+                showMoveToCollection = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image("folder-plus")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                    Text("Move")
+                        .font(.interMedium(size: 16))
+                }
+                .foregroundColor(.baseBlack)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.warmGray200)
+                .cornerRadius(12)
+            }
+        }
+    }
+    
+    private func deleteSelectedRecordings() {
+        let toDelete = selectedRecordingsArray
+        for recording in toDelete {
+            viewModel.deleteRecording(recording)
+        }
+    }
+    
+    private func copySelectedRecordings() {
+        let toCopy = selectedRecordingsArray
+        let combinedText = toCopy.map { $0.fullText }.joined(separator: "\n\n")
+        UIPasteboard.general.string = combinedText
+        viewModel.displayCopyToast()
     }
     
     private var recordingsList: some View {
@@ -150,14 +306,32 @@ struct CollectionDetailView: View {
                 List {
                     ForEach(filteredRecordings) { recording in
                         Button {
-                            selectedRecording = recording
+                            if isSelectionMode {
+                                // Toggle selection
+                                if selectedRecordings.contains(recording.id) {
+                                    selectedRecordings.remove(recording.id)
+                                } else {
+                                    selectedRecordings.insert(recording.id)
+                                }
+                            } else {
+                                selectedRecording = recording
+                            }
                         } label: {
                             RecordingRowView(
                                 recording: recording,
                                 player: viewModel.player,
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
-                                onDelete: { viewModel.deleteRecording(recording) }
+                                onDelete: { viewModel.deleteRecording(recording) },
+                                isSelectionMode: isSelectionMode,
+                                isSelected: selectedRecordings.contains(recording.id),
+                                onSelectionToggle: {
+                                    if selectedRecordings.contains(recording.id) {
+                                        selectedRecordings.remove(recording.id)
+                                    } else {
+                                        selectedRecordings.insert(recording.id)
+                                    }
+                                }
                             )
                         }
                         .buttonStyle(.plain)
