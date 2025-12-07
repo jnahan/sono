@@ -15,8 +15,9 @@ struct Transcription_AppApp: App {
     }()
 
     init() {
-        // Trigger TranscriptionService initialization to preload the base model
+        // Trigger service initializations to preload models
         _ = TranscriptionService.shared
+        _ = LLMService.shared
     }
 
     var body: some Scene {

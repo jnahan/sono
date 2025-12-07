@@ -13,9 +13,28 @@ class LLMService {
     private let modelName = "Llama-3.2-1B-Instruct-Q4_K_M"
     
     // MARK: - Initialization
-    private init() {}
-    
+    private init() {
+        // Preload the model in the background
+        Task {
+            await preloadModel()
+        }
+    }
+
     // MARK: - Public Methods
+
+    /// Preloads the LLM model to reduce first-use latency
+    @MainActor
+    func preloadModel() async {
+        // Check if model exists in bundle
+        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "gguf") else {
+            return
+        }
+
+        // Initialize LLM to ensure it's ready
+        if llm == nil {
+            llm = LLM(from: modelURL)
+        }
+    }
     
     /// Gets a completion from the LLM
     /// - Parameters:
