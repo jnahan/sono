@@ -21,12 +21,15 @@ class TranscriptionService {
     
     // MARK: - Public Methods
     
-    /// Preloads the tiny model to reduce transcription latency
+    /// Preloads the selected model to reduce transcription latency
     func preloadModel() async {
         guard !isLoadingModel else { return }
         
+        let settings = SettingsManager.shared
+        let modelName = settings.transcriptionModel
+        
         // Only preload if we don't already have the model loaded
-        guard whisperKit == nil || currentModelName != "tiny" else {
+        guard whisperKit == nil || currentModelName != modelName else {
             return
         }
         
@@ -34,8 +37,8 @@ class TranscriptionService {
         defer { isLoadingModel = false }
         
         do {
-            whisperKit = try await WhisperKit(WhisperKitConfig(model: "tiny"))
-            currentModelName = "tiny"
+            whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
+            currentModelName = modelName
         } catch {
             // Don't throw - preloading is optional
         }
@@ -168,13 +171,14 @@ class TranscriptionService {
     /// Transcribes an audio file and returns the result
     /// - Parameters:
     ///   - audioURL: URL of the audio file to transcribe
-    ///   - modelName: Optional model name. If nil, uses "tiny".
+    ///   - modelName: Optional model name. If nil, uses the model from settings.
     ///   - languageCode: Optional language code (e.g., "en", "ko"). If nil, uses automatic detection.
     /// - Returns: TranscriptionResult with text, language, and segments
     /// - Throws: TranscriptionError if transcription fails
     func transcribe(audioURL: URL, modelName: String? = nil, languageCode: String? = nil) async throws -> TranscriptionResult {
-        // Always use tiny model
-        let finalModelName = modelName ?? "tiny"
+        // Use provided model or get from settings
+        let settings = SettingsManager.shared
+        let finalModelName = modelName ?? settings.transcriptionModel
         
         // Initialize WhisperKit if needed
         if whisperKit == nil || currentModelName != finalModelName {
@@ -199,7 +203,6 @@ class TranscriptionService {
         }
         
         // Get language code from parameter or settings
-        let settings = SettingsManager.shared
         let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
         
         // Perform transcription with segment-level timestamps only

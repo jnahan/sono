@@ -5,16 +5,17 @@ struct SettingsView: View {
     
     @State private var audioLanguage: String
     @State private var showTimestamps: Bool
+    @State private var transcriptionModel: String
     
     init() {
-        let settings = SettingsManager.shared
-        _audioLanguage = State(initialValue: settings.audioLanguage)
-        _showTimestamps = State(initialValue: settings.showTimestamps)
+        _audioLanguage = State(initialValue: SettingsManager.shared.audioLanguage)
+        _showTimestamps = State(initialValue: SettingsManager.shared.showTimestamps)
+        _transcriptionModel = State(initialValue: SettingsManager.shared.transcriptionModel.capitalized)
     }
     
     // Data for selection lists
     // All languages officially supported by WhisperKit (based on OpenAI Whisper)
-    private let audioLanguages = [
+    private let audioLanguages: [SelectionItem] = [
         SelectionItem(emoji: nil, title: "Auto"),
         SelectionItem(emoji: nil, title: "Afrikaans"),
         SelectionItem(emoji: nil, title: "Albanian"),
@@ -117,6 +118,12 @@ struct SettingsView: View {
         SelectionItem(emoji: nil, title: "Yue Chinese")
     ]
     
+    private let modelOptions: [SelectionItem] = [
+        SelectionItem(emoji: nil, title: "Tiny"),
+        SelectionItem(emoji: nil, title: "Base"),
+        SelectionItem(emoji: nil, title: "Small")
+    ]
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -187,7 +194,13 @@ struct SettingsView: View {
                             
                             // Model Section
                             VStack(spacing: 0) {
-                                SettingsRow(title: "Model", value: "Tiny", imageName: "sparkle", showChevron: false)
+                                NavigationLink(destination: SelectionListView(
+                                    title: "Model",
+                                    items: modelOptions,
+                                    selectedItem: $transcriptionModel
+                                )) {
+                                    SettingsRow(title: "Model", value: transcriptionModel, imageName: "sparkle")
+                                }
                             }
                             .background(Color.white)
                             .cornerRadius(12)
@@ -246,6 +259,11 @@ struct SettingsView: View {
         }
         .onChange(of: showTimestamps) { oldValue, newValue in
             SettingsManager.shared.showTimestamps = newValue
+        }
+        .onChange(of: transcriptionModel) { oldValue, newValue in
+            SettingsManager.shared.transcriptionModel = newValue.lowercased()
+            // Clear the current model so it reloads with the new selection
+            TranscriptionService.shared.clearModelCache()
         }
     }
     
