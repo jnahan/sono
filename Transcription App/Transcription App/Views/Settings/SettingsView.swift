@@ -382,6 +382,10 @@ struct SettingsView: View {
             SettingsManager.shared.transcriptionModel = newValue.lowercased()
             // Clear the current model so it reloads with the new selection
             TranscriptionService.shared.clearModelCache()
+            // Preload the new model in the background
+            Task {
+                await TranscriptionService.shared.preloadModel()
+            }
         }
     }
     

@@ -3,7 +3,7 @@ import SwiftData
 
 @main
 struct Transcription_AppApp: App {
-    
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Recording.self, RecordingSegment.self, Collection.self])
         let config = ModelConfiguration(schema: schema)
@@ -13,6 +13,11 @@ struct Transcription_AppApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+
+    init() {
+        // Trigger TranscriptionService initialization to preload the base model
+        _ = TranscriptionService.shared
+    }
 
     var body: some Scene {
         WindowGroup {

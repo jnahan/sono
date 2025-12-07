@@ -12,7 +12,7 @@ class SettingsManager {
     
     // MARK: - Defaults
     private let defaultLanguage = "Auto"
-    private let defaultModel = "tiny"
+    private let defaultModel = "base"
     
     // MARK: - Initialization
     private init() {}
