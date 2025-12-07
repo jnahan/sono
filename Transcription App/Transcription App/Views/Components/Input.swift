@@ -47,22 +47,24 @@ struct InputField: View {
                 } else if isMultiline {
                     // TextEditor
                     ZStack(alignment: .topLeading) {
-                        if text.isEmpty {
-                            Text(placeholder)
-                                .font(.system(size: 17))
-                                .foregroundColor(.warmGray400)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 12)
-                        }
-
                         TextEditor(text: $text)
                             .font(.system(size: 17))
                             .foregroundColor(.baseBlack)
                             .tint(.baseBlack)
-                            .padding(12)
                             .scrollContentBackground(.hidden)
                             .frame(height: height ?? 200)
                             .scrollDismissesKeyboard(.interactively)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 8)
+                        
+                        if text.isEmpty {
+                            Text(placeholder)
+                                .font(.system(size: 17))
+                                .foregroundColor(.warmGray400)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 16)
+                                .allowsHitTesting(false)
+                        }
                     }
                     .background(Color.baseWhite)
                     .cornerRadius(12)
@@ -73,14 +75,7 @@ struct InputField: View {
                 } else {
                     // TextField
                     ZStack(alignment: .leading) {
-                        if text.isEmpty {
-                            Text(placeholder)
-                                .font(.system(size: 17))
-                                .foregroundColor(.warmGray400)
-                                .padding(.leading, 16)
-                        }
-
-                        TextField("", text: $text)
+                        TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.warmGray400))
                             .font(.system(size: 17))
                             .foregroundColor(.baseBlack)
                             .tint(.baseBlack)
