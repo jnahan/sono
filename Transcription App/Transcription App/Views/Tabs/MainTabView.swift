@@ -16,8 +16,8 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var collections: [Collection]
 
-    
-    @State private var selectedTab = 0
+
+    @AppStorage("selectedTab") private var selectedTab = 0
     @State private var showPlusButton = true
     
     @State private var showNewRecordingSheet = false
