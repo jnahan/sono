@@ -25,3 +25,4 @@ struct CustomSwitch: View {
         .buttonStyle(.plain)
     }
 }
+

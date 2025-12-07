@@ -62,10 +62,11 @@ struct RecordingFormView: View {
                     .padding(.top, 12)
                     
                     VStack(spacing: 8) {
+                        
                         Text("Transcribing audio")
                             .font(.custom("LibreBaskerville-Regular", size: 24))
                             .foregroundColor(.baseBlack)
-                        
+
                         Text("Please do not close the app\nuntil transcription is complete")
                             .font(.system(size: 16))
                             .foregroundColor(.warmGray500)

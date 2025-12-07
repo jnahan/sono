@@ -10,11 +10,13 @@ class TranscriptionService {
     private var whisperKit: WhisperKit?
     private var currentModelName: String?
     private var isLoadingModel = false
+    private var preloadTask: Task<Void, Never>? = nil
     
     // MARK: - Initialization
     private init() {
         // Preload the default model in the background
-        Task {
+        print("🚀 [TranscriptionService] Initializing and starting model preload")
+        preloadTask = Task {
             await preloadModel()
         }
     }
@@ -23,24 +25,31 @@ class TranscriptionService {
     
     /// Preloads the selected model to reduce transcription latency
     func preloadModel() async {
-        guard !isLoadingModel else { return }
-        
-        let settings = SettingsManager.shared
-        let modelName = settings.transcriptionModel
-        
-        // Only preload if we don't already have the model loaded
-        guard whisperKit == nil || currentModelName != modelName else {
+        guard !isLoadingModel else {
+            print("ℹ️ [TranscriptionService] Model already loading, skipping preload")
             return
         }
-        
+
+        let settings = SettingsManager.shared
+        let modelName = settings.transcriptionModel
+
+        // Only preload if we don't already have the model loaded
+        guard whisperKit == nil || currentModelName != modelName else {
+            print("ℹ️ [TranscriptionService] Model '\(modelName)' already loaded")
+            return
+        }
+
+        print("📥 [TranscriptionService] Preloading model '\(modelName)'...")
         isLoadingModel = true
         defer { isLoadingModel = false }
-        
+
         do {
             whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
             currentModelName = modelName
+            print("✅ [TranscriptionService] Model '\(modelName)' preloaded successfully")
         } catch {
-            // Don't throw - preloading is optional
+            print("❌ [TranscriptionService] Failed to preload model: \(error)")
+            // Don't throw - preloading is optional, will load on-demand during transcription
         }
     }
     
@@ -173,24 +182,44 @@ class TranscriptionService {
     ///   - audioURL: URL of the audio file to transcribe
     ///   - modelName: Optional model name. If nil, uses the model from settings.
     ///   - languageCode: Optional language code (e.g., "en", "ko"). If nil, uses automatic detection.
+    ///   - progressCallback: Optional closure called with progress updates (0.0 to 1.0)
     /// - Returns: TranscriptionResult with text, language, and segments
     /// - Throws: TranscriptionError if transcription fails
-    func transcribe(audioURL: URL, modelName: String? = nil, languageCode: String? = nil) async throws -> TranscriptionResult {
+    func transcribe(audioURL: URL, modelName: String? = nil, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
         // Use provided model or get from settings
         let settings = SettingsManager.shared
         let finalModelName = modelName ?? settings.transcriptionModel
         
+        // Wait for preload to complete if it's still running
+        if let task = preloadTask {
+            print("⏳ [TranscriptionService] Waiting for preload to complete...")
+            await task.value
+            preloadTask = nil
+        }
+
         // Initialize WhisperKit if needed
         if whisperKit == nil || currentModelName != finalModelName {
+            print("📥 [TranscriptionService] Loading model '\(finalModelName)' for transcription...")
             whisperKit = nil
             currentModelName = nil
-            
+
+            // Report model loading progress (this is the slow part)
+            if let callback = progressCallback {
+                Task { @MainActor in
+                    callback(0.0)
+                }
+            }
+
             do {
                 whisperKit = try await WhisperKit(WhisperKitConfig(model: finalModelName))
                 currentModelName = finalModelName
+                print("✅ [TranscriptionService] Model '\(finalModelName)' loaded successfully")
             } catch {
+                print("❌ [TranscriptionService] Failed to load model: \(error)")
                 throw TranscriptionError.initializationFailed
             }
+        } else {
+            print("ℹ️ [TranscriptionService] Using already loaded model '\(finalModelName)'")
         }
         
         guard let whisperKit = whisperKit else {
@@ -207,12 +236,29 @@ class TranscriptionService {
         
         // Perform transcription with segment-level timestamps only
         var options = DecodingOptions(wordTimestamps: false)
-        
+
         if let langCode = finalLanguageCode {
             options.language = langCode
         }
-        
-        let results = try await whisperKit.transcribe(audioPath: audioURL.path, decodeOptions: options)
+
+        let results = try await whisperKit.transcribe(
+            audioPath: audioURL.path,
+            decodeOptions: options,
+            callback: { progress in
+                // WhisperKit provides progress through TranscriptionProgress
+                // Calculate overall progress from current and total segments
+                if let callback = progressCallback {
+                    let currentProgress = Double(progress.timings.totalDecodingLoops)
+                    // Estimate: typically ~100-300 loops for a transcription
+                    // Cap at 0.95 to show progress, leave 5% for post-processing
+                    let estimatedProgress = min(currentProgress / 200.0, 0.95)
+                    Task { @MainActor in
+                        callback(estimatedProgress)
+                    }
+                }
+                return true // Continue transcription
+            }
+        )
         
         guard let firstResult = results.first else {
             throw TranscriptionError.noResults

@@ -22,6 +22,7 @@ struct RecordingDetailsView: View {
     @State private var currentActiveSegmentId: UUID?
     @State private var selectedTab: RecordingDetailTab = .transcript
     @State private var isTranscribing = false
+    @State private var transcriptionProgress: Double = 0.0
     @State private var transcriptionError: String?
     @State private var showWarningToast = false
     
@@ -238,20 +239,22 @@ struct RecordingDetailsView: View {
                             Button {
                                 startTranscription()
                             } label: {
-                                HStack {
-                                    if isTranscribing {
+                                if isTranscribing {
+                                    HStack(spacing: 12) {
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
-                                        Text("Transcribing...")
-                                    } else {
-                                        Image(systemName: "waveform")
-                                        Text("Transcribe Recording")
+                                        if transcriptionProgress > 0 {
+                                            Text("Transcribing \(Int(transcriptionProgress * 100))%")
+                                        } else {
+                                            Text("Transcribing...")
+                                        }
                                     }
+                                } else {
+                                    Text("Transcribe")
                                 }
                             }
                             .buttonStyle(AppButtonStyle())
                             .disabled(isTranscribing)
-                            .padding(.horizontal, AppConstants.UI.Spacing.large)
 
                             if let error = transcriptionError {
                                 Text(error)
@@ -376,6 +379,7 @@ struct RecordingDetailsView: View {
         }
 
         isTranscribing = true
+        transcriptionProgress = 0.0
         transcriptionError = nil
         recording.status = .inProgress
         recording.transcriptionStartedAt = Date()
@@ -383,7 +387,11 @@ struct RecordingDetailsView: View {
 
         Task {
             do {
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url)
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                    Task { @MainActor in
+                        self.transcriptionProgress = progress
+                    }
+                }
 
                 await MainActor.run {
                     // Update recording with transcription
@@ -407,6 +415,7 @@ struct RecordingDetailsView: View {
                     // Save to database
                     do {
                         try modelContext.save()
+                        transcriptionProgress = 1.0
                         isTranscribing = false
                         withAnimation {
                             showWarningToast = false
@@ -414,6 +423,7 @@ struct RecordingDetailsView: View {
                         print("✅ [RecordingDetails] Transcription completed successfully")
                     } catch {
                         isTranscribing = false
+                        transcriptionProgress = 0.0
                         transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
                         recording.status = .failed
                         recording.failureReason = transcriptionError
@@ -422,6 +432,7 @@ struct RecordingDetailsView: View {
             } catch {
                 await MainActor.run {
                     isTranscribing = false
+                    transcriptionProgress = 0.0
                     transcriptionError = "Transcription failed: \(error.localizedDescription)"
                     recording.status = .failed
                     recording.failureReason = transcriptionError

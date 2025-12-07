@@ -16,6 +16,7 @@ class RecordingFormViewModel: ObservableObject {
     @Published var transcribedLanguage: String = ""
     @Published var transcribedSegments: [RecordingSegment] = []
     @Published var isTranscribing = false
+    @Published var transcriptionProgress: Double = 0.0 // 0.0 to 1.0
     
     // Validation state
     @Published var titleError: String? = nil
@@ -52,7 +53,7 @@ class RecordingFormViewModel: ObservableObject {
     
     var saveButtonText: String {
         if isTranscribing && !isEditing {
-            return "Processing recording"
+            return "Transcribing audio \(Int(transcriptionProgress * 100))%"
         } else if isEditing {
             return "Save changes"
         } else {
@@ -154,11 +155,16 @@ class RecordingFormViewModel: ObservableObject {
     private func startTranscription() {
         guard let url = audioURL else { return }
         isTranscribing = true
+        transcriptionProgress = 0.0
 
         Task {
             do {
                 // TranscriptionService will use settings from UserDefaults automatically
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url)
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                    Task { @MainActor in
+                        self.transcriptionProgress = progress
+                    }
+                }
 
                 await MainActor.run {
                     transcribedText = result.text
@@ -170,6 +176,7 @@ class RecordingFormViewModel: ObservableObject {
                             text: segment.text
                         )
                     }
+                    transcriptionProgress = 1.0 // Complete
                     isTranscribing = false
 
                     // Update auto-saved recording if it exists
@@ -180,6 +187,7 @@ class RecordingFormViewModel: ObservableObject {
             } catch {
                 await MainActor.run {
                     isTranscribing = false
+                    transcriptionProgress = 0.0
 
                     // Mark auto-saved recording as failed
                     if let recording = autoSavedRecording {
