@@ -113,7 +113,7 @@ struct RecorderControl: View {
                                     .frame(width: 48, height: 48)
                             } else {
                                 // Recorded: checkmark
-                                Image("check")
+                                Image("check-bold")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 32, height: 32)

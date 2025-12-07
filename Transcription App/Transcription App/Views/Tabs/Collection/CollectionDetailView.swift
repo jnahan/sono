@@ -40,7 +40,7 @@ struct CollectionDetailView: View {
             CustomTopBar(
                 title: collection.name,
                 leftIcon: "caret-left",
-                rightIcon: "dots-three",
+                rightIcon: "dots-three-bold",
                 onLeftTap: { dismiss() },
                 onRightTap: { showMenu = true }
             )

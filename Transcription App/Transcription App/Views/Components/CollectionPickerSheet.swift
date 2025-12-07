@@ -87,7 +87,7 @@ struct CollectionPickerSheet: View {
                             Spacer()
                             
                             if selectedCollection?.id == collection.id {
-                                Image("check")
+                                Image("check-bold")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)

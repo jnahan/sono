@@ -68,7 +68,7 @@ struct SelectionListView: View {
                             Spacer()
                             
                             if selectedItem == item.title {
-                                Image("check")
+                                Image("check-bold")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)

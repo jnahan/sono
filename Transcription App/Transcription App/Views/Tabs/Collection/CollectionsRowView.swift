@@ -40,7 +40,7 @@ struct CollectionsRowView: View {
             Button {
                 showMenu = true
             } label: {
-                Image("dots-three")
+                Image("dots-three-bold")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)

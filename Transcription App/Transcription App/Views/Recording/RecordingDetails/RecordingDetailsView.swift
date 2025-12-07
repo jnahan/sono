@@ -36,7 +36,7 @@ struct RecordingDetailsView: View {
                 CustomTopBar(
                     title: "",
                     leftIcon: "caret-left",
-                    rightIcon: "dots-three",
+                    rightIcon: "dots-three-bold",
                     onLeftTap: { dismiss() },
                     onRightTap: { showMenu = true }
                 )

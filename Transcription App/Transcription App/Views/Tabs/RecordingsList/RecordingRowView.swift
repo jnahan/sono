@@ -75,7 +75,7 @@ struct RecordingRowView: View {
                 }
                 
                 // Dots three menu button
-                IconButton(icon: "dots-three") {
+                IconButton(icon: "dots-three-bold") {
                     showMenu = true
                 }
                 
