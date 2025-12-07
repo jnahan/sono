@@ -59,8 +59,9 @@ class LLMService {
         }
         
         // Manually format the prompt for Llama 3.2 chat template
+        // Note: BOS token (<|begin_of_text|>) is added automatically by the LLM library
         let formattedPrompt = """
-        <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+        <|start_header_id|>system<|end_header_id|>
 
         \(systemPrompt)<|eot_id|><|start_header_id|>user<|end_header_id|>
 
