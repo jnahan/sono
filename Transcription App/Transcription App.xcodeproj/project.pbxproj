@@ -11,6 +11,7 @@
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionListView.swift */; };
 		5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */; };
+		5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */; };
 		5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */; };
 		5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */ = {isa = PBXBuildFile; fileRef = 5D0ED1172EE118DF0003E775 /* EdgeCases.md */; };
 		5D0ED11B2EE1317D0003E775 /* TimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */; };
@@ -85,6 +86,7 @@
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionListView.swift; sourceTree = "<group>"; };
 		5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwitch.swift; sourceTree = "<group>"; };
+		5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorToastView.swift; sourceTree = "<group>"; };
 		5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationSheet.swift; sourceTree = "<group>"; };
 		5D0ED1172EE118DF0003E775 /* EdgeCases.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = EdgeCases.md; sourceTree = "<group>"; };
 		5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatter.swift; sourceTree = "<group>"; };
@@ -344,6 +346,7 @@
 				5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */,
 				5D0ED10D2EE004090003E775 /* SelectionListView.swift */,
 				5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */,
+				5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */,
 				5D1300062EE3BA4000F1FAE2 /* AudioPreviewBar.swift */,
 				5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */,
 				5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */,
@@ -547,6 +550,7 @@
 				5D1300072EE3BA4000F1FAE2 /* AudioPreviewBar.swift in Sources */,
 				5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */,
 				5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */,
+				5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */,
 				5D962F282ECE935500049626 /* Player.swift in Sources */,
 				5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */,
 				5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */,

@@ -17,6 +17,7 @@ class RecordingFormViewModel: ObservableObject {
     @Published var transcribedSegments: [RecordingSegment] = []
     @Published var isTranscribing = false
     @Published var transcriptionProgress: Double = 0.0 // 0.0 to 1.0
+    @Published var isModelLoading = false // Track if model is being downloaded/loaded
     
     // Validation state
     @Published var titleError: String? = nil
@@ -26,6 +27,8 @@ class RecordingFormViewModel: ObservableObject {
     // UI state
     @Published var showCollectionPicker = false
     @Published var showExitConfirmation = false
+    @Published var showErrorToast = false
+    @Published var errorMessage = ""
     
     // MARK: - Private Properties
 
@@ -52,7 +55,9 @@ class RecordingFormViewModel: ObservableObject {
     }
     
     var saveButtonText: String {
-        if isTranscribing && !isEditing {
+        if isModelLoading && !isEditing {
+            return "Downloading model..."
+        } else if isTranscribing && !isEditing {
             return "Transcribing audio \(Int(transcriptionProgress * 100))%"
         } else if isEditing {
             return "Save changes"
@@ -153,48 +158,107 @@ class RecordingFormViewModel: ObservableObject {
     // MARK: - Transcription
 
     private func startTranscription() {
-        guard let url = audioURL else { return }
-        isTranscribing = true
-        transcriptionProgress = 0.0
-
+        guard let url = audioURL else {
+            showError("Audio file not found")
+            return
+        }
+        
+        // Start transcription - if model isn't ready, wait for it
         Task {
+            // First, wait for model to be ready (if it's not already)
+            if !TranscriptionService.shared.isModelReadyForTranscription {
+                await MainActor.run {
+                    isModelLoading = true
+                }
+                
+                // Wait for model to be ready (up to 60 seconds)
+                let maxWaitTime: TimeInterval = 60
+                let startTime = Date()
+                
+                while !TranscriptionService.shared.isModelReadyForTranscription {
+                    // Update loading state
+                    await MainActor.run {
+                        isModelLoading = TranscriptionService.shared.isModelLoading
+                    }
+                    
+                    if Date().timeIntervalSince(startTime) > maxWaitTime {
+                        await MainActor.run {
+                            isModelLoading = false
+                            showError("Transcription model failed to load. Please restart the app.")
+                        }
+                        return
+                    }
+                    try? await Task.sleep(nanoseconds: 500_000_000) // Wait 0.5 seconds
+                }
+                
+                await MainActor.run {
+                    isModelLoading = false
+                    isTranscribing = true
+                    transcriptionProgress = 0.0
+                }
+            } else {
+                await MainActor.run {
+                    isModelLoading = false
+                    isTranscribing = true
+                    transcriptionProgress = 0.0
+                }
+            }
+            
+            // Now transcribe with the ready model
             do {
-                // TranscriptionService will use settings from UserDefaults automatically
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
                         self.transcriptionProgress = progress
                     }
                 }
-
-                await MainActor.run {
-                    transcribedText = result.text
-                    transcribedLanguage = result.language
-                    transcribedSegments = result.segments.map { segment in
-                        RecordingSegment(
-                            start: segment.start,
-                            end: segment.end,
-                            text: segment.text
-                        )
-                    }
-                    transcriptionProgress = 1.0 // Complete
-                    isTranscribing = false
-
-                    // Update auto-saved recording if it exists
-                    if let recording = autoSavedRecording {
-                        updateAutoSavedRecording(recording, withTranscription: true)
-                    }
-                }
+                await handleTranscriptionResult(result)
             } catch {
                 await MainActor.run {
-                    isTranscribing = false
-                    transcriptionProgress = 0.0
-
-                    // Mark auto-saved recording as failed
-                    if let recording = autoSavedRecording {
-                        recording.status = .failed
-                        recording.failureReason = "Transcription failed: \(error.localizedDescription)"
-                    }
+                    handleTranscriptionError(error)
                 }
+            }
+        }
+    }
+    
+    @MainActor
+    private func handleTranscriptionResult(_ result: TranscriptionResult) {
+        transcribedText = result.text
+        transcribedLanguage = result.language
+        transcribedSegments = result.segments.map { segment in
+            RecordingSegment(
+                start: segment.start,
+                end: segment.end,
+                text: segment.text
+            )
+        }
+        transcriptionProgress = 1.0 // Complete
+        isTranscribing = false
+
+        // Update auto-saved recording if it exists
+        if let recording = autoSavedRecording {
+            updateAutoSavedRecording(recording, withTranscription: true)
+        }
+    }
+    
+    @MainActor
+    private func handleTranscriptionError(_ error: Error) {
+        isTranscribing = false
+        isModelLoading = false
+        transcriptionProgress = 0.0
+        showError("Transcription failed: \(error.localizedDescription)")
+
+        // Mark auto-saved recording as failed
+        if let recording = autoSavedRecording {
+            recording.status = .failed
+            recording.failureReason = "Transcription failed: \(error.localizedDescription)"
+        }
+    }
+    
+    func showError(_ message: String) {
+        Task { @MainActor in
+            errorMessage = message
+            withAnimation {
+                showErrorToast = true
             }
         }
     }

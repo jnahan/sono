@@ -38,6 +38,18 @@ struct RecordingFormView: View {
         ZStack {
             Color.warmGray50
                 .ignoresSafeArea()
+            
+            // Error Toast
+            VStack {
+                if viewModel.showErrorToast {
+                    ErrorToastView(
+                        message: viewModel.errorMessage,
+                        isPresented: $viewModel.showErrorToast
+                    )
+                }
+                Spacer()
+            }
+            .zIndex(1000)
 
             VStack(spacing: 0) {
                 // Header
@@ -62,15 +74,32 @@ struct RecordingFormView: View {
                     .padding(.top, 12)
                     
                     VStack(spacing: 8) {
-                        
-                        Text("Transcribing audio")
-                            .font(.custom("LibreBaskerville-Regular", size: 24))
-                            .foregroundColor(.baseBlack)
-
-                        Text("Please do not close the app\nuntil transcription is complete")
-                            .font(.system(size: 16))
-                            .foregroundColor(.warmGray500)
-                            .multilineTextAlignment(.center)
+                        if viewModel.isModelLoading {
+                            Text("Downloading model...")
+                                .font(.custom("LibreBaskerville-Regular", size: 24))
+                                .foregroundColor(.baseBlack)
+                            
+                            Text("Please wait while the transcription model loads")
+                                .font(.system(size: 16))
+                                .foregroundColor(.warmGray500)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            Text("Transcribing audio")
+                                .font(.custom("LibreBaskerville-Regular", size: 24))
+                                .foregroundColor(.baseBlack)
+                            
+                            if viewModel.isTranscribing {
+                                Text("\(Int(viewModel.transcriptionProgress * 100))% complete")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.warmGray500)
+                                    .multilineTextAlignment(.center)
+                            } else {
+                                Text("Please do not close the app\nuntil transcription is complete")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.warmGray500)
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
                     }
                     .padding(.top, 16)
                     .padding(.bottom, 32)
@@ -131,6 +160,24 @@ struct RecordingFormView: View {
                             isPresented = false
                             dismiss()
                         } else {
+                            // Guard: Don't allow saving if model is still loading
+                            guard !viewModel.isModelLoading else {
+                                viewModel.showError("Please wait for the model to finish loading before saving.")
+                                return
+                            }
+                            
+                            // Guard: Don't allow saving if transcription is still in progress
+                            guard !viewModel.isTranscribing else {
+                                viewModel.showError("Please wait for transcription to complete before saving.")
+                                return
+                            }
+                            
+                            // Guard: Don't allow saving if transcription hasn't started or failed
+                            guard !viewModel.transcribedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                                viewModel.showError("Transcription is not complete. Please wait for it to finish.")
+                                return
+                            }
+                            
                             viewModel.saveRecording(modelContext: modelContext) {
                                 onTranscriptionComplete()
                                 isPresented = false
@@ -141,7 +188,7 @@ struct RecordingFormView: View {
                     Text(viewModel.saveButtonText)
                 }
                 .buttonStyle(AppButtonStyle())
-                .disabled(viewModel.isTranscribing)
+                .disabled(viewModel.isTranscribing || viewModel.isModelLoading)
             }
         }
         .sheet(isPresented: $viewModel.showCollectionPicker) {

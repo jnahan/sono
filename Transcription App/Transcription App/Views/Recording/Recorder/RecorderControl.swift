@@ -19,47 +19,48 @@ struct RecorderControl: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                Spacer()
-                
-                // Timer display and waveform section
+            ZStack {
                 VStack(spacing: 0) {
-                    Text(TimeFormatter.formatTimestamp(elapsedTime))
-                        .font(.interMedium(size: 14))
-                        .foregroundColor(.warmGray700)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.baseWhite)
-                        .cornerRadius(32)
+                    Spacer()
                     
-                    ZStack(alignment: .top) {
-                        // Waveform visualizer - show frozen history if stopped, live if recording
-                        HStack(spacing: 0) {
-                            RecorderVisualizer(
-                                values: frozenMeterHistory.isEmpty ? rec.meterHistory : frozenMeterHistory,
-                                barCount: 40
-                            )
-                            .frame(height: 80)
-                            .clipped()
-                            
-                            Spacer()
-                                .frame(width: 3)  // Exact width of white line
-                        }
-                        .frame(width: geometry.size.width.isFinite ? geometry.size.width / 2 : 0)
-                        .padding(.top, 80)
-                        .offset(x: geometry.size.width.isFinite ? -geometry.size.width / 4 : 0)
+                    // Timer display and waveform section
+                    VStack(spacing: 0) {
+                        Text(TimeFormatter.formatTimestamp(elapsedTime))
+                            .font(.interMedium(size: 14))
+                            .foregroundColor(.warmGray700)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.baseWhite)
+                            .cornerRadius(32)
                         
-                        // Vertical line on top - centered and fully opaque
-                        Rectangle()
-                            .fill(Color.baseWhite)
-                            .frame(width: 3, height: 240)
+                        ZStack(alignment: .top) {
+                            // Waveform visualizer - show frozen history if stopped, live if recording
+                            HStack(spacing: 0) {
+                                RecorderVisualizer(
+                                    values: frozenMeterHistory.isEmpty ? rec.meterHistory : frozenMeterHistory,
+                                    barCount: 40
+                                )
+                                .frame(height: 80)
+                                .clipped()
+                                
+                                Spacer()
+                                    .frame(width: 3)  // Exact width of white line
+                            }
+                            .frame(width: geometry.size.width.isFinite ? geometry.size.width / 2 : 0)
+                            .padding(.top, 80)
+                            .offset(x: geometry.size.width.isFinite ? -geometry.size.width / 4 : 0)
+                            
+                            // Vertical line on top - centered and fully opaque
+                            Rectangle()
+                                .fill(Color.baseWhite)
+                                .frame(width: 3, height: 240)
+                        }
                     }
-                }
-                
-                Spacer()
-                
-                // Bottom buttons - 64px from bottom including safe area
-                HStack(spacing: 24) {
+                    
+                    Spacer()
+                    
+                    // Bottom buttons - 64px from bottom including safe area
+                    HStack(spacing: 24) {
                     // Retry button - only visible when recording is stopped (not during recording)
                     if !rec.isRecording && rec.fileURL != nil {
                         Button {
@@ -134,6 +135,7 @@ struct RecorderControl: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 64)
+                }
             }
         }
         .task {
@@ -183,6 +185,8 @@ struct RecorderControl: View {
     
     // MARK: - Actions
     private func startRecording() {
+        // Recording is completely independent of model loading
+        // Model only needs to be ready when transcription starts (after recording finishes)
         player.stop()
         elapsedTime = 0
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -206,6 +210,7 @@ struct RecorderControl: View {
             rec.stop()
         }
         if let fileURL = rec.fileURL {
+            // Model will be loaded when transcription starts - no need to block here
             onFinishRecording?(fileURL)
         }
     }
