@@ -15,7 +15,12 @@ struct SummaryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if viewModel.isGeneratingSummary {
-                    loadingView
+                    // Show streaming text if available, otherwise show loading
+                    if !viewModel.streamingSummary.isEmpty {
+                        streamingSummaryView
+                    } else {
+                        loadingView
+                    }
                 } else if let error = viewModel.summaryError {
                     errorView(error: error)
                 } else if let summary = recording.summary, !summary.isEmpty {
@@ -32,6 +37,32 @@ struct SummaryView: View {
     }
     
     // MARK: - Subviews
+    
+    private var streamingSummaryView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(viewModel.streamingSummary)
+                .font(.custom("Inter-Regular", size: 16))
+                .foregroundColor(.baseBlack)
+                .transition(.opacity)
+            
+            // Show typing indicator
+            HStack(spacing: 4) {
+                ForEach(0..<3) { index in
+                    Circle()
+                        .fill(Color.warmGray400)
+                        .frame(width: 6, height: 6)
+                        .opacity(0.3)
+                        .animation(
+                            Animation.easeInOut(duration: 0.6)
+                                .repeatForever()
+                                .delay(Double(index) * 0.2),
+                            value: viewModel.streamingSummary
+                        )
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
     
     private var loadingView: some View {
         VStack(spacing: 16) {
@@ -138,6 +169,7 @@ class SummaryViewModel: ObservableObject {
     
     @Published var isGeneratingSummary = false
     @Published var summaryError: String?
+    @Published var streamingSummary: String = ""
     
     // MARK: - Private Properties
     
@@ -184,10 +216,19 @@ class SummaryViewModel: ObservableObject {
             \(transcriptionText)
             """
             
-            let summary = try await LLMService.shared.getCompletion(
+            // Reset streaming text
+            streamingSummary = ""
+            
+            // Stream the response
+            let summary = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
                 systemPrompt: systemPrompt
-            )
+            ) { chunk in
+                // Update streaming summary on main thread
+                Task { @MainActor in
+                    self.streamingSummary += chunk
+                }
+            }
             
             // Validate response
             let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -205,6 +246,9 @@ class SummaryViewModel: ObservableObject {
             
             recording.summary = finalSummary
             
+            // Clear streaming text
+            streamingSummary = ""
+            
             // Save asynchronously to avoid blocking main thread
             await MainActor.run {
                 do {
@@ -216,6 +260,7 @@ class SummaryViewModel: ObservableObject {
             
         } catch {
             summaryError = "Failed to generate summary: \(error.localizedDescription)"
+            streamingSummary = ""
         }
         
         isGeneratingSummary = false

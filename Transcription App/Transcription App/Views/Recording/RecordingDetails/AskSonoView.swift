@@ -2,10 +2,17 @@ import SwiftUI
 import SwiftData
 
 struct ChatMessage: Identifiable {
-    let id = UUID()
+    let id: UUID
     let text: String
     let isUser: Bool
-    let timestamp: Date = Date()
+    let timestamp: Date
+    
+    init(id: UUID = UUID(), text: String, isUser: Bool, timestamp: Date = Date()) {
+        self.id = id
+        self.text = text
+        self.isUser = isUser
+        self.timestamp = timestamp
+    }
 }
 
 struct AskSonoView: View {
@@ -77,6 +84,14 @@ struct AskSonoView: View {
                             }
                         }
                     }
+                    .onChange(of: viewModel.streamingText) { _, _ in
+                        // Auto-scroll as text streams in
+                        if let lastMessage = viewModel.messages.last, !lastMessage.isUser {
+                            withAnimation(.easeOut(duration: 0.1)) {
+                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                            }
+                        }
+                    }
                 }
                 
                 // Input Area
@@ -91,7 +106,7 @@ struct AskSonoView: View {
                                     .font(.custom("Inter-Regular", size: 16))
                                     .foregroundColor(.warmGray400)
                                     .padding(.leading, 16)
-                                    .padding(.top, 12)
+                                    .padding(.vertical, 12)
                             }
 
                             TextField("", text: $viewModel.userPrompt, axis: .vertical)
@@ -105,6 +120,10 @@ struct AskSonoView: View {
                         }
                         .background(Color.baseWhite)
                         .cornerRadius(24)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            isInputFocused = true
+                        }
 
                         // Send Button
                         Button(action: {
@@ -162,33 +181,42 @@ struct AskSonoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(message.text)
-                            .font(.custom("Inter-Regular", size: 16))
-                            .foregroundColor(.baseBlack)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 12)
-                            .background(Color.white)
-                            .cornerRadius(20)
+                        HStack(alignment: .bottom, spacing: 0) {
+                            Text(message.text)
+                                .font(.custom("Inter-Regular", size: 16))
+                                .foregroundColor(.baseBlack)
+                            
+                            // Show typing cursor if this is the streaming message
+                            if viewModel.streamingMessageId != nil && message.id == viewModel.messages.last?.id && !message.isUser {
+                                TypingCursorView()
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.white)
+                        .cornerRadius(20)
                     }
                     
                     Spacer(minLength: 60)
                 }
                 
-                // Action buttons
-                HStack(spacing: 16) {
-                    actionButton(icon: "doc.on.doc", action: {
-                        UIPasteboard.general.string = message.text
-                    })
-                    
-                    actionButton(icon: "arrow.clockwise", action: {
-                        viewModel.resendLastMessage()
-                    })
-                    
-                    actionButton(icon: "square.and.arrow.up", action: {
-                        ShareHelper.shareText(message.text)
-                    })
+                // Action buttons (only show when not streaming)
+                if viewModel.streamingMessageId == nil || message.id != viewModel.messages.last?.id {
+                    HStack(spacing: 16) {
+                        actionButton(icon: "doc.on.doc", action: {
+                            UIPasteboard.general.string = message.text
+                        })
+                        
+                        actionButton(icon: "arrow.clockwise", action: {
+                            viewModel.resendLastMessage()
+                        })
+                        
+                        actionButton(icon: "square.and.arrow.up", action: {
+                            ShareHelper.shareText(message.text)
+                        })
+                    }
+                    .padding(.leading, 4)
                 }
-                .padding(.leading, 4)
             }
         }
     }
@@ -203,6 +231,25 @@ struct AskSonoView: View {
     }
 }
 
+// MARK: - Typing Cursor View
+struct TypingCursorView: View {
+    @State private var blink = false
+    
+    var body: some View {
+        Text("▋")
+            .font(.custom("Inter-Regular", size: 16))
+            .foregroundColor(.baseBlack)
+            .opacity(blink ? 0.3 : 1.0)
+            .animation(
+                Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                value: blink
+            )
+            .onAppear {
+                blink = true
+            }
+    }
+}
+
 // MARK: - View Model
 
 @MainActor
@@ -213,6 +260,8 @@ class AskSonoViewModel: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var isProcessing: Bool = false
     @Published var error: String?
+    @Published var streamingMessageId: UUID? = nil
+    @Published var streamingText: String = ""
     
     // MARK: - Private Properties
     
@@ -272,10 +321,37 @@ class AskSonoViewModel: ObservableObject {
             Question: \(promptText)
             """
             
-            let llmResponse = try await LLMService.shared.getCompletion(
+            // Create placeholder message for streaming
+            let streamingId = UUID()
+            streamingMessageId = streamingId
+            streamingText = ""
+            let placeholderMessage = ChatMessage(id: streamingId, text: "", isUser: false)
+            messages.append(placeholderMessage)
+            
+            // Stream the response
+            let llmResponse = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
                 systemPrompt: systemPrompt
-            )
+            ) { chunk in
+                // Update streaming text on main thread
+                Task { @MainActor in
+                    if self.streamingMessageId == streamingId {
+                        self.streamingText += chunk
+                        // Update the last message with streaming text, preserving the ID
+                        if let lastIndex = self.messages.indices.last, !self.messages[lastIndex].isUser {
+                            let existingMessage = self.messages[lastIndex]
+                            // Create new message with updated text but same ID
+                            let updatedMessage = ChatMessage(
+                                id: existingMessage.id,
+                                text: self.streamingText,
+                                isUser: false,
+                                timestamp: existingMessage.timestamp
+                            )
+                            self.messages[lastIndex] = updatedMessage
+                        }
+                    }
+                }
+            }
             
             // Validate response
             let trimmedResponse = llmResponse.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -283,18 +359,41 @@ class AskSonoViewModel: ObservableObject {
             guard !trimmedResponse.isEmpty, trimmedResponse.count >= 10 else {
                 error = "Model returned invalid response. Please try again."
                 isProcessing = false
+                streamingMessageId = nil
+                streamingText = ""
+                // Remove the placeholder message
+                if let lastIndex = messages.indices.last, !messages[lastIndex].isUser {
+                    messages.removeLast()
+                }
                 return
             }
             
-            // Add AI response to chat
-            let aiMessage = ChatMessage(text: trimmedResponse, isUser: false)
-            messages.append(aiMessage)
+            // Ensure final message is set correctly with preserved ID
+            if let lastIndex = messages.indices.last, !messages[lastIndex].isUser, messages[lastIndex].id == streamingId {
+                let existingMessage = messages[lastIndex]
+                let finalMessage = ChatMessage(
+                    id: streamingId,
+                    text: trimmedResponse,
+                    isUser: false,
+                    timestamp: existingMessage.timestamp
+                )
+                messages[lastIndex] = finalMessage
+            }
+            
+            streamingMessageId = nil
+            streamingText = ""
             
         } catch {
             self.error = "Failed to get response: \(error.localizedDescription)"
+            // Remove streaming placeholder if it exists
+            if let lastIndex = messages.indices.last, !messages[lastIndex].isUser, streamingMessageId != nil {
+                messages.removeLast()
+            }
             // Add error message to chat
             let errorMessage = ChatMessage(text: "Sorry, I encountered an error. Please try again.", isUser: false)
             messages.append(errorMessage)
+            streamingMessageId = nil
+            streamingText = ""
         }
         
         isProcessing = false

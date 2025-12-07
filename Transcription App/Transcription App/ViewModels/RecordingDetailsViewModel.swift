@@ -8,6 +8,7 @@ class RecordingDetailsViewModel: ObservableObject {
     
     @Published var isGeneratingSummary = false
     @Published var summaryError: String?
+    @Published var streamingSummary: String = ""
     
     // MARK: - Private Properties
     
@@ -56,10 +57,19 @@ class RecordingDetailsViewModel: ObservableObject {
             \(transcriptionText)
             """
             
-            let summary = try await LLMService.shared.getCompletion(
+            // Reset streaming text
+            streamingSummary = ""
+            
+            // Stream the response
+            let summary = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
                 systemPrompt: systemPrompt
-            )
+            ) { chunk in
+                // Update streaming summary on main thread
+                Task { @MainActor in
+                    self.streamingSummary += chunk
+                }
+            }
             
             // Validate response
             let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -77,6 +87,9 @@ class RecordingDetailsViewModel: ObservableObject {
             
             recording.summary = finalSummary
             
+            // Clear streaming text
+            streamingSummary = ""
+            
             // Save asynchronously to avoid blocking main thread
             await MainActor.run {
                 do {
@@ -88,6 +101,7 @@ class RecordingDetailsViewModel: ObservableObject {
             
         } catch {
             summaryError = "Failed to generate summary: \(error.localizedDescription)"
+            streamingSummary = ""
         }
         
         isGeneratingSummary = false
