@@ -54,12 +54,4 @@ struct TimeFormatter {
             }
         }
     }
-    
-    /// Format a date with time (e.g., "Jan 15, 2024 at 3:45 PM")
-    static func formatDateWithTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
-    }
 }
