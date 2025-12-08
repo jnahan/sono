@@ -186,6 +186,16 @@ class TranscriptionService {
 
         return deleted
     }
+
+    /// Clears all cached model files
+    func clearAllModels() {
+        ModelDownloadManager.shared.deleteAllModels()
+
+        // Clear the in-memory instance
+        whisperKit = nil
+        currentModelName = nil
+        isModelReady = false
+    }
     
     // MARK: - Private Helpers
     

@@ -18,7 +18,7 @@
 		5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11C2EE131860003E775 /* ShareHelper.swift */; };
 		5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */; };
 		5D0ED1212EE131990003E775 /* AudioHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1202EE131990003E775 /* AudioHelper.swift */; };
-		5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */; };
+		5D0ED1232EE131E90003E775 /* URL+Identifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifier.swift */; };
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
 		5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */; };
@@ -63,7 +63,9 @@
 		5DB579062ED846A6002DC84D /* CollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579052ED846A6002DC84D /* CollectionsView.swift */; };
 		5DB579082ED8475F002DC84D /* NewRecordingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */; };
 		5DB579102ED8BF6E002DC84D /* RecordingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */; };
+		5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */; };
 		5DB579142ED8C031002DC84D /* CopyToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579132ED8C031002DC84D /* CopyToastView.swift */; };
+		5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */; };
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
@@ -93,7 +95,7 @@
 		5D0ED11C2EE131860003E775 /* ShareHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHelper.swift; sourceTree = "<group>"; };
 		5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationHelper.swift; sourceTree = "<group>"; };
 		5D0ED1202EE131990003E775 /* AudioHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioHelper.swift; sourceTree = "<group>"; };
-		5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifiable.swift"; sourceTree = "<group>"; };
+		5D0ED1222EE131E90003E775 /* URL+Identifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifier.swift"; sourceTree = "<group>"; };
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
@@ -137,7 +139,9 @@
 		5DB579052ED846A6002DC84D /* CollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsView.swift; sourceTree = "<group>"; };
 		5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewRecordingSheet.swift; sourceTree = "<group>"; };
 		5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingRowView.swift; sourceTree = "<group>"; };
+		5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRecordingOverlay.swift; sourceTree = "<group>"; };
 		5DB579132ED8C031002DC84D /* CopyToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToastView.swift; sourceTree = "<group>"; };
+		5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingActionsMenu.swift; sourceTree = "<group>"; };
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
@@ -381,7 +385,7 @@
 				5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */,
 				5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */,
 				5DDA7CC92EDD842100AFB6C0 /* View+Shadow.swift */,
-				5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */,
+				5D0ED1222EE131E90003E775 /* URL+Identifier.swift */,
 				5D0ED1242EE131F50003E775 /* String+Validation.swift */,
 			);
 			path = Extensions;
@@ -393,6 +397,8 @@
 				5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */,
 				5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */,
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */,
+				5DB579172ED8C823002DC84D /* RecordingActionsMenu.swift */,
+				5DB579112ED8C016002DC84D /* EditRecordingOverlay.swift */,
 			);
 			path = RecordingsList;
 			sourceTree = "<group>";
@@ -532,8 +538,8 @@
 				5D15706B2EDA154A0094E13E /* AudioPlayerControls.swift in Sources */,
 				5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */,
 				5D0ED11B2EE1317D0003E775 /* TimeFormatter.swift in Sources */,
-				5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */,
 				5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */,
+				5D0ED1232EE131E90003E775 /* URL+Identifier.swift in Sources */,
 				5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */,
 				5D769037E55464FDEF7961 /* ModelSelectionView.swift in Sources */,
 				5D0ED1212EE131990003E775 /* AudioHelper.swift in Sources */,
@@ -542,6 +548,7 @@
 				5D1570632ED965F40094E13E /* CollectionsRowView.swift in Sources */,
 				5D962F222ECE87ED00049626 /* Recorder.swift in Sources */,
 				5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */,
+				5DB579182ED8C823002DC84D /* RecordingActionsMenu.swift in Sources */,
 				5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */,
 				5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */,
 				5D12FFFE2EE3B9F000F1FAE2 /* SummaryView.swift in Sources */,
@@ -552,6 +559,7 @@
 				5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */,
 				5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */,
 				5D962F282ECE935500049626 /* Player.swift in Sources */,
+				5DB579122ED8C016002DC84D /* EditRecordingOverlay.swift in Sources */,
 				5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */,
 				5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */,
 				5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */,
