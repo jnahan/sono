@@ -3,9 +3,6 @@ import SwiftData
 
 /// Shared logic for displaying and managing a list of recordings
 class RecordingListViewModel: ObservableObject {
-    // MARK: - Player
-    @Published var player = Player()
-    
     // MARK: - Edit State
     @Published var editingRecording: Recording?
     

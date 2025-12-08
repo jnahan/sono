@@ -4,7 +4,6 @@ import SwiftUI
 struct RecordingRowView: View {
     // MARK: - Properties
     let recording: Recording
-    let player: Player // Keep for compatibility but use global manager
     let onCopy: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
@@ -146,10 +145,6 @@ struct RecordingRowView: View {
     // MARK: - Computed Properties
     private var formattedDuration: String {
         TimeFormatter.formatDuration(duration)
-    }
-    
-    private var relativeDate: String {
-        TimeFormatter.relativeDate(from: recording.recordedAt)
     }
     
     private var formattedDateWithTime: String {

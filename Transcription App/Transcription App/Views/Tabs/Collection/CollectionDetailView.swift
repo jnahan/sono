@@ -319,7 +319,6 @@ struct CollectionDetailView: View {
                         } label: {
                             RecordingRowView(
                                 recording: recording,
-                                player: viewModel.player,
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
                                 onDelete: { viewModel.deleteRecording(recording) },

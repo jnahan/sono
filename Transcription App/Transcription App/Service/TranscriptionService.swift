@@ -160,45 +160,6 @@ class TranscriptionService {
         return tempURL
     }
     
-    /// Clears the cached tiny model files to force re-download
-    func clearModelCache() {
-        let fileManager = FileManager.default
-        
-        // WhisperKit stores models in multiple possible locations
-        let possibleCachePaths = [
-            // Cache directory
-            fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit"),
-            // Application Support directory
-            fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit"),
-            // Documents directory (sometimes used)
-            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit")
-        ]
-        
-        for cacheURL in possibleCachePaths.compactMap({ $0 }) {
-            guard fileManager.fileExists(atPath: cacheURL.path) else { continue }
-            
-            do {
-                // Clear tiny model - try different naming patterns
-                let modelVariants = [
-                    cacheURL.appendingPathComponent(modelName),
-                    cacheURL.appendingPathComponent("openai/whisper-\(modelName)"),
-                    cacheURL.appendingPathComponent("whisper-\(modelName)")
-                ]
-                
-                for modelURL in modelVariants {
-                    if fileManager.fileExists(atPath: modelURL.path) {
-                        try fileManager.removeItem(at: modelURL)
-                    }
-                }
-            } catch {
-                // Silently continue
-            }
-        }
-        
-        // Also clear the in-memory instance
-        whisperKit = nil
-        isModelReady = false
-    }
     
     // MARK: - Private Helpers
     

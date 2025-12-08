@@ -178,7 +178,6 @@ struct RecordingsView: View {
                         } label: {
                             RecordingRowView(
                                 recording: recording,
-                                player: AudioPlayerManager.shared.player,
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
                                 onDelete: { viewModel.deleteRecording(recording) },
