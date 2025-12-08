@@ -350,6 +350,9 @@ class TranscriptionService {
             options.language = langCode
         }
 
+        // Track max loops seen to ensure monotonic progress
+        var maxLoopsSeen: Double = 0
+
         let results = try await whisperKit.transcribe(
             audioPath: audioURL.path,
             decodeOptions: options,
@@ -357,10 +360,18 @@ class TranscriptionService {
                 // WhisperKit provides progress through TranscriptionProgress
                 // Calculate overall progress from current and total segments
                 if let callback = progressCallback {
-                    let currentProgress = Double(progress.timings.totalDecodingLoops)
+                    // Use totalDecodingLoops but ensure monotonic progress
+                    let currentLoops = Double(progress.timings.totalDecodingLoops)
+
+                    // Only update if we've seen more loops (prevent backward progress)
+                    if currentLoops > maxLoopsSeen {
+                        maxLoopsSeen = currentLoops
+                    }
+
                     // Estimate: typically ~100-300 loops for a transcription
                     // Cap at 0.95 to show progress, leave 5% for post-processing
-                    let estimatedProgress = min(currentProgress / 200.0, 0.95)
+                    let estimatedProgress = min(maxLoopsSeen / 200.0, 0.95)
+
                     Task { @MainActor in
                         callback(estimatedProgress)
                     }
@@ -412,12 +423,19 @@ class TranscriptionService {
         // For very short or silent recordings, empty results are valid and expected
         // Return empty result instead of throwing error - user may have been silent
         let finalText = isValidFullText ? trimmedFullText : ""
-        
+
         // Log if we got empty results (user may have been silent - this is fine)
         if finalSegments.isEmpty && !isValidFullText {
             print("ℹ️ [TranscriptionService] Transcription returned empty results - recording may have been silent or very short (this is normal)")
         }
-        
+
+        // Report 100% completion
+        if let callback = progressCallback {
+            Task { @MainActor in
+                callback(1.0)
+            }
+        }
+
         return TranscriptionResult(
             text: finalText,
             language: firstResult.language,

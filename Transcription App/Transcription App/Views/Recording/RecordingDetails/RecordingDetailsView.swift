@@ -11,6 +11,7 @@ enum RecordingDetailTab {
 struct RecordingDetailsView: View {
     let recording: Recording
     @StateObject private var audioPlayback = AudioPlaybackService()
+    @StateObject private var progressManager = TranscriptionProgressManager.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Collection.name) private var collections: [Collection]
@@ -46,50 +47,16 @@ struct RecordingDetailsView: View {
                 )
                 
                 // Header
-                VStack(spacing: 12) {
-                    Image("asterisk")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
+                VStack(spacing: 8) {
+                    Text(TimeFormatter.relativeDate(from: recording.recordedAt))
+                        .font(.system(size: 14))
+                        .foregroundColor(.warmGray500)
 
-                    VStack(spacing: 8) {
-                        Text(TimeFormatter.relativeDate(from: recording.recordedAt))
-                            .font(.system(size: 14))
-                            .foregroundColor(.warmGray500)
-
-                        Text(recording.title)
-                            .font(.custom("LibreBaskerville-Medium", size: 24))
-                            .foregroundColor(.baseBlack)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                    }
-                }
-
-                // Warning Toast for incomplete transcription
-                if showWarningToast {
-                    HStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.orange)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Transcription Incomplete")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.baseBlack)
-
-                            Text(recording.failureReason ?? "This recording was interrupted and needs to be transcribed.")
-                                .font(.system(size: 12))
-                                .foregroundColor(.warmGray600)
-                        }
-
-                        Spacer()
-                    }
-                    .padding(16)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(12)
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    .padding(.top, 16)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    Text(recording.title)
+                        .font(.custom("LibreBaskerville-Medium", size: 24))
+                        .foregroundColor(.baseBlack)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
                 }
 
                 // Tab Selector
@@ -207,18 +174,18 @@ struct RecordingDetailsView: View {
         .onAppear {
             // Hide preview bar and handle audio switching
             let audioManager = AudioPlayerManager.shared
-            
+
             // If global player is playing a different recording, stop it
             if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
                 audioManager.stop()
             }
-            
+
             // If global player is playing the same recording, sync state to local player
             if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
                 let wasPlaying = audioManager.player.isPlaying
                 let currentTime = audioManager.player.currentTime
                 audioManager.stop() // Stop global player
-                
+
                 // Load and sync to local player
                 if let url = recording.resolvedURL {
                     audioPlayback.preload(url: url)
@@ -233,14 +200,35 @@ struct RecordingDetailsView: View {
                     audioPlayback.preload(url: url)
                 }
             }
-            
+
             // Set active recording details ID to hide preview bar
             audioManager.activeRecordingDetailsId = recording.id
+
+            // Check if transcription is in progress
+            if recording.status == .inProgress {
+                // Check for active transcription progress
+                if let progress = progressManager.getProgress(for: recording.id) {
+                    transcriptionProgress = progress
+                }
+            }
 
             // Show warning toast if recording is incomplete
             if recording.status == .failed || recording.status == .notStarted {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     showWarningToast = true
+                }
+            }
+        }
+        .onChange(of: progressManager.activeTranscriptions[recording.id]) { _, newProgress in
+            if let progress = newProgress {
+                transcriptionProgress = progress
+            }
+        }
+        .onChange(of: recording.status) { oldStatus, newStatus in
+            // When transcription completes, hide the warning toast
+            if oldStatus == .inProgress && newStatus == .completed {
+                withAnimation {
+                    showWarningToast = false
                 }
             }
         }
@@ -257,8 +245,52 @@ struct RecordingDetailsView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    // Transcribe button for incomplete recordings
-                    if recording.status == .failed || recording.status == .notStarted {
+                    // Show loading state for in-progress transcriptions
+                    if recording.status == .inProgress {
+                        VStack(spacing: 20) {
+                            VStack(spacing: 12) {
+                                HStack(spacing: 12) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                    if transcriptionProgress > 0 {
+                                        Text("\(Int(transcriptionProgress * 100))% complete")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.baseBlack)
+                                    } else {
+                                        Text("Transcribing...")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.baseBlack)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                                Text("Please do not close the app until transcription is complete")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.warmGray500)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                            }
+                            .padding(.top, 24)
+
+                            // Show partial text if available
+                            if !recording.fullText.isEmpty {
+                                Divider()
+                                    .padding(.vertical, 16)
+
+                                Text("Partial Transcript:")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.warmGray500)
+
+                                Text(recording.fullText)
+                                    .font(.custom("Inter-Regular", size: 16))
+                                    .foregroundColor(.warmGray400)
+                                    .opacity(0.7)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    } else if recording.status == .failed || recording.status == .notStarted {
+                        // Transcribe button for incomplete recordings
                         VStack(spacing: 16) {
                             Text(recording.fullText.isEmpty ? "No transcription available" : "Partial transcription available")
                                 .font(.system(size: 14))

@@ -10,6 +10,7 @@ struct RecordingFormView: View {
     let modelContext: ModelContext
     let onTranscriptionComplete: () -> Void
     let onExit: (() -> Void)?
+    var onSaveComplete: ((Recording) -> Void)? = nil
 
     @StateObject private var viewModel: RecordingFormViewModel
     @Environment(\.dismiss) private var dismiss
@@ -22,7 +23,8 @@ struct RecordingFormView: View {
         collections: [Collection],
         modelContext: ModelContext,
         onTranscriptionComplete: @escaping () -> Void,
-        onExit: (() -> Void)?
+        onExit: (() -> Void)?,
+        onSaveComplete: ((Recording) -> Void)? = nil
     ) {
         self._isPresented = isPresented
         self.audioURL = audioURL
@@ -31,6 +33,7 @@ struct RecordingFormView: View {
         self.modelContext = modelContext
         self.onTranscriptionComplete = onTranscriptionComplete
         self.onExit = onExit
+        self.onSaveComplete = onSaveComplete
         self._viewModel = StateObject(wrappedValue: RecordingFormViewModel(audioURL: audioURL, existingRecording: existingRecording))
     }
     
@@ -72,46 +75,6 @@ struct RecordingFormView: View {
                         }
                     )
                     .padding(.top, 12)
-                    
-                    VStack(spacing: 8) {
-                        if viewModel.isModelLoading {
-                            Text("Downloading model...")
-                                .font(.custom("LibreBaskerville-Regular", size: 24))
-                                .foregroundColor(.baseBlack)
-                            
-                            Text("Please wait while the transcription model loads")
-                                .font(.system(size: 16))
-                                .foregroundColor(.warmGray500)
-                                .multilineTextAlignment(.center)
-                        } else if viewModel.isModelWarming {
-                            Text("Warming up model...")
-                                .font(.custom("LibreBaskerville-Regular", size: 24))
-                                .foregroundColor(.baseBlack)
-                            
-                            Text("Please wait while the model initializes")
-                                .font(.system(size: 16))
-                                .foregroundColor(.warmGray500)
-                                .multilineTextAlignment(.center)
-                        } else {
-                            Text("Transcribing audio")
-                                .font(.custom("LibreBaskerville-Regular", size: 24))
-                                .foregroundColor(.baseBlack)
-                            
-                            if viewModel.isTranscribing {
-                                Text("\(Int(viewModel.transcriptionProgress * 100))% complete")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.warmGray500)
-                                    .multilineTextAlignment(.center)
-                            } else {
-                                Text("Please do not close the app\nuntil transcription is complete")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.warmGray500)
-                                    .multilineTextAlignment(.center)
-                            }
-                        }
-                    }
-                    .padding(.top, 16)
-                    .padding(.bottom, 32)
                 }
                 
                 ScrollView {
@@ -169,17 +132,10 @@ struct RecordingFormView: View {
                             isPresented = false
                             dismiss()
                         } else {
-                            // Guard: Don't allow saving if model is still loading
-                            guard !viewModel.isModelLoading else {
-                                viewModel.showError("Please wait for the model to finish loading before saving.")
-                                return
-                            }
-                            
-                            // Button is already disabled if transcription isn't complete, so no need for error
-                            
-                            viewModel.saveRecording(modelContext: modelContext) {
-                                onTranscriptionComplete()
+                            // Save recording and call completion handler
+                            if let savedRecording = viewModel.saveRecording(modelContext: modelContext) {
                                 isPresented = false
+                                onSaveComplete?(savedRecording)
                             }
                         }
                     }
@@ -187,7 +143,7 @@ struct RecordingFormView: View {
                     Text(viewModel.saveButtonText)
                 }
                 .buttonStyle(AppButtonStyle())
-                .disabled(viewModel.isTranscribing || viewModel.isModelLoading || viewModel.isModelWarming)
+                .disabled(!viewModel.isFormValid)
             }
         }
         .sheet(isPresented: $viewModel.showCollectionPicker) {
@@ -218,6 +174,7 @@ struct RecordingFormView: View {
             if !viewModel.isEditing {
                 viewModel.autoSaveRecording(modelContext: modelContext)
                 viewModel.markTranscriptionStarted(modelContext: modelContext)
+                viewModel.setTranscriptionContext(modelContext)
             }
             viewModel.startTranscriptionIfNeeded()
         }
@@ -226,9 +183,7 @@ struct RecordingFormView: View {
             if newPhase == .background && !viewModel.isEditing {
                 print("📱 [RecordingForm] App backgrounded - saving recording state")
                 // Save current state even if transcription is still in progress
-                viewModel.saveRecording(modelContext: modelContext) {
-                    // No-op: just ensuring state is saved
-                }
+                _ = viewModel.saveRecording(modelContext: modelContext)
             }
         }
         .navigationBarHidden(true)

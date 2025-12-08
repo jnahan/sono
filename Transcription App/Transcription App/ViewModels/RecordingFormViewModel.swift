@@ -44,15 +44,7 @@ class RecordingFormViewModel: ObservableObject {
     }
     
     var isFormValid: Bool {
-        // For new recordings, ensure transcription is complete (can be empty if silent)
-        if !isEditing {
-            return validateTitle() && 
-                   validateNote() && 
-                   !isTranscribing && 
-                   !isModelLoading &&
-                   !isModelWarming
-        }
-        // For editing, just validate title and note
+        // Allow saving even during transcription - just validate title and note
         return validateTitle() && validateNote()
     }
     
@@ -60,28 +52,9 @@ class RecordingFormViewModel: ObservableObject {
         if isEditing {
             return "Save changes"
         }
-        
-        // For new recordings, NEVER show "Save transcription" until transcription is complete
-        if isModelLoading {
-            return "Downloading model..."
-        }
-        
-        if isModelWarming {
-            return "Warming up model..."
-        }
-        
-        if isTranscribing {
-            return "Transcribing audio \(Int(transcriptionProgress * 100))%"
-        }
-        
-        // If transcription is NOT in progress and NOT loading/warming, it's complete
-        // (even if empty - user may have been silent)
-        if !isTranscribing && !isModelLoading && !isModelWarming {
-            return "Save transcription"
-        }
-        
-        // Otherwise, we're still waiting
-        return "Preparing..."
+
+        // For new recordings, always allow saving (transcription continues in background)
+        return "Save recording"
     }
     
     // MARK: - Initialization
@@ -175,10 +148,17 @@ class RecordingFormViewModel: ObservableObject {
     
     // MARK: - Transcription
 
-    private func startTranscription() {
+    private var transcriptionModelContext: ModelContext? = nil
+
+    func startTranscription(modelContext: ModelContext? = nil) {
         guard let url = audioURL else {
             showError("Audio file not found")
             return
+        }
+
+        // Store modelContext for background updates
+        if let context = modelContext {
+            transcriptionModelContext = context
         }
         
         // Start transcription - if model isn't ready, wait for it
@@ -245,10 +225,14 @@ class RecordingFormViewModel: ObservableObject {
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
                         self.transcriptionProgress = progress
+                        // Update shared progress manager for cross-view updates
+                        if let recordingId = self.autoSavedRecording?.id {
+                            TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
+                        }
                     }
                 }
                 print("✅ [RecordingForm] Transcription completed successfully")
-                handleTranscriptionResult(result)
+                handleTranscriptionResult(result, modelContext: transcriptionModelContext)
             } catch {
                 print("❌ [RecordingForm] Transcription error: \(error)")
                 print("   Error type: \(type(of: error))")
@@ -257,9 +241,13 @@ class RecordingFormViewModel: ObservableObject {
             }
         }
     }
+
+    func setTranscriptionContext(_ context: ModelContext) {
+        transcriptionModelContext = context
+    }
     
     @MainActor
-    private func handleTranscriptionResult(_ result: TranscriptionResult) {
+    private func handleTranscriptionResult(_ result: TranscriptionResult, modelContext: ModelContext?) {
         transcribedText = result.text
         transcribedLanguage = result.language
         transcribedSegments = result.segments.map { segment in
@@ -272,11 +260,38 @@ class RecordingFormViewModel: ObservableObject {
         transcriptionProgress = 1.0 // Complete
         isTranscribing = false
 
-        // Note: auto-saved recording will be updated when user clicks save
-        // We don't have modelContext access here, so we just update the view state
-        
-        // If transcription is empty, it's still complete (might be very short recording)
-        // Don't show error - just allow user to save with empty transcription
+        print("✅ [RecordingForm] Transcription completed:")
+        print("   - Text length: \(transcribedText.count)")
+        print("   - Segments: \(transcribedSegments.count)")
+        print("   - Language: \(transcribedLanguage)")
+
+        // Update auto-saved recording immediately with transcription results
+        if let recording = autoSavedRecording, let context = modelContext {
+            recording.fullText = transcribedText
+            recording.language = transcribedLanguage
+            recording.status = .completed
+            recording.failureReason = nil
+
+            // Clear existing segments and add new ones
+            recording.segments.removeAll()
+            for segment in transcribedSegments {
+                // Insert segment into context if not already tracked
+                if segment.modelContext == nil {
+                    context.insert(segment)
+                }
+                recording.segments.append(segment)
+            }
+
+            do {
+                try context.save()
+                print("✅ [RecordingForm] Auto-saved recording updated with transcription")
+
+                // Mark transcription complete in progress manager
+                TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
+            } catch {
+                print("❌ [RecordingForm] Failed to update recording: \(error)")
+            }
+        }
     }
     
     @MainActor
@@ -384,40 +399,61 @@ class RecordingFormViewModel: ObservableObject {
             recording.segments.append(segment)
         }
 
-        print("✅ [RecordingForm] Updated auto-saved recording with transcription")
+        print("✅ [RecordingForm] Updated auto-saved recording:")
+        print("   - Title: \(recording.title)")
+        print("   - FullText length: \(recording.fullText.count)")
+        print("   - Segments: \(recording.segments.count)")
+        print("   - TranscribedText length: \(transcribedText.count)")
     }
     
     // MARK: - Save
-    
+
     @MainActor
-    func saveRecording(modelContext: ModelContext, onComplete: @escaping () -> Void) {
-        // If we have an auto-saved recording, just update it
+    func saveRecording(modelContext: ModelContext) -> Recording? {
+        // If we have an auto-saved recording, just update metadata
         if let recording = autoSavedRecording {
-            // Update recording with transcription (this also inserts segments into context)
-            updateAutoSavedRecording(recording, withTranscription: !transcribedText.isEmpty, modelContext: modelContext)
+            // Update metadata only - transcription continues in background
+            recording.title = title.trimmed
+            recording.notes = note
+            recording.collection = selectedCollection
+
+            // Update transcription data if already completed
+            if !isTranscribing && !transcribedText.isEmpty {
+                recording.fullText = transcribedText
+                recording.language = transcribedLanguage
+                recording.status = .completed
+
+                // Update segments
+                recording.segments.removeAll()
+                for segment in transcribedSegments {
+                    if segment.modelContext == nil {
+                        modelContext.insert(segment)
+                    }
+                    recording.segments.append(segment)
+                }
+            }
 
             do {
                 try modelContext.save()
                 print("✅ [RecordingForm] Recording saved successfully")
+                return recording
             } catch {
                 print("❌ [RecordingForm] Failed to save recording: \(error)")
+                return nil
             }
-
-            onComplete()
-            return
         }
 
         // Fallback: Create new recording if auto-save didn't happen
-        guard let url = audioURL else { return }
+        guard let url = audioURL else { return nil }
 
         print("💾 [RecordingForm] Saving recording with fullText length: \(transcribedText.count)")
 
         // Determine status based on transcription
         let status: TranscriptionStatus
-        if transcribedText.isEmpty {
-            status = .notStarted
-        } else if isTranscribing {
+        if isTranscribing {
             status = .inProgress
+        } else if transcribedText.isEmpty {
+            status = .notStarted
         } else {
             status = .completed
         }
@@ -449,11 +485,12 @@ class RecordingFormViewModel: ObservableObject {
         do {
             try modelContext.save()
             print("✅ [RecordingForm] Recording saved successfully")
+            autoSavedRecording = recording
+            return recording
         } catch {
             print("❌ [RecordingForm] Failed to save recording: \(error)")
+            return nil
         }
-
-        onComplete()
     }
     
     func saveEdit() {

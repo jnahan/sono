@@ -11,6 +11,7 @@ struct RecorderView: View {
     @State private var pendingAudioURL: URL? = nil
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
+    @State private var navigateToRecording: Recording? = nil
     
     var body: some View {
         NavigationStack {
@@ -83,8 +84,16 @@ struct RecorderView: View {
                         pendingAudioURL = nil
                         showTranscriptionDetail = false
                         dismiss()
+                    },
+                    onSaveComplete: { recording in
+                        pendingAudioURL = nil
+                        showTranscriptionDetail = false
+                        navigateToRecording = recording
                     }
                 )
+            }
+            .navigationDestination(item: $navigateToRecording) { recording in
+                RecordingDetailsView(recording: recording)
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 // Auto-save recording if app is backgrounded or terminated

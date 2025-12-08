@@ -19,27 +19,29 @@ struct MainTabView: View {
 
     @AppStorage("selectedTab") private var selectedTab = 0
     @State private var showPlusButton = true
-    
+
     @State private var showNewRecordingSheet = false
     @State private var showRecorderScreen = false
     @State private var showFilePicker = false
     @State private var showVideoPicker = false
     // used to pass file url from picker to transcription screen
     @State private var pendingAudioURL: URL?
+    @State private var navigateToRecording: Recording? = nil
     
     var body: some View {
-        ZStack {
-            TabView(selection: $selectedTab) {
-                RecordingsView()
-                    .environment(\.showPlusButton, $showPlusButton)
-                    .tabItem { EmptyView() } // Hide default tab item
-                    .tag(0)
-                
-                CollectionsView()
-                    .environment(\.showPlusButton, $showPlusButton)
-                    .tabItem { EmptyView() } // Hide default tab item
-                    .tag(1)
-            }
+        NavigationStack {
+            ZStack {
+                TabView(selection: $selectedTab) {
+                    RecordingsView()
+                        .environment(\.showPlusButton, $showPlusButton)
+                        .tabItem { EmptyView() } // Hide default tab item
+                        .tag(0)
+
+                    CollectionsView()
+                        .environment(\.showPlusButton, $showPlusButton)
+                        .tabItem { EmptyView() } // Hide default tab item
+                        .tag(1)
+                }
             
             // Custom Tab Bar
             VStack {
@@ -93,6 +95,10 @@ struct MainTabView: View {
                         )
                     }
                 }
+            }
+            }
+            .navigationDestination(item: $navigateToRecording) { recording in
+                RecordingDetailsView(recording: recording)
             }
         }
         .onAppear {
@@ -154,7 +160,12 @@ struct MainTabView: View {
                 onExit: {
                     pendingAudioURL = nil
                     selectedTab = 0  // Go back to recordings home tab
+                },
+                onSaveComplete: { recording in
+                    pendingAudioURL = nil
+                    navigateToRecording = recording
                 }
             )
-        }    }
+        }
+    }
 }
