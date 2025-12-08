@@ -135,20 +135,12 @@ struct RecordingsView: View {
                     }
                 )
             }
-            .navigationDestination(item: $selectedRecordingForProgress) { recording in
-                TranscriptionProgressView(recording: recording, onComplete: { completedRecording in
-                    // When transcription completes, replace TranscriptionProgressView with RecordingDetailsView
-                    // Clear progress selection and set details selection
+            .sheet(item: $selectedRecordingForProgress) { recording in
+                TranscriptionProgressSheet(recording: recording, onComplete: { completedRecording in
+                    // When transcription completes, dismiss sheet and navigate to RecordingDetailsView
                     selectedRecordingForProgress = nil
                     selectedRecording = completedRecording
                 })
-                    .onAppear { showPlusButton.wrappedValue = false }
-                    .onDisappear {
-                        // When leaving TranscriptionProgressView, clear selection
-                        if selectedRecordingForProgress?.id == recording.id {
-                            selectedRecordingForProgress = nil
-                        }
-                    }
             }
             .navigationDestination(item: $selectedRecording) { recording in
                 RecordingDetailsView(recording: recording, onDismiss: {
@@ -176,16 +168,7 @@ struct RecordingsView: View {
                 }
             }
             .onChange(of: selectedRecordingForProgress) { oldValue, newValue in
-                // When navigating to progress view, add to path
-                if newValue != nil {
-                    navigationPath.append("progress-\(newValue!.id)")
-                } else if oldValue != nil {
-                    // When clearing, ensure path is cleared
-                    if navigationPath.count > 0 {
-                        navigationPath.removeLast()
-                    }
-                    showPlusButton.wrappedValue = true
-                }
+                // Sheet presentation is handled automatically, no path management needed
             }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(

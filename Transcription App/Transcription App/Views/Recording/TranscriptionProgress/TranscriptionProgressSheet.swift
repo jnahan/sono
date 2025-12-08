@@ -1,13 +1,12 @@
 import SwiftUI
 import SwiftData
 
-struct TranscriptionProgressView: View {
+struct TranscriptionProgressSheet: View {
     let recording: Recording
     var onComplete: ((Recording) -> Void)? = nil
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.showPlusButton) private var showPlusButton
     
     @State private var transcriptionProgress: Double = 0.0
     @State private var transcriptionError: String?
@@ -73,7 +72,8 @@ struct TranscriptionProgressView: View {
             }
             .padding(.horizontal, AppConstants.UI.Spacing.large)
         }
-        .navigationBarHidden(true)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
         .onAppear {
             // Check if already completed when view appears
             if recording.status == .completed {
