@@ -43,15 +43,37 @@ final class AudioPlaybackService: ObservableObject {
         }
 
         do {
+            // Configure audio session for playback
+            let session = AVAudioSession.sharedInstance()
+            
+            // Deactivate first to ensure clean state
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            
+            // Use .playback category for pure playback (not .playAndRecord)
+            try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
+            try session.setActive(true)
+            
             player = try AVAudioPlayer(contentsOf: url)
             currentURL = url
-            player?.prepareToPlay()
+            
+            // Enable rate and enable metering if needed
+            player?.enableRate = false
+            player?.numberOfLoops = 0
+            
+            let prepared = player?.prepareToPlay() ?? false
             duration = player?.duration ?? 0
             currentTime = 0
             progress = 0
-            print("✅ [AudioPlayback] Preloaded: \(url.lastPathComponent)")
+            
+            if prepared {
+                print("✅ [AudioPlayback] Preloaded: \(url.lastPathComponent), duration: \(duration)s")
+            } else {
+                print("⚠️ [AudioPlayback] Preloaded but prepareToPlay() returned false")
+            }
         } catch {
-            print("❌ [AudioPlayback] Failed to load: \(error)")
+            print("❌ [AudioPlayback] Failed to load: \(error.localizedDescription)")
+            player = nil
+            currentURL = nil
         }
     }
 
@@ -77,11 +99,50 @@ final class AudioPlaybackService: ObservableObject {
 
     /// Plays the currently loaded audio
     func play() {
-        guard let player else { return }
+        guard let player else {
+            print("⚠️ [AudioPlayback] Cannot play - no player loaded")
+            return
+        }
 
-        player.play()
-        isPlaying = true
-        startProgressTracking()
+        do {
+            // Deactivate session first to ensure clean state
+            let session = AVAudioSession.sharedInstance()
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+            
+            // Configure audio session for playback
+            // Use .playback category for pure playback
+            try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
+            try session.setActive(true)
+            
+            print("✅ [AudioPlayback] Audio session configured and activated")
+        } catch {
+            print("⚠️ [AudioPlayback] Failed to configure audio session: \(error.localizedDescription)")
+            return
+        }
+
+        // Ensure player is prepared
+        if !player.prepareToPlay() {
+            print("⚠️ [AudioPlayback] prepareToPlay() returned false")
+        }
+        
+        let success = player.play()
+        if success {
+            // Verify player is actually playing after a brief moment
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self, let player = self.player else { return }
+                if player.isPlaying {
+                    self.isPlaying = true
+                    self.startProgressTracking()
+                    print("✅ [AudioPlayback] Started playing - verified isPlaying=true")
+                } else {
+                    print("❌ [AudioPlayback] player.play() returned true but isPlaying=false")
+                    self.isPlaying = false
+                }
+            }
+        } else {
+            print("❌ [AudioPlayback] player.play() returned false")
+            isPlaying = false
+        }
     }
 
     /// Pauses playback
@@ -143,7 +204,20 @@ final class AudioPlaybackService: ObservableObject {
     }
 
     private func updateProgress() {
-        guard let player else { return }
+        guard let player else {
+            // Player was deallocated, stop tracking
+            isPlaying = false
+            stopProgressTracking()
+            return
+        }
+
+        // Sync isPlaying state with actual player state
+        if player.isPlaying != isPlaying {
+            isPlaying = player.isPlaying
+            if !isPlaying {
+                stopProgressTracking()
+            }
+        }
 
         currentTime = player.currentTime
         progress = player.duration > 0 ? player.currentTime / player.duration : 0
@@ -152,6 +226,7 @@ final class AudioPlaybackService: ObservableObject {
         if !player.isPlaying && isPlaying {
             isPlaying = false
             stopProgressTracking()
+            print("✅ [AudioPlayback] Playback finished")
         }
     }
 }

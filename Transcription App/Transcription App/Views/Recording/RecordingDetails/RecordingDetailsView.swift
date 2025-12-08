@@ -442,14 +442,25 @@ struct RecordingDetailsView: View {
             return
         }
 
+        // Update UI state first (before database changes)
         isTranscribing = true
         transcriptionProgress = 0.0
         transcriptionError = nil
-        recording.status = .inProgress
-        recording.transcriptionStartedAt = Date()
-        recording.failureReason = nil
-
+        
+        // Update recording status on MainActor to avoid navigation issues
         Task { @MainActor in
+            recording.status = .inProgress
+            recording.transcriptionStartedAt = Date()
+            recording.failureReason = nil
+            
+            // Save initial status update
+            do {
+                try modelContext.save()
+            } catch {
+                print("⚠️ [RecordingDetails] Failed to save initial status: \(error)")
+            }
+            
+            // Start transcription
             do {
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
@@ -457,7 +468,7 @@ struct RecordingDetailsView: View {
                     }
                 }
 
-                // Update recording with transcription
+                // Update recording with transcription results
                 recording.fullText = result.text
                 recording.language = result.language
                 recording.status = .completed
@@ -490,6 +501,7 @@ struct RecordingDetailsView: View {
                     transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
                     recording.status = .failed
                     recording.failureReason = transcriptionError
+                    try? modelContext.save()
                 }
             } catch {
                 isTranscribing = false
