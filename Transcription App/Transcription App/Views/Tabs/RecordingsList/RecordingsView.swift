@@ -12,14 +12,16 @@ struct RecordingsView: View {
     @State private var searchText = ""
     @State private var filteredRecordings: [Recording] = []
     @State private var selectedRecording: Recording?
+    @State private var selectedRecordingForProgress: Recording?
     @State private var showSettings = false
     @State private var isSelectionMode = false
     @State private var selectedRecordings: Set<UUID> = []
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
+    @State private var navigationPath = NavigationPath()
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 // Gradient at absolute top of screen (when empty)
                 if filteredRecordings.isEmpty {
@@ -133,14 +135,56 @@ struct RecordingsView: View {
                     }
                 )
             }
-            .navigationDestination(item: $selectedRecording) { recording in
-                RecordingDetailsView(recording: recording)
+            .navigationDestination(item: $selectedRecordingForProgress) { recording in
+                TranscriptionProgressView(recording: recording, onComplete: { completedRecording in
+                    // When transcription completes, replace TranscriptionProgressView with RecordingDetailsView
+                    // Clear progress selection and set details selection
+                    selectedRecordingForProgress = nil
+                    selectedRecording = completedRecording
+                })
                     .onAppear { showPlusButton.wrappedValue = false }
+                    .onDisappear {
+                        // When leaving TranscriptionProgressView, clear selection
+                        if selectedRecordingForProgress?.id == recording.id {
+                            selectedRecordingForProgress = nil
+                        }
+                    }
             }
-            .onChange(of: AudioPlayerManager.shared.navigateToRecording) { _, recording in
-                if let recording = recording {
-                    selectedRecording = recording
-                    AudioPlayerManager.shared.navigateToRecording = nil // Clear trigger
+            .navigationDestination(item: $selectedRecording) { recording in
+                RecordingDetailsView(recording: recording, onDismiss: {
+                    // Explicitly clear selection to pop back to RecordingsView
+                    selectedRecording = nil
+                    if navigationPath.count > 0 {
+                        navigationPath.removeLast(navigationPath.count)
+                    }
+                })
+                    .onAppear { showPlusButton.wrappedValue = false }
+                    .onDisappear {
+                        if selectedRecording?.id == recording.id {
+                            selectedRecording = nil
+                        }
+                    }
+            }
+            .onChange(of: selectedRecording) { oldValue, newValue in
+                // When navigating to a recording, add to path
+                if newValue != nil {
+                    navigationPath.append("recording-\(newValue!.id)")
+                } else if oldValue != nil {
+                    // When clearing, ensure path is cleared
+                    navigationPath.removeLast(navigationPath.count)
+                    showPlusButton.wrappedValue = true
+                }
+            }
+            .onChange(of: selectedRecordingForProgress) { oldValue, newValue in
+                // When navigating to progress view, add to path
+                if newValue != nil {
+                    navigationPath.append("progress-\(newValue!.id)")
+                } else if oldValue != nil {
+                    // When clearing, ensure path is cleared
+                    if navigationPath.count > 0 {
+                        navigationPath.removeLast()
+                    }
+                    showPlusButton.wrappedValue = true
                 }
             }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
@@ -179,7 +223,13 @@ struct RecordingsView: View {
                                     selectedRecordings.insert(recording.id)
                                 }
                             } else {
-                                selectedRecording = recording
+                                // If transcription is in progress, show progress view
+                                // Otherwise show details
+                                if recording.status == .inProgress {
+                                    selectedRecordingForProgress = recording
+                                } else {
+                                    selectedRecording = recording
+                                }
                             }
                         } label: {
                             RecordingRowView(
@@ -328,9 +378,4 @@ struct RecordingsView: View {
     private func copySelectedRecordings() {
         viewModel.copyRecordings(selectedRecordingsArray)
     }
-}
-
-#Preview {
-    RecordingsView()
-        .modelContainer(for: [Recording.self, RecordingSegment.self, Collection.self], inMemory: true)
 }

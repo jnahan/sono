@@ -156,13 +156,10 @@ struct CollectionDetailView: View {
             )
         }
         .navigationDestination(item: $selectedRecording) { recording in
-            RecordingDetailsView(recording: recording)
-        }
-        .onChange(of: AudioPlayerManager.shared.navigateToRecording) { _, recording in
-            if let recording = recording {
-                selectedRecording = recording
-                AudioPlayerManager.shared.navigateToRecording = nil // Clear trigger
-            }
+            RecordingDetailsView(recording: recording, onDismiss: {
+                // Explicitly clear selection to navigate back to CollectionDetailView
+                selectedRecording = nil
+            })
         }
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(

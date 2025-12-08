@@ -15,6 +15,7 @@ struct RecordingRowView: View {
     
     @State private var showMenu = false
     @State private var showDeleteConfirm = false
+    @StateObject private var progressManager = TranscriptionProgressManager.shared
     
     // MARK: - Body
     var body: some View {
@@ -60,8 +61,23 @@ struct RecordingRowView: View {
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
-                    // Transcript preview
-                    if !recording.fullText.isEmpty {
+                    // Transcript preview or progress indicator
+                    if recording.status == .inProgress {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                .scaleEffect(0.8)
+                            if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
+                                Text("Transcribing \(Int(progress * 100))%")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.warmGray600)
+                            } else {
+                                Text("Transcribing...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.warmGray600)
+                            }
+                        }
+                    } else if !recording.fullText.isEmpty {
                         Text(recording.fullText)
                             .font(.system(size: 14))
                             .foregroundColor(.warmGray600)

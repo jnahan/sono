@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct RecorderView: View {
+    let onDismiss: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Collection.name) private var collections: [Collection]
     @Environment(\.modelContext) private var modelContext
@@ -11,7 +12,10 @@ struct RecorderView: View {
     @State private var pendingAudioURL: URL? = nil
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
-    @State private var navigateToRecording: Recording? = nil
+    
+    init(onDismiss: (() -> Void)? = nil) {
+        self.onDismiss = onDismiss
+    }
     
     var body: some View {
         NavigationStack {
@@ -86,14 +90,17 @@ struct RecorderView: View {
                         dismiss()
                     },
                     onSaveComplete: { recording in
+                        // Clear state - this will dismiss RecordingFormView's fullScreenCover
                         pendingAudioURL = nil
                         showTranscriptionDetail = false
-                        navigateToRecording = recording
+                        // Then dismiss RecorderView to go back to home
+                        // Use a small delay to ensure RecordingFormView dismisses first
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
+                            onDismiss?()
+                        }
                     }
                 )
-            }
-            .navigationDestination(item: $navigateToRecording) { recording in
-                RecordingDetailsView(recording: recording)
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 // Auto-save recording if app is backgrounded or terminated

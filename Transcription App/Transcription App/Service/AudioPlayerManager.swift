@@ -13,6 +13,7 @@ class AudioPlayerManager: ObservableObject {
     @Published var player = Player()
     @Published var activeRecordingDetailsId: UUID? = nil // Track which recording is in details view
     @Published var navigateToRecording: Recording? = nil // Trigger navigation to recording details
+    @Published var shouldNavigateAfterRecorderDismiss: Recording? = nil // Navigate after RecorderView is dismissed
     
     private init() {}
     

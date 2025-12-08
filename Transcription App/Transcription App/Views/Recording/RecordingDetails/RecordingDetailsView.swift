@@ -10,11 +10,19 @@ enum RecordingDetailTab {
 
 struct RecordingDetailsView: View {
     let recording: Recording
+    var onDismiss: (() -> Void)? = nil
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.isPresented) private var isPresented
+    @Environment(\.showPlusButton) private var showPlusButton
     @Query(sort: \Collection.name) private var collections: [Collection]
+    
+    init(recording: Recording, onDismiss: (() -> Void)? = nil) {
+        self.recording = recording
+        self.onDismiss = onDismiss
+    }
 
     @State private var showNotePopup = false
     @State private var showEditRecording = false
@@ -42,7 +50,22 @@ struct RecordingDetailsView: View {
                     title: "",
                     leftIcon: "caret-left",
                     rightIcon: "dots-three-bold",
-                    onLeftTap: { dismiss() },
+                    onLeftTap: {
+                        print("🟣 RecordingDetailsView: BACK BUTTON TAPPED")
+                        print("   - isPresented: \(isPresented)")
+                        print("   - hasCallback: \(onDismiss != nil)")
+                        print("   - recording.id: \(recording.id.uuidString.prefix(8))")
+                        // Show tab bar when going back
+                        showPlusButton.wrappedValue = true
+                        // ALWAYS use callback if provided - this ensures we're in RecordingsView's stack
+                        if let onDismiss = onDismiss {
+                            print("   - Using callback to navigate back")
+                            onDismiss()
+                        } else {
+                            print("   ⚠️ ERROR: No callback provided! Using dismiss() - may go to wrong view")
+                            dismiss()
+                        }
+                    },
                     onRightTap: { showMenu = true }
                 )
                 
@@ -172,6 +195,18 @@ struct RecordingDetailsView: View {
             )
         }
         .onAppear {
+            print("🟣 RecordingDetailsView: APPEARED")
+            print("   - isPresented: \(isPresented)")
+            print("   - hasCallback: \(onDismiss != nil)")
+            print("   - recording.id: \(recording.id.uuidString.prefix(8))")
+            if !isPresented && onDismiss != nil {
+                print("   ✅ In NavigationStack with callback - should work correctly")
+            } else if isPresented {
+                print("   ⚠️ WARNING: Presented modally - may have navigation issues")
+            } else {
+                print("   ⚠️ WARNING: No callback - may have navigation issues")
+            }
+            
             // Hide preview bar and handle audio switching
             let audioManager = AudioPlayerManager.shared
 
@@ -233,9 +268,13 @@ struct RecordingDetailsView: View {
             }
         }
         .onDisappear {
+            print("🟣 RecordingDetailsView: DISAPPEARED")
+            print("   - isPresented: \(isPresented)")
             audioPlayback.stop()
             // Clear active recording details ID to show preview bar again
             AudioPlayerManager.shared.clearActiveRecordingDetails()
+            // Ensure tab bar is shown when leaving details view
+            showPlusButton.wrappedValue = true
         }
     }
     

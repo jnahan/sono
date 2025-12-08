@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */; };
+		52F11FFC6686B1A707651C26 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */; };
 		5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */; };
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionListView.swift */; };
@@ -27,7 +27,6 @@
 		5D12FFF02EE33C7400F1FAE2 /* LLM in Frameworks */ = {isa = PBXBuildFile; productRef = 5D12FFEF2EE33C7400F1FAE2 /* LLM */; };
 		5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF72EE3500100F1FAE2 /* LLMService.swift */; };
 		5D12FFF82EE3500200F1FAE2 /* RecordingDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */; };
-		5D12FFFC2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */; };
 		5D12FFFE2EE3B9F000F1FAE2 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */; };
 		5D1300002EE3BA0000F1FAE2 /* AskSonoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D12FFFF2EE3BA0000F1FAE2 /* AskSonoView.swift */; };
 		5D1300052EE3BA3000F1FAE2 /* AudioPlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1300042EE3BA3000F1FAE2 /* AudioPlayerManager.swift */; };
@@ -53,6 +52,7 @@
 		5D962F282ECE935500049626 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F272ECE935500049626 /* Player.swift */; };
 		5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2A2ECEBAC000049626 /* SettingsView.swift */; };
 		5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */; };
+		5D962F2E2ECEBBF900049626 /* TranscriptionProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2F2ECEBBFA00049626 /* TranscriptionProgressView.swift */; };
 		5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */; };
 		5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */; };
 		5DB579022ED84343002DC84D /* RecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579012ED84343002DC84D /* RecorderView.swift */; };
@@ -68,6 +68,7 @@
 		5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */; };
 		5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */; };
 		5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */; };
+		5DC587812EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
 		5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */; };
 		5DDA7CCA2EDD842100AFB6C0 /* View+Shadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC92EDD842100AFB6C0 /* View+Shadow.swift */; };
@@ -75,7 +76,7 @@
 		5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */; };
 		5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */; };
 		5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DE4CA742EDD37D20039A2AA /* Assets.xcassets */; };
-		813E26A12C6C6D09EF563F53 /* TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D01689DC246FCDF3CB5275 /* TranscriptionHelper.swift */; };
+		813E26A12C6C6D09EF563F53 /* Transcription App/Helpers/TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D01689DC246FCDF3CB5275 /* Transcription App/Helpers/TranscriptionHelper.swift */; };
 		81767EC7719D89FF5DB97F80 /* AskSonoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF3D673207A77FC96D4DDB /* AskSonoViewModel.swift */; };
 		8D902EC4EA9C314DA855042A /* TranscriptionProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */; };
 		C899B6D0F8BAFC4A29C09615 /* LLMPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EEB64612AFEDCE986F8B87 /* LLMPrompts.swift */; };
@@ -101,7 +102,6 @@
 		5D0ED1362EE150000003E775 /* LanguageMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageMapper.swift; sourceTree = "<group>"; };
 		5D12FFF72EE3500100F1FAE2 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
 		5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsViewModel.swift; sourceTree = "<group>"; };
-		5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"; sourceTree = "<group>"; };
 		5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		5D12FFFF2EE3BA0000F1FAE2 /* AskSonoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskSonoView.swift; sourceTree = "<group>"; };
 		5D1300042EE3BA3000F1FAE2 /* AudioPlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerManager.swift; sourceTree = "<group>"; };
@@ -127,6 +127,7 @@
 		5D962F272ECE935500049626 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		5D962F2A2ECEBAC000049626 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsView.swift; sourceTree = "<group>"; };
+		5D962F2F2ECEBBFA00049626 /* TranscriptionProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionProgressView.swift; sourceTree = "<group>"; };
 		5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSlider.swift; sourceTree = "<group>"; };
 		5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		5DB579012ED84343002DC84D /* RecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderView.swift; sourceTree = "<group>"; };
@@ -143,6 +144,7 @@
 		5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Transcription-App-Info.plist"; sourceTree = SOURCE_ROOT; };
 		5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
+		5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC92EDD842100AFB6C0 /* View+Shadow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Shadow.swift"; sourceTree = "<group>"; };
@@ -152,10 +154,10 @@
 		5DE4CA742EDD37D20039A2AA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A5EEB64612AFEDCE986F8B87 /* LLMPrompts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LLMPrompts.swift; sourceTree = "<group>"; };
 		B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TranscriptionProgressManager.swift; path = "Transcription App/Service/TranscriptionProgressManager.swift"; sourceTree = SOURCE_ROOT; };
-		E4D01689DC246FCDF3CB5275 /* TranscriptionHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Helpers/TranscriptionHelper.swift"; sourceTree = SOURCE_ROOT; };
+		E4D01689DC246FCDF3CB5275 /* Transcription App/Helpers/TranscriptionHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Helpers/TranscriptionHelper.swift"; sourceTree = SOURCE_ROOT; };
 		F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlaybackService.swift; sourceTree = "<group>"; };
 		F4DF3D673207A77FC96D4DDB /* AskSonoViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AskSonoViewModel.swift; sourceTree = "<group>"; };
-		FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
+		FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,7 +176,7 @@
 		4D59D44B26605265FFB30D97 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				E4D01689DC246FCDF3CB5275 /* TranscriptionHelper.swift */,
+				E4D01689DC246FCDF3CB5275 /* Transcription App/Helpers/TranscriptionHelper.swift */,
 			);
 			name = Helpers;
 			sourceTree = "<group>";
@@ -229,7 +231,7 @@
 		5D12FFF12EE3411000F1FAE2 /* LLM */ = {
 			isa = PBXGroup;
 			children = (
-				5D12FFFB2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */,
+				5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */,
 			);
 			path = LLM;
 			sourceTree = "<group>";
@@ -334,6 +336,7 @@
 				5D0ED1072EDFCF760003E775 /* RecordingForm */,
 				5DDA7CD22EDD86EC00AFB6C0 /* RecordingDetails */,
 				5DDA7CD12EDD86C100AFB6C0 /* Recorder */,
+				5DDA7CD32EDD86ED00AFB6C0 /* TranscriptionProgress */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -442,10 +445,18 @@
 			path = RecordingDetails;
 			sourceTree = "<group>";
 		};
+		5DDA7CD32EDD86ED00AFB6C0 /* TranscriptionProgress */ = {
+			isa = PBXGroup;
+			children = (
+				5D962F2F2ECEBBFA00049626 /* TranscriptionProgressView.swift */,
+			);
+			path = TranscriptionProgress;
+			sourceTree = "<group>";
+		};
 		9DA34ED9D8CE5048F6995514 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */,
+				FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -500,7 +511,7 @@
 			mainGroup = 5D79259F2ECD8E4A002889A6;
 			packageReferences = (
 				5D70377A2ECD90B200D061E3 /* XCRemoteSwiftPackageReference "whisperkit" */,
-				5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */,
+				5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */,
 			);
 			productRefGroup = 5D7925A92ECD8E4A002889A6 /* Products */;
 			projectDirPath = "";
@@ -517,10 +528,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */,
-				5D12FFFC2EE3A6F900F1FAE2 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */,
 				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
+				5DC587812EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -538,6 +549,7 @@
 				5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */,
 				5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */,
 				5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */,
+				5D962F2E2ECEBBF900049626 /* TranscriptionProgressView.swift in Sources */,
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */,
 				5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */,
@@ -593,9 +605,9 @@
 				5DB579102ED8BF6E002DC84D /* RecordingRowView.swift in Sources */,
 				C899B6D0F8BAFC4A29C09615 /* LLMPrompts.swift in Sources */,
 				81767EC7719D89FF5DB97F80 /* AskSonoViewModel.swift in Sources */,
-				813E26A12C6C6D09EF563F53 /* TranscriptionHelper.swift in Sources */,
+				813E26A12C6C6D09EF563F53 /* Transcription App/Helpers/TranscriptionHelper.swift in Sources */,
 				E805026C9245257B5A76A46D /* AudioPlaybackService.swift in Sources */,
-				52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */,
+				52F11FFC6686B1A707651C26 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift in Sources */,
 				8D902EC4EA9C314DA855042A /* TranscriptionProgressManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -812,7 +824,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */ = {
+		5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eastriverlee/LLM.swift";
 			requirement = {
@@ -833,7 +845,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		5D12FFEF2EE33C7400F1FAE2 /* LLM */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */;
+			package = 5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */;
 			productName = LLM;
 		};
 		5D70377B2ECD90B200D061E3 /* WhisperKit */ = {

@@ -132,10 +132,12 @@ struct RecordingFormView: View {
                             isPresented = false
                             dismiss()
                         } else {
-                            // Save recording and call completion handler
+                            // Save recording and dismiss - go back to home
                             if let savedRecording = viewModel.saveRecording(modelContext: modelContext) {
-                                isPresented = false
+                                // Call onSaveComplete callback - parent will handle dismissal
                                 onSaveComplete?(savedRecording)
+                                // Set isPresented to false to trigger binding update
+                                isPresented = false
                             }
                         }
                     }
