@@ -83,9 +83,10 @@ struct TranscriptionProgressSheet: View {
                     try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
                     onComplete?(recording)
                 }
-            } else if recording.status == .failed {
-                transcriptionError = recording.failureReason ?? "Transcription failed"
-            } else {
+            } else if recording.status == .failed || recording.status == .notStarted {
+                // Start transcription if not already in progress
+                startTranscription()
+            } else if recording.status == .inProgress {
                 // Get initial progress if available
                 if let progress = progressManager.getProgress(for: recording.id) {
                     transcriptionProgress = progress
@@ -109,6 +110,81 @@ struct TranscriptionProgressSheet: View {
                 }
             } else if newStatus == .failed {
                 transcriptionError = recording.failureReason ?? "Transcription failed"
+            }
+        }
+    }
+    
+    // MARK: - Transcription
+    
+    private func startTranscription() {
+        guard let url = recording.resolvedURL else {
+            transcriptionError = "Audio file not found"
+            return
+        }
+        
+        // Update recording status
+        Task { @MainActor in
+            recording.status = .inProgress
+            recording.transcriptionStartedAt = Date()
+            recording.failureReason = nil
+            
+            // Save initial status update
+            do {
+                try modelContext.save()
+            } catch {
+                print("⚠️ [TranscriptionProgressSheet] Failed to save initial status: \(error)")
+            }
+            
+            // Start transcription
+            do {
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                    Task { @MainActor in
+                        self.transcriptionProgress = progress
+                        // Update shared progress manager for cross-view updates
+                        TranscriptionProgressManager.shared.updateProgress(for: recording.id, progress: progress)
+                    }
+                }
+                
+                // Update recording with transcription results
+                recording.fullText = result.text
+                recording.language = result.language
+                recording.status = .completed
+                recording.failureReason = nil
+                
+                // Clear existing segments and add new ones
+                recording.segments.removeAll()
+                for segment in result.segments {
+                    let recordingSegment = RecordingSegment(
+                        start: segment.start,
+                        end: segment.end,
+                        text: segment.text
+                    )
+                    modelContext.insert(recordingSegment)
+                    recording.segments.append(recordingSegment)
+                }
+                
+                // Save to database
+                do {
+                    try modelContext.save()
+                    transcriptionProgress = 1.0
+                    TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
+                    print("✅ [TranscriptionProgressSheet] Transcription completed successfully")
+                } catch {
+                    transcriptionProgress = 0.0
+                    transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
+                    recording.status = .failed
+                    recording.failureReason = transcriptionError
+                    try? modelContext.save()
+                }
+            } catch {
+                transcriptionProgress = 0.0
+                transcriptionError = "Transcription failed: \(error.localizedDescription)"
+                recording.status = .failed
+                recording.failureReason = transcriptionError
+                TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
+                
+                // Save error state
+                try? modelContext.save()
             }
         }
     }

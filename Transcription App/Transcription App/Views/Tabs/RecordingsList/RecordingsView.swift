@@ -206,12 +206,13 @@ struct RecordingsView: View {
                                     selectedRecordings.insert(recording.id)
                                 }
                             } else {
-                                // If transcription is in progress, show progress view
-                                // Otherwise show details
-                                if recording.status == .inProgress {
-                                    selectedRecordingForProgress = recording
-                                } else {
+                                // Only allow navigation to details if transcription is completed
+                                // Otherwise show progress sheet
+                                if recording.status == .completed {
                                     selectedRecording = recording
+                                } else {
+                                    // Show progress sheet for in-progress, failed, or notStarted
+                                    selectedRecordingForProgress = recording
                                 }
                             }
                         } label: {

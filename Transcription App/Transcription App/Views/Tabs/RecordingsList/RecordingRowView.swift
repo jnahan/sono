@@ -61,7 +61,7 @@ struct RecordingRowView: View {
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
-                    // Transcript preview or progress indicator
+                    // Transcript preview, progress indicator, or interruption message
                     if recording.status == .inProgress {
                         HStack(spacing: 8) {
                             ProgressView()
@@ -77,6 +77,11 @@ struct RecordingRowView: View {
                                     .foregroundColor(.warmGray600)
                             }
                         }
+                    } else if recording.status == .failed || recording.status == .notStarted {
+                        Text("Transcription interrupted")
+                            .font(.system(size: 14))
+                            .foregroundColor(.warmGray500)
+                            .italic()
                     } else if !recording.fullText.isEmpty {
                         Text(recording.fullText)
                             .font(.system(size: 14))

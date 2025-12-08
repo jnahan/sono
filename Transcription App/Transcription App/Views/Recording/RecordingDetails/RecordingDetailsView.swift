@@ -12,7 +12,6 @@ struct RecordingDetailsView: View {
     let recording: Recording
     var onDismiss: (() -> Void)? = nil
     @StateObject private var audioPlayback = AudioPlaybackService()
-    @StateObject private var progressManager = TranscriptionProgressManager.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.isPresented) private var isPresented
@@ -30,10 +29,7 @@ struct RecordingDetailsView: View {
     @State private var showMenu = false
     @State private var currentActiveSegmentId: UUID?
     @State private var selectedTab: RecordingDetailTab = .transcript
-    @State private var isTranscribing = false
-    @State private var transcriptionProgress: Double = 0.0
-    @State private var transcriptionError: String?
-    @State private var showWarningToast = false
+    @State private var showTranscriptionProgressSheet = false
     
     private var showTimestamps: Bool {
         SettingsManager.shared.showTimestamps
@@ -239,33 +235,6 @@ struct RecordingDetailsView: View {
             // Set active recording details ID to hide preview bar
             audioManager.activeRecordingDetailsId = recording.id
 
-            // Check if transcription is in progress
-            if recording.status == .inProgress {
-                // Check for active transcription progress
-                if let progress = progressManager.getProgress(for: recording.id) {
-                    transcriptionProgress = progress
-                }
-            }
-
-            // Show warning toast if recording is incomplete
-            if recording.status == .failed || recording.status == .notStarted {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showWarningToast = true
-                }
-            }
-        }
-        .onChange(of: progressManager.activeTranscriptions[recording.id]) { _, newProgress in
-            if let progress = newProgress {
-                transcriptionProgress = progress
-            }
-        }
-        .onChange(of: recording.status) { oldStatus, newStatus in
-            // When transcription completes, hide the warning toast
-            if oldStatus == .inProgress && newStatus == .completed {
-                withAnimation {
-                    showWarningToast = false
-                }
-            }
         }
         .onDisappear {
             print("🟣 RecordingDetailsView: DISAPPEARED")
@@ -284,104 +253,7 @@ struct RecordingDetailsView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    // Show loading state for in-progress transcriptions
-                    if recording.status == .inProgress {
-                        VStack(spacing: 20) {
-                            VStack(spacing: 12) {
-                                HStack(spacing: 12) {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
-                                    if transcriptionProgress > 0 {
-                                        Text("\(Int(transcriptionProgress * 100))% complete")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.baseBlack)
-                                    } else {
-                                        Text("Transcribing...")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.baseBlack)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .center)
-
-                                Text("Please do not close the app until transcription is complete")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.warmGray500)
-                                    .multilineTextAlignment(.center)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                            }
-                            .padding(.top, 24)
-
-                            // Show partial text if available
-                            if !recording.fullText.isEmpty {
-                                Divider()
-                                    .padding(.vertical, 16)
-
-                                Text("Partial Transcript:")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.warmGray500)
-
-                                Text(recording.fullText)
-                                    .font(.custom("Inter-Regular", size: 16))
-                                    .foregroundColor(.warmGray400)
-                                    .opacity(0.7)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    } else if recording.status == .failed || recording.status == .notStarted {
-                        // Transcribe button for incomplete recordings
-                        VStack(spacing: 16) {
-                            Text(recording.fullText.isEmpty ? "No transcription available" : "Partial transcription available")
-                                .font(.system(size: 14))
-                                .foregroundColor(.warmGray500)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.top, 24)
-
-                            Button {
-                                startTranscription()
-                            } label: {
-                                if isTranscribing {
-                                    HStack(spacing: 12) {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
-                                        if transcriptionProgress > 0 {
-                                            Text("Transcribing \(Int(transcriptionProgress * 100))%")
-                                        } else {
-                                            Text("Transcribing...")
-                                        }
-                                    }
-                                } else {
-                                    Text("Transcribe")
-                                }
-                            }
-                            .buttonStyle(AppButtonStyle())
-                            .disabled(isTranscribing)
-
-                            if let error = transcriptionError {
-                                Text(error)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.red)
-                                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                            }
-
-                            // Show partial text if available
-                            if !recording.fullText.isEmpty {
-                                Divider()
-                                    .padding(.vertical, 16)
-
-                                Text("Partial Transcript:")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.warmGray500)
-
-                                Text(recording.fullText)
-                                    .font(.custom("Inter-Regular", size: 16))
-                                    .foregroundColor(.warmGray400)
-                                    .opacity(0.7)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    } else if showTimestamps && !recording.segments.isEmpty {
+                    if showTimestamps && !recording.segments.isEmpty {
                         // Show segments with timestamps when enabled
                         ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
                             let isActive = audioPlayback.isPlaying &&
@@ -473,87 +345,6 @@ struct RecordingDetailsView: View {
             .id(recording.id)  // Force view recreation when recording changes
     }
     
-    // MARK: - Transcription
-
-    private func startTranscription() {
-        guard let url = recording.resolvedURL else {
-            transcriptionError = "Audio file not found"
-            return
-        }
-
-        // Update UI state first (before database changes)
-        isTranscribing = true
-        transcriptionProgress = 0.0
-        transcriptionError = nil
-        
-        // Update recording status on MainActor to avoid navigation issues
-        Task { @MainActor in
-            recording.status = .inProgress
-            recording.transcriptionStartedAt = Date()
-            recording.failureReason = nil
-            
-            // Save initial status update
-            do {
-                try modelContext.save()
-            } catch {
-                print("⚠️ [RecordingDetails] Failed to save initial status: \(error)")
-            }
-            
-            // Start transcription
-            do {
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
-                    Task { @MainActor in
-                        self.transcriptionProgress = progress
-                    }
-                }
-
-                // Update recording with transcription results
-                recording.fullText = result.text
-                recording.language = result.language
-                recording.status = .completed
-                recording.failureReason = nil
-
-                // Clear existing segments and add new ones
-                recording.segments.removeAll()
-                for segment in result.segments {
-                    let recordingSegment = RecordingSegment(
-                        start: segment.start,
-                        end: segment.end,
-                        text: segment.text
-                    )
-                    modelContext.insert(recordingSegment)
-                    recording.segments.append(recordingSegment)
-                }
-
-                // Save to database
-                do {
-                    try modelContext.save()
-                    transcriptionProgress = 1.0
-                    isTranscribing = false
-                    withAnimation {
-                        showWarningToast = false
-                    }
-                    print("✅ [RecordingDetails] Transcription completed successfully")
-                } catch {
-                    isTranscribing = false
-                    transcriptionProgress = 0.0
-                    transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
-                    recording.status = .failed
-                    recording.failureReason = transcriptionError
-                    try? modelContext.save()
-                }
-            } catch {
-                isTranscribing = false
-                transcriptionProgress = 0.0
-                transcriptionError = "Transcription failed: \(error.localizedDescription)"
-                recording.status = .failed
-                recording.failureReason = transcriptionError
-                
-                // Save error state
-                try? modelContext.save()
-            }
-        }
-    }
 
     // MARK: - Helper Methods
 
