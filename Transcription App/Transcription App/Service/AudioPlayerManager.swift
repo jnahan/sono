@@ -12,8 +12,6 @@ class AudioPlayerManager: ObservableObject {
     @Published var currentRecording: Recording?
     @Published var player = Player()
     @Published var activeRecordingDetailsId: UUID? = nil // Track which recording is in details view
-    @Published var navigateToRecording: Recording? = nil // Trigger navigation to recording details
-    @Published var shouldNavigateAfterRecorderDismiss: Recording? = nil // Navigate after RecorderView is dismissed
     
     private init() {}
     
@@ -26,7 +24,6 @@ class AudioPlayerManager: ObservableObject {
     /// Clear active recording details (called when leaving details view)
     func clearActiveRecordingDetails() {
         activeRecordingDetailsId = nil
-        navigateToRecording = nil
     }
 }
 

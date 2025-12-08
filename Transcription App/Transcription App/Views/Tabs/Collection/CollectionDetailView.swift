@@ -162,18 +162,17 @@ struct CollectionDetailView: View {
             })
         }
         .navigationDestination(item: $viewModel.editingRecording) { recording in
-            RecordingFormView(
-                isPresented: Binding(
-                    get: { viewModel.editingRecording != nil },
-                    set: { if !$0 { viewModel.cancelEdit() } }
-                ),
-                audioURL: nil,
-                existingRecording: recording,
-                collections: collections,
-                modelContext: modelContext,
-                onTranscriptionComplete: {},
-                onExit: nil
-            )
+                RecordingFormView(
+                    isPresented: Binding(
+                        get: { viewModel.editingRecording != nil },
+                        set: { if !$0 { viewModel.cancelEdit() } }
+                    ),
+                    audioURL: nil,
+                    existingRecording: recording,
+                    collections: collections,
+                    modelContext: modelContext,
+                    onExit: nil
+                )
         }
         .sheet(isPresented: $showMoveToCollection) {
             CollectionPickerSheet(

@@ -150,9 +150,6 @@ struct MainTabView: View {
                 existingRecording: nil,
                 collections: collections,
                 modelContext: modelContext,
-                onTranscriptionComplete: {
-                    pendingAudioURL = nil
-                },
                 onExit: {
                     pendingAudioURL = nil
                     selectedTab = 0  // Go back to recordings home tab

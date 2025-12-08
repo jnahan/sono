@@ -79,11 +79,6 @@ struct RecorderView: View {
                     existingRecording: nil,
                     collections: collections,
                     modelContext: modelContext,
-                    onTranscriptionComplete: {
-                        pendingAudioURL = nil
-                        showTranscriptionDetail = false
-                        dismiss()
-                    },
                     onExit: {
                         pendingAudioURL = nil
                         showTranscriptionDetail = false

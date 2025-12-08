@@ -167,9 +167,6 @@ struct RecordingsView: View {
                     showPlusButton.wrappedValue = true
                 }
             }
-            .onChange(of: selectedRecordingForProgress) { oldValue, newValue in
-                // Sheet presentation is handled automatically, no path management needed
-            }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(
                     isPresented: Binding(
@@ -180,7 +177,6 @@ struct RecordingsView: View {
                     existingRecording: recording,
                     collections: collections,
                     modelContext: modelContext,
-                    onTranscriptionComplete: {},
                     onExit: nil
                 )
                 .onAppear { showPlusButton.wrappedValue = false }

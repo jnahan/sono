@@ -8,7 +8,6 @@ struct RecordingFormView: View {
     let existingRecording: Recording?
     let collections: [Collection]
     let modelContext: ModelContext
-    let onTranscriptionComplete: () -> Void
     let onExit: (() -> Void)?
     var onSaveComplete: ((Recording) -> Void)? = nil
 
@@ -22,7 +21,6 @@ struct RecordingFormView: View {
         existingRecording: Recording?,
         collections: [Collection],
         modelContext: ModelContext,
-        onTranscriptionComplete: @escaping () -> Void,
         onExit: (() -> Void)?,
         onSaveComplete: ((Recording) -> Void)? = nil
     ) {
@@ -31,7 +29,6 @@ struct RecordingFormView: View {
         self.existingRecording = existingRecording
         self.collections = collections
         self.modelContext = modelContext
-        self.onTranscriptionComplete = onTranscriptionComplete
         self.onExit = onExit
         self.onSaveComplete = onSaveComplete
         self._viewModel = StateObject(wrappedValue: RecordingFormViewModel(audioURL: audioURL, existingRecording: existingRecording))
