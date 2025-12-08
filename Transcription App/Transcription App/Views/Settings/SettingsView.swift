@@ -257,12 +257,6 @@ struct SettingsView: View {
         }
     }
     
-    private let modelOptions: [SelectionItem] = [
-        SelectionItem(title: "Tiny", description: "Fastest"),
-        SelectionItem(title: "Base", description: "Balanced"),
-        SelectionItem(title: "Small", description: "Highest quality")
-    ]
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -293,10 +287,8 @@ struct SettingsView: View {
                                     SettingsRow(title: "Audio language", value: localLanguageName(for: audioLanguage), imageName: "text-aa")
                                 }
                                 
-                                NavigationLink(destination: SelectionListView(
-                                    title: "Model",
-                                    items: modelOptions,
-                                    selectedItem: $transcriptionModel
+                                NavigationLink(destination: ModelSelectionView(
+                                    selectedModel: $transcriptionModel
                                 )) {
                                     SettingsRow(title: "Model", value: transcriptionModel, imageName: "sparkle")
                                 }
@@ -380,9 +372,8 @@ struct SettingsView: View {
         }
         .onChange(of: transcriptionModel) { oldValue, newValue in
             SettingsManager.shared.transcriptionModel = newValue.lowercased()
-            // Clear the current model so it reloads with the new selection
-            TranscriptionService.shared.clearModelCache()
             // Preload the new model in the background
+            // The service will automatically switch to the new model
             Task {
                 await TranscriptionService.shared.preloadModel()
             }
