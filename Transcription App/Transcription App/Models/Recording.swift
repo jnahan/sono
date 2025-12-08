@@ -16,7 +16,6 @@ enum TranscriptionStatus: String, Codable {
 class Recording {
     // MARK: - Identifiers
     @Attribute(.unique) var id: UUID
-    var schemaVersion: Int = 2 // Track schema version for future migrations
     
     // MARK: - Basic Info
     var title: String
@@ -96,7 +95,6 @@ class Recording {
         transcriptionStartedAt: Date? = nil
     ) {
         self.id = UUID()
-        self.schemaVersion = 2
         self.title = title
 
         // Store relative path from Application Support directory

@@ -9,14 +9,12 @@ struct Transcription_AppApp: App {
         let config = ModelConfiguration(schema: schema)
 
         do {
-            // SwiftData will automatically handle lightweight migration for new fields with defaults
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            // If migration fails, print error details
-            print("❌ Migration failed: \(error)")
+            // If ModelContainer creation fails, delete existing store and create new one
+            print("❌ ModelContainer creation failed: \(error)")
             print("⚠️ Attempting to create fresh ModelContainer...")
 
-            // Last resort: delete existing store and create new one
             let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
             let shmURL = URL.applicationSupportDirectory.appending(path: "default.store-shm")
             let walURL = URL.applicationSupportDirectory.appending(path: "default.store-wal")

@@ -17,7 +17,6 @@
 		5D0ED11B2EE1317D0003E775 /* TimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */; };
 		5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11C2EE131860003E775 /* ShareHelper.swift */; };
 		5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */; };
-		5D0ED1212EE131990003E775 /* AudioHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1202EE131990003E775 /* AudioHelper.swift */; };
 		5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */; };
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
@@ -89,7 +88,6 @@
 		5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatter.swift; sourceTree = "<group>"; };
 		5D0ED11C2EE131860003E775 /* ShareHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHelper.swift; sourceTree = "<group>"; };
 		5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationHelper.swift; sourceTree = "<group>"; };
-		5D0ED1202EE131990003E775 /* AudioHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioHelper.swift; sourceTree = "<group>"; };
 		5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifiable.swift"; sourceTree = "<group>"; };
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
@@ -185,7 +183,6 @@
 				5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */,
 				5D0ED11C2EE131860003E775 /* ShareHelper.swift */,
 				5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */,
-				5D0ED1202EE131990003E775 /* AudioHelper.swift */,
 				5D0ED1362EE150000003E775 /* LanguageMapper.swift */,
 			);
 			path = Utilities;
@@ -526,7 +523,6 @@
 				5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */,
 				5D0ED1372EE150000003E775 /* LanguageMapper.swift in Sources */,
 				5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */,
-				5D0ED1212EE131990003E775 /* AudioHelper.swift in Sources */,
 				5DB579062ED846A6002DC84D /* CollectionsView.swift in Sources */,
 				5D1570692EDA0F450094E13E /* CustomTopBar.swift in Sources */,
 				5D1570632ED965F40094E13E /* CollectionsRowView.swift in Sources */,
