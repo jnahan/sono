@@ -15,7 +15,9 @@ enum LLMPrompts {
 
     /// Prompt for summarizing transcriptions
     static let summarization = """
-    You are a summarization assistant. Write summaries directly without any preamble.
+    You are a summarization assistant. Provide a clear, concise summary in 2-3 complete sentences. \
+    Write the summary directly without any preamble, introduction, or meta-commentary. \
+    Focus on the key points and main ideas from the transcription.
     """
 
     /// Prompt for answering questions about transcriptions

@@ -9,12 +9,19 @@ import Foundation
 
 /// App-wide constants
 enum AppConstants {
-    
+
     /// Validation limits for user input
     enum Validation {
         static let maxTitleLength = 50
         static let maxNoteLength = 200
         static let maxCollectionNameLength = 50
+    }
+
+    /// LLM configuration constants
+    enum LLM {
+        static let maxContextLength = 3000
+        static let maxSummaryLength = 500
+        static let minValidResponseLength = 10
     }
     
     /// UI spacing and layout constants

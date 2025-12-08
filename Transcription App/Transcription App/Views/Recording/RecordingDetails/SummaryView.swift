@@ -194,24 +194,16 @@ class SummaryViewModel: ObservableObject {
         summaryError = nil
         
         do {
-            // Truncate long transcriptions to fit context window
-            let maxInputLength = 3000
-            let transcriptionText: String
-            
-            if recording.fullText.count > maxInputLength {
-                let beginningLength = Int(Double(maxInputLength) * 0.6)
-                let endLength = maxInputLength - beginningLength - 50
-                let beginning = String(recording.fullText.prefix(beginningLength))
-                let end = String(recording.fullText.suffix(endLength))
-                transcriptionText = "\(beginning)\n\n[...]\n\n\(end)"
-            } else {
-                transcriptionText = recording.fullText
-            }
-            
+            // Truncate transcription if needed
+            let truncatedTranscription = TranscriptionHelper.truncate(
+                recording.fullText,
+                maxLength: AppConstants.LLM.maxContextLength
+            )
+
             let prompt = """
             Summarize the following transcription in 2-3 concise sentences:
 
-            \(transcriptionText)
+            \(truncatedTranscription)
             """
 
             // Reset streaming text
@@ -221,26 +213,25 @@ class SummaryViewModel: ObservableObject {
             let summary = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
                 systemPrompt: LLMPrompts.summarization
-            ) { chunk in
-                // Update streaming summary on main thread
+            ) { [weak self] chunk in
+                guard let self = self else { return }
                 Task { @MainActor in
                     self.streamingSummary += chunk
                 }
             }
-            
+
             // Validate response
-            let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            guard !trimmedSummary.isEmpty, trimmedSummary.count >= 10 else {
+            guard LLMResponseValidator.isValid(summary) else {
                 summaryError = "Model returned invalid response. Please try again."
                 isGeneratingSummary = false
                 return
             }
-            
+
             // Limit summary length
-            let finalSummary = trimmedSummary.count > 500
-                ? String(trimmedSummary.prefix(500)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
-                : trimmedSummary
+            let finalSummary = LLMResponseValidator.limit(
+                summary,
+                to: AppConstants.LLM.maxSummaryLength
+            )
             
             recording.summary = finalSummary
             
@@ -257,10 +248,12 @@ class SummaryViewModel: ObservableObject {
             }
             
         } catch {
+            print("❌ [SummaryView] Summary generation error: \(error)")
             summaryError = "Failed to generate summary: \(error.localizedDescription)"
             streamingSummary = ""
         }
-        
+
         isGeneratingSummary = false
+        print("📊 [SummaryView] Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
     }
 }
