@@ -10,7 +10,7 @@ enum RecordingDetailTab {
 
 struct RecordingDetailsView: View {
     let recording: Recording
-    @StateObject private var audioPlayer = Player()
+    @StateObject private var audioPlayback = AudioPlaybackService()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Collection.name) private var collections: [Collection]
@@ -131,9 +131,9 @@ struct RecordingDetailsView: View {
             if selectedTab == .transcript {
                 VStack {
                     Spacer()
-                    
-                    AudioPlayerControls(
-                        audioPlayer: audioPlayer,
+
+                    RecordingPlayerBar(
+                        audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
                         fullText: recording.fullText,
                         onNotePressed: {
@@ -221,16 +221,16 @@ struct RecordingDetailsView: View {
                 
                 // Load and sync to local player
                 if let url = recording.resolvedURL {
-                    audioPlayer.loadAudio(url: url)
-                    audioPlayer.seek(toTime: currentTime)
+                    audioPlayback.preload(url: url)
+                    audioPlayback.seek(to: currentTime)
                     if wasPlaying {
-                        audioPlayer.play(url)
+                        audioPlayback.play()
                     }
                 }
             } else {
                 // Just load the audio
                 if let url = recording.resolvedURL {
-                    audioPlayer.loadAudio(url: url)
+                    audioPlayback.preload(url: url)
                 }
             }
             
@@ -245,7 +245,7 @@ struct RecordingDetailsView: View {
             }
         }
         .onDisappear {
-            audioPlayer.stop()
+            audioPlayback.stop()
             // Clear active recording details ID to show preview bar again
             AudioPlayerManager.shared.clearActiveRecordingDetails()
         }
@@ -313,9 +313,9 @@ struct RecordingDetailsView: View {
                     } else if showTimestamps && !recording.segments.isEmpty {
                         // Show segments with timestamps when enabled
                         ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
-                            let isActive = audioPlayer.isPlaying && 
-                                         audioPlayer.currentTime >= segment.start && 
-                                         audioPlayer.currentTime < segment.end
+                            let isActive = audioPlayback.isPlaying &&
+                                         audioPlayback.currentTime >= segment.start &&
+                                         audioPlayback.currentTime < segment.end
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(TimeFormatter.formatTimestamp(segment.start))
@@ -333,12 +333,12 @@ struct RecordingDetailsView: View {
                             .onTapGesture {
                                 if let url = recording.resolvedURL {
                                     // If already playing, just seek. Otherwise load, seek, and play.
-                                    if audioPlayer.isPlaying {
-                                        audioPlayer.seek(toTime: segment.start)
+                                    if audioPlayback.isPlaying {
+                                        audioPlayback.seek(to: segment.start)
                                     } else {
-                                        audioPlayer.loadAudio(url: url)
-                                        audioPlayer.seek(toTime: segment.start)
-                                        audioPlayer.play(url)
+                                        audioPlayback.preload(url: url)
+                                        audioPlayback.seek(to: segment.start)
+                                        audioPlayback.play()
                                     }
                                 }
                                 // Scroll to tapped segment
@@ -360,13 +360,13 @@ struct RecordingDetailsView: View {
                 .padding(.top, 24)
                 .padding(.bottom, 180)
             }
-            .onChange(of: audioPlayer.currentTime) { _, _ in
-                if audioPlayer.isPlaying && showTimestamps && !recording.segments.isEmpty {
+            .onChange(of: audioPlayback.currentTime) { _, _ in
+                if audioPlayback.isPlaying && showTimestamps && !recording.segments.isEmpty {
                     // Find the currently active segment
                     let sortedSegments = recording.segments.sorted(by: { $0.start < $1.start })
                     if let activeSegment = sortedSegments.first(where: { segment in
-                        audioPlayer.currentTime >= segment.start && 
-                        audioPlayer.currentTime < segment.end
+                        audioPlayback.currentTime >= segment.start && 
+                        audioPlayback.currentTime < segment.end
                     }) {
                         // Only scroll if this is a new active segment
                         if currentActiveSegmentId != activeSegment.id {
@@ -378,7 +378,7 @@ struct RecordingDetailsView: View {
                     }
                 }
             }
-            .onChange(of: audioPlayer.isPlaying) { _, isPlaying in
+            .onChange(of: audioPlayback.isPlaying) { _, isPlaying in
                 // Reset tracking when playback stops
                 if !isPlaying {
                     currentActiveSegmentId = nil
