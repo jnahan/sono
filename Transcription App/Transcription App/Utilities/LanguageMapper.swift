@@ -1,0 +1,270 @@
+import Foundation
+
+/// Utility for mapping between language names, codes, and localized names
+struct LanguageMapper {
+    
+    // MARK: - Language Code Mapping
+    
+    /// Map language names to ISO 639-1 codes used by WhisperKit
+    static let languageCodeMap: [String: String] = [
+        "Afrikaans": "af",
+        "Albanian": "sq",
+        "Amharic": "am",
+        "Arabic": "ar",
+        "Armenian": "hy",
+        "Assamese": "as",
+        "Azerbaijani": "az",
+        "Bashkir": "ba",
+        "Belarusian": "be",
+        "Bengali": "bn",
+        "Bosnian": "bs",
+        "Breton": "br",
+        "Bulgarian": "bg",
+        "Catalan": "ca",
+        "Chinese": "zh",
+        "Croatian": "hr",
+        "Czech": "cs",
+        "Danish": "da",
+        "Dutch": "nl",
+        "English": "en",
+        "Estonian": "et",
+        "Faroese": "fo",
+        "Finnish": "fi",
+        "French": "fr",
+        "Galician": "gl",
+        "Georgian": "ka",
+        "German": "de",
+        "Greek": "el",
+        "Gujarati": "gu",
+        "Haitian Creole": "ht",
+        "Hausa": "ha",
+        "Hawaiian": "haw",
+        "Hebrew": "he",
+        "Hindi": "hi",
+        "Hungarian": "hu",
+        "Icelandic": "is",
+        "Indonesian": "id",
+        "Italian": "it",
+        "Japanese": "ja",
+        "Javanese": "jv",
+        "Kannada": "kn",
+        "Kazakh": "kk",
+        "Khmer": "km",
+        "Korean": "ko",
+        "Lao": "lo",
+        "Latin": "la",
+        "Latvian": "lv",
+        "Lingala": "ln",
+        "Lithuanian": "lt",
+        "Luxembourgish": "lb",
+        "Macedonian": "mk",
+        "Malagasy": "mg",
+        "Malay": "ms",
+        "Malayalam": "ml",
+        "Maltese": "mt",
+        "Māori": "mi",
+        "Marathi": "mr",
+        "Mongolian": "mn",
+        "Burmese": "my",
+        "Nepali": "ne",
+        "Norwegian": "no",
+        "Norwegian Nynorsk": "nn",
+        "Occitan": "oc",
+        "Pashto": "ps",
+        "Persian": "fa",
+        "Polish": "pl",
+        "Portuguese": "pt",
+        "Punjabi": "pa",
+        "Romanian": "ro",
+        "Russian": "ru",
+        "Sanskrit": "sa",
+        "Serbian": "sr",
+        "Shona": "sn",
+        "Sindhi": "sd",
+        "Sinhala": "si",
+        "Slovak": "sk",
+        "Slovenian": "sl",
+        "Somali": "so",
+        "Spanish": "es",
+        "Sundanese": "su",
+        "Swahili": "sw",
+        "Swedish": "sv",
+        "Tagalog": "tl",
+        "Tajik": "tg",
+        "Tamil": "ta",
+        "Tatar": "tt",
+        "Telugu": "te",
+        "Thai": "th",
+        "Tibetan": "bo",
+        "Turkish": "tr",
+        "Turkmen": "tk",
+        "Ukrainian": "uk",
+        "Urdu": "ur",
+        "Uzbek": "uz",
+        "Vietnamese": "vi",
+        "Welsh": "cy",
+        "Yiddish": "yi",
+        "Yoruba": "yo",
+        "Yue Chinese": "yue"
+    ]
+    
+    // MARK: - Localized Name Mapping
+    
+    /// Map English language names to their localized names
+    static let localizedNameMap: [String: String] = [
+        "Auto": "Auto",
+        "Afrikaans": "Afrikaans",
+        "Albanian": "Shqip",
+        "Amharic": "አማርኛ",
+        "Arabic": "العربية",
+        "Armenian": "Հայերեն",
+        "Assamese": "অসমীয়া",
+        "Azerbaijani": "Azərbaycan",
+        "Bashkir": "Башҡорт",
+        "Belarusian": "Беларуская",
+        "Bengali": "বাংলা",
+        "Bosnian": "Bosanski",
+        "Breton": "Brezhoneg",
+        "Bulgarian": "Български",
+        "Catalan": "Català",
+        "Chinese": "中文",
+        "Croatian": "Hrvatski",
+        "Czech": "Čeština",
+        "Danish": "Dansk",
+        "Dutch": "Nederlands",
+        "English": "English",
+        "Estonian": "Eesti",
+        "Faroese": "Føroyskt",
+        "Finnish": "Suomi",
+        "French": "Français",
+        "Galician": "Galego",
+        "Georgian": "ქართული",
+        "German": "Deutsch",
+        "Greek": "Ελληνικά",
+        "Gujarati": "ગુજરાતી",
+        "Haitian Creole": "Kreyòl Ayisyen",
+        "Hausa": "Hausa",
+        "Hawaiian": "ʻŌlelo Hawaiʻi",
+        "Hebrew": "עברית",
+        "Hindi": "हिन्दी",
+        "Hungarian": "Magyar",
+        "Icelandic": "Íslenska",
+        "Indonesian": "Bahasa Indonesia",
+        "Italian": "Italiano",
+        "Japanese": "日本語",
+        "Javanese": "Basa Jawa",
+        "Kannada": "ಕನ್ನಡ",
+        "Kazakh": "Қазақ",
+        "Khmer": "ខ្មែរ",
+        "Korean": "한국어",
+        "Lao": "ລາວ",
+        "Latin": "Latina",
+        "Latvian": "Latviešu",
+        "Lingala": "Lingála",
+        "Lithuanian": "Lietuvių",
+        "Luxembourgish": "Lëtzebuergesch",
+        "Macedonian": "Македонски",
+        "Malagasy": "Malagasy",
+        "Malay": "Bahasa Melayu",
+        "Malayalam": "മലയാളം",
+        "Maltese": "Malti",
+        "Māori": "Te Reo Māori",
+        "Marathi": "मराठी",
+        "Mongolian": "Монгол",
+        "Burmese": "မြန်မာ",
+        "Nepali": "नेपाली",
+        "Norwegian": "Norsk",
+        "Norwegian Nynorsk": "Norsk Nynorsk",
+        "Occitan": "Occitan",
+        "Pashto": "پښتو",
+        "Persian": "فارسی",
+        "Polish": "Polski",
+        "Portuguese": "Português",
+        "Punjabi": "ਪੰਜਾਬੀ",
+        "Romanian": "Română",
+        "Russian": "Русский",
+        "Sanskrit": "संस्कृतम्",
+        "Serbian": "Српски",
+        "Shona": "ChiShona",
+        "Sindhi": "سنڌي",
+        "Sinhala": "සිංහල",
+        "Slovak": "Slovenčina",
+        "Slovenian": "Slovenščina",
+        "Somali": "Soomaali",
+        "Spanish": "Español",
+        "Sundanese": "Basa Sunda",
+        "Swahili": "Kiswahili",
+        "Swedish": "Svenska",
+        "Tagalog": "Tagalog",
+        "Tajik": "Тоҷикӣ",
+        "Tamil": "தமிழ்",
+        "Tatar": "Татар",
+        "Telugu": "తెలుగు",
+        "Thai": "ไทย",
+        "Tibetan": "བོད་སྐད་",
+        "Turkish": "Türkçe",
+        "Turkmen": "Türkmen",
+        "Ukrainian": "Українська",
+        "Urdu": "اردو",
+        "Uzbek": "Oʻzbek",
+        "Vietnamese": "Tiếng Việt",
+        "Welsh": "Cymraeg",
+        "Yiddish": "ייִדיש",
+        "Yoruba": "Yorùbá",
+        "Yue Chinese": "粵語"
+    ]
+    
+    // MARK: - Reverse Mapping (Localized to English)
+    
+    /// Reverse map from localized names to English names
+    static let englishNameMap: [String: String] = {
+        var reverseMap: [String: String] = [:]
+        for (english, localized) in localizedNameMap {
+            reverseMap[localized] = english
+        }
+        return reverseMap
+    }()
+    
+    // MARK: - All Available Languages
+    
+    /// All language names in English (for selection lists)
+    static let allLanguages: [String] = [
+        "Auto", "Afrikaans", "Albanian", "Amharic", "Arabic", "Armenian", "Assamese",
+        "Azerbaijani", "Bashkir", "Belarusian", "Bengali", "Bosnian", "Breton",
+        "Bulgarian", "Catalan", "Chinese", "Croatian", "Czech", "Danish", "Dutch",
+        "English", "Estonian", "Faroese", "Finnish", "French", "Galician", "Georgian",
+        "German", "Greek", "Gujarati", "Haitian Creole", "Hausa", "Hawaiian",
+        "Hebrew", "Hindi", "Hungarian", "Icelandic", "Indonesian", "Italian",
+        "Japanese", "Javanese", "Kannada", "Kazakh", "Khmer", "Korean", "Lao",
+        "Latin", "Latvian", "Lingala", "Lithuanian", "Luxembourgish", "Macedonian",
+        "Malagasy", "Malay", "Malayalam", "Maltese", "Māori", "Marathi", "Mongolian",
+        "Burmese", "Nepali", "Norwegian", "Norwegian Nynorsk", "Occitan", "Pashto",
+        "Persian", "Polish", "Portuguese", "Punjabi", "Romanian", "Russian",
+        "Sanskrit", "Serbian", "Shona", "Sindhi", "Sinhala", "Slovak", "Slovenian",
+        "Somali", "Spanish", "Sundanese", "Swahili", "Swedish", "Tagalog", "Tajik",
+        "Tamil", "Tatar", "Telugu", "Thai", "Tibetan", "Turkish", "Turkmen",
+        "Ukrainian", "Urdu", "Uzbek", "Vietnamese", "Welsh", "Yiddish", "Yoruba",
+        "Yue Chinese"
+    ]
+    
+    // MARK: - Public Methods
+    
+    /// Convert language name to WhisperKit language code
+    /// Returns nil for "Auto" to enable automatic detection
+    static func languageCode(for languageName: String) -> String? {
+        if languageName == "Auto" {
+            return nil
+        }
+        return languageCodeMap[languageName]
+    }
+    
+    /// Convert English language name to localized name
+    static func localizedName(for englishName: String) -> String {
+        return localizedNameMap[englishName] ?? englishName
+    }
+    
+    /// Convert localized language name back to English name
+    static func englishName(for localizedName: String) -> String {
+        return englishNameMap[localizedName] ?? localizedName
+    }
+}

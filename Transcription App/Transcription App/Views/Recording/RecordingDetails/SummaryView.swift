@@ -195,18 +195,7 @@ class SummaryViewModel: ObservableObject {
         
         do {
             // Truncate long transcriptions to fit context window
-            let maxInputLength = 3000
-            let transcriptionText: String
-            
-            if recording.fullText.count > maxInputLength {
-                let beginningLength = Int(Double(maxInputLength) * 0.6)
-                let endLength = maxInputLength - beginningLength - 50
-                let beginning = String(recording.fullText.prefix(beginningLength))
-                let end = String(recording.fullText.suffix(endLength))
-                transcriptionText = "\(beginning)\n\n[...]\n\n\(end)"
-            } else {
-                transcriptionText = recording.fullText
-            }
+            let transcriptionText = TranscriptionTruncator.truncate(recording.fullText)
             
             let systemPrompt = "You are a summarization assistant. Write summaries directly without any preamble."
             

@@ -272,31 +272,12 @@ class RecordingFormViewModel: ObservableObject {
 
         // Perform save operation asynchronously to avoid blocking main thread
         Task { @MainActor in
-            // Create recording with notStarted status
-            let recording = Recording(
-                title: title.trimmed.isEmpty ? url.deletingPathExtension().lastPathComponent : title.trimmed,
+            let recording = await RecordingAutoSaveService.autoSaveRecording(
                 fileURL: url,
-                fullText: "",
-                language: "",
-                notes: "",
-                summary: nil,
-                segments: [],
-                collection: nil,
-                recordedAt: Date(),
-                transcriptionStatus: .notStarted,
-                failureReason: nil,
-                transcriptionStartedAt: nil
+                title: title.trimmed.isEmpty ? nil : title.trimmed,
+                modelContext: modelContext
             )
-
-            modelContext.insert(recording)
-
-            do {
-                try modelContext.save()
-                autoSavedRecording = recording
-                print("✅ [RecordingForm] Recording auto-saved successfully")
-            } catch {
-                print("❌ [RecordingForm] Failed to auto-save recording: \(error)")
-            }
+            autoSavedRecording = recording
         }
     }
 

@@ -108,52 +108,12 @@ struct RecorderView: View {
     /// Auto-save recording if there's an audio file but user hasn't finished
     private func autoSaveRecordingIfNeeded() {
         guard let fileURL = recorderControl.currentFileURL else { return }
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            print("⚠️ [RecorderView] Audio file doesn't exist, skipping auto-save")
-            return
-        }
-
-        // Check if this recording already exists in database
-        let descriptor = FetchDescriptor<Recording>(
-            predicate: #Predicate { recording in
-                recording.filePath.contains(fileURL.lastPathComponent)
-            }
-        )
-
-        if let existingRecordings = try? modelContext.fetch(descriptor),
-           !existingRecordings.isEmpty {
-            print("ℹ️ [RecorderView] Recording already saved, skipping auto-save")
-            return
-        }
-
-        print("💾 [RecorderView] Auto-saving interrupted recording")
-
-        // Create recording with notStarted status
-        let recording = Recording(
-            title: fileURL.deletingPathExtension().lastPathComponent,
-            fileURL: fileURL,
-            fullText: "",
-            language: "",
-            notes: "",
-            summary: nil,
-            segments: [],
-            collection: nil,
-            recordedAt: Date(),
-            transcriptionStatus: .notStarted,
-            failureReason: "Recording was interrupted. The app was closed before transcription could start.",
-            transcriptionStartedAt: nil
-        )
-
-        modelContext.insert(recording)
-
-        // Perform save operation asynchronously to avoid blocking main thread
+        
         Task { @MainActor in
-            do {
-                try modelContext.save()
-                print("✅ [RecorderView] Auto-saved interrupted recording")
-            } catch {
-                print("❌ [RecorderView] Failed to auto-save recording: \(error)")
-            }
+            _ = await RecordingAutoSaveService.autoSaveInterruptedRecording(
+                fileURL: fileURL,
+                modelContext: modelContext
+            )
         }
     }
 }
