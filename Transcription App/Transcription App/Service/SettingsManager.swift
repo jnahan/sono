@@ -8,11 +8,9 @@ class SettingsManager {
     // MARK: - Keys
     private let audioLanguageKey = "audioLanguage"
     private let showTimestampsKey = "showTimestamps"
-    private let transcriptionModelKey = "transcriptionModel"
     
     // MARK: - Defaults
     private let defaultLanguage = "Auto"
-    private let defaultModel = "base"
     
     // MARK: - Initialization
     private init() {}
@@ -42,18 +40,6 @@ class SettingsManager {
         }
         set {
             UserDefaults.standard.set(newValue, forKey: showTimestampsKey)
-        }
-    }
-    
-    // MARK: - Model Settings
-    
-    /// Get the selected transcription model
-    var transcriptionModel: String {
-        get {
-            UserDefaults.standard.string(forKey: transcriptionModelKey) ?? defaultModel
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: transcriptionModelKey)
         }
     }
     

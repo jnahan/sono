@@ -5,12 +5,10 @@ struct SettingsView: View {
     
     @State private var audioLanguage: String
     @State private var showTimestamps: Bool
-    @State private var transcriptionModel: String
     
     init() {
         _audioLanguage = State(initialValue: SettingsManager.shared.audioLanguage)
         _showTimestamps = State(initialValue: SettingsManager.shared.showTimestamps)
-        _transcriptionModel = State(initialValue: SettingsManager.shared.transcriptionModel.capitalized)
     }
     
     // Helper function to convert English name to local name
@@ -257,12 +255,6 @@ struct SettingsView: View {
         }
     }
     
-    private let modelOptions: [SelectionItem] = [
-        SelectionItem(title: "Tiny", description: "Fastest"),
-        SelectionItem(title: "Base", description: "Balanced"),
-        SelectionItem(title: "Small", description: "Highest quality")
-    ]
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -278,8 +270,10 @@ struct SettingsView: View {
                     
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Settings Section: Audio Language, Model, Timestamps
+                            // Settings Section: Transcription Model, Audio Language, Timestamps
                             VStack(spacing: 0) {
+                                SettingsRow(title: "Transcription model", value: "Tiny", imageName: "sparkle", showChevron: false)
+                                
                                 NavigationLink(destination: SelectionListView(
                                     title: "Audio Language",
                                     items: audioLanguages,
@@ -291,14 +285,6 @@ struct SettingsView: View {
                                     )
                                 )) {
                                     SettingsRow(title: "Audio language", value: localLanguageName(for: audioLanguage), imageName: "text-aa")
-                                }
-                                
-                                NavigationLink(destination: SelectionListView(
-                                    title: "Model",
-                                    items: modelOptions,
-                                    selectedItem: $transcriptionModel
-                                )) {
-                                    SettingsRow(title: "Model", value: transcriptionModel, imageName: "sparkle")
                                 }
                                 
                                 HStack(spacing: 16) {
@@ -377,15 +363,6 @@ struct SettingsView: View {
         }
         .onChange(of: showTimestamps) { oldValue, newValue in
             SettingsManager.shared.showTimestamps = newValue
-        }
-        .onChange(of: transcriptionModel) { oldValue, newValue in
-            SettingsManager.shared.transcriptionModel = newValue.lowercased()
-            // Clear the current model so it reloads with the new selection
-            TranscriptionService.shared.clearModelCache()
-            // Preload the new model in the background
-            Task {
-                await TranscriptionService.shared.preloadModel()
-            }
         }
     }
     

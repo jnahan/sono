@@ -8,10 +8,12 @@ class TranscriptionService {
     
     // MARK: - Properties
     private var whisperKit: WhisperKit?
-    private var currentModelName: String?
     private var isLoadingModel = false
     private var preloadTask: Task<Void, Never>? = nil
     private var isModelReady = false // Track if model is fully loaded and ready
+    
+    // MARK: - Constants
+    private let modelName = "tiny" // Only model we support
     
     // MARK: - Initialization
     private init() {
@@ -36,7 +38,7 @@ class TranscriptionService {
         return isLoadingModel
     }
     
-    /// Preloads the selected model to reduce transcription latency
+    /// Preloads the tiny model to reduce transcription latency
     /// This fully initializes the model including loading into Metal buffers
     func preloadModel() async {
         guard !isLoadingModel else {
@@ -44,11 +46,8 @@ class TranscriptionService {
             return
         }
 
-        let settings = SettingsManager.shared
-        let modelName = settings.transcriptionModel
-
         // Only preload if we don't already have the model loaded and ready
-        guard whisperKit == nil || currentModelName != modelName || !isModelReady else {
+        guard whisperKit == nil || !isModelReady else {
             print("ℹ️ [TranscriptionService] Model '\(modelName)' already loaded and ready")
             return
         }
@@ -61,7 +60,6 @@ class TranscriptionService {
         do {
             // Create WhisperKit instance - this downloads model files if needed
             whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
-            currentModelName = modelName
             
             // CRITICAL: WhisperKit does lazy initialization. The model files are downloaded,
             // but the actual model loading (into Metal buffers, etc.) happens on first transcribe().
@@ -162,11 +160,9 @@ class TranscriptionService {
         return tempURL
     }
     
-    /// Clears the cached model files to force re-download
-    /// - Parameter modelName: The model name to clear (e.g., "base", "tiny"). If nil, clears all models.
-    func clearModelCache(modelName: String? = nil) {
+    /// Clears the cached tiny model files to force re-download
+    func clearModelCache() {
         let fileManager = FileManager.default
-        var cleared = false
         
         // WhisperKit stores models in multiple possible locations
         let possibleCachePaths = [
@@ -182,24 +178,17 @@ class TranscriptionService {
             guard fileManager.fileExists(atPath: cacheURL.path) else { continue }
             
             do {
-                if let modelName = modelName {
-                    // Clear specific model - try different naming patterns
-                    let modelVariants = [
-                        cacheURL.appendingPathComponent(modelName),
-                        cacheURL.appendingPathComponent("openai/whisper-\(modelName)"),
-                        cacheURL.appendingPathComponent("whisper-\(modelName)")
-                    ]
-                    
-                    for modelURL in modelVariants {
-                        if fileManager.fileExists(atPath: modelURL.path) {
-                            try fileManager.removeItem(at: modelURL)
-                            cleared = true
-                        }
+                // Clear tiny model - try different naming patterns
+                let modelVariants = [
+                    cacheURL.appendingPathComponent(modelName),
+                    cacheURL.appendingPathComponent("openai/whisper-\(modelName)"),
+                    cacheURL.appendingPathComponent("whisper-\(modelName)")
+                ]
+                
+                for modelURL in modelVariants {
+                    if fileManager.fileExists(atPath: modelURL.path) {
+                        try fileManager.removeItem(at: modelURL)
                     }
-                } else {
-                    // Clear all WhisperKit models
-                    try fileManager.removeItem(at: cacheURL)
-                    cleared = true
                 }
             } catch {
                 // Silently continue
@@ -208,7 +197,6 @@ class TranscriptionService {
         
         // Also clear the in-memory instance
         whisperKit = nil
-        currentModelName = nil
         isModelReady = false
     }
     
@@ -290,30 +278,26 @@ class TranscriptionService {
     /// Transcribes an audio file and returns the result
     /// - Parameters:
     ///   - audioURL: URL of the audio file to transcribe
-    ///   - modelName: Optional model name. If nil, uses the model from settings.
     ///   - languageCode: Optional language code (e.g., "en", "ko"). If nil, uses automatic detection.
     ///   - progressCallback: Optional closure called with progress updates (0.0 to 1.0)
     /// - Returns: TranscriptionResult with text, language, and segments
     /// - Throws: TranscriptionError if transcription fails
-    func transcribe(audioURL: URL, modelName: String? = nil, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
-        // Use provided model or get from settings
+    func transcribe(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
         let settings = SettingsManager.shared
-        let finalModelName = modelName ?? settings.transcriptionModel
-        
+
         // Wait for preload to complete if it's still running
         if let task = preloadTask {
             print("⏳ [TranscriptionService] Waiting for preload to complete...")
             await task.value
             preloadTask = nil
-            print("✅ [TranscriptionService] Preload task completed. isModelReady=\(isModelReady), currentModelName=\(currentModelName ?? "nil")")
+            print("✅ [TranscriptionService] Preload task completed. isModelReady=\(isModelReady)")
         }
 
         // Initialize WhisperKit if needed
-        if whisperKit == nil || currentModelName != finalModelName || !isModelReady {
-            print("📥 [TranscriptionService] Loading model '\(finalModelName)' for transcription...")
-            print("   [TranscriptionService] Current state: whisperKit=\(whisperKit != nil), currentModelName=\(currentModelName ?? "nil"), isModelReady=\(isModelReady)")
+        if whisperKit == nil || !isModelReady {
+            print("📥 [TranscriptionService] Loading model '\(modelName)' for transcription...")
+            print("   [TranscriptionService] Current state: whisperKit=\(whisperKit != nil), isModelReady=\(isModelReady)")
             whisperKit = nil
-            currentModelName = nil
             isModelReady = false
 
             // Report model loading progress (this is the slow part)
@@ -325,8 +309,7 @@ class TranscriptionService {
 
             do {
                 // Create WhisperKit instance
-                whisperKit = try await WhisperKit(WhisperKitConfig(model: finalModelName))
-                currentModelName = finalModelName
+                whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
                 
                 // Warm up the model to ensure it's fully initialized
                 if let whisperKit = whisperKit {
@@ -353,15 +336,15 @@ class TranscriptionService {
                     isModelReady = false
                 }
                 
-                print("✅ [TranscriptionService] Model '\(finalModelName)' loaded and ready")
+                print("✅ [TranscriptionService] Model '\(modelName)' loaded and ready")
             } catch {
                 print("❌ [TranscriptionService] Failed to load model: \(error)")
                 isModelReady = false
                 throw TranscriptionError.initializationFailed
             }
         } else {
-            print("ℹ️ [TranscriptionService] Using already loaded and ready model '\(finalModelName)'")
-            print("   [TranscriptionService] Model state verified: whisperKit exists, modelName matches, isModelReady=true")
+            print("ℹ️ [TranscriptionService] Using already loaded and ready model '\(modelName)'")
+            print("   [TranscriptionService] Model state verified: whisperKit exists, isModelReady=true")
         }
         
         guard let whisperKit = whisperKit else {
