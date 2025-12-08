@@ -82,7 +82,7 @@ struct RecordingsView: View {
                                 .padding(.top, 12)
                                 .padding(.bottom, 12)
                                 .background(Color.warmGray50)
-                                .padding(.bottom, 68) // Space for tab bar (similar to AudioPreviewBar)
+                                .padding(.bottom, 68) // Space for tab bar
                         }
                     }
                 }
@@ -136,6 +136,12 @@ struct RecordingsView: View {
             .navigationDestination(item: $selectedRecording) { recording in
                 RecordingDetailsView(recording: recording)
                     .onAppear { showPlusButton.wrappedValue = false }
+            }
+            .onChange(of: AudioPlayerManager.shared.navigateToRecording) { _, recording in
+                if let recording = recording {
+                    selectedRecording = recording
+                    AudioPlayerManager.shared.navigateToRecording = nil // Clear trigger
+                }
             }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(

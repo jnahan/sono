@@ -205,9 +205,37 @@ struct RecordingDetailsView: View {
             )
         }
         .onAppear {
-            if let url = recording.resolvedURL {
-                audioPlayer.loadAudio(url: url)
+            // Hide preview bar and handle audio switching
+            let audioManager = AudioPlayerManager.shared
+            
+            // If global player is playing a different recording, stop it
+            if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
+                audioManager.stop()
             }
+            
+            // If global player is playing the same recording, sync state to local player
+            if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
+                let wasPlaying = audioManager.player.isPlaying
+                let currentTime = audioManager.player.currentTime
+                audioManager.stop() // Stop global player
+                
+                // Load and sync to local player
+                if let url = recording.resolvedURL {
+                    audioPlayer.loadAudio(url: url)
+                    audioPlayer.seek(toTime: currentTime)
+                    if wasPlaying {
+                        audioPlayer.play(url)
+                    }
+                }
+            } else {
+                // Just load the audio
+                if let url = recording.resolvedURL {
+                    audioPlayer.loadAudio(url: url)
+                }
+            }
+            
+            // Set active recording details ID to hide preview bar
+            audioManager.activeRecordingDetailsId = recording.id
 
             // Show warning toast if recording is incomplete
             if recording.status == .failed || recording.status == .notStarted {
@@ -218,6 +246,8 @@ struct RecordingDetailsView: View {
         }
         .onDisappear {
             audioPlayer.stop()
+            // Clear active recording details ID to show preview bar again
+            AudioPlayerManager.shared.clearActiveRecordingDetails()
         }
     }
     

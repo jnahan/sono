@@ -158,6 +158,12 @@ struct CollectionDetailView: View {
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
         }
+        .onChange(of: AudioPlayerManager.shared.navigateToRecording) { _, recording in
+            if let recording = recording {
+                selectedRecording = recording
+                AudioPlayerManager.shared.navigateToRecording = nil // Clear trigger
+            }
+        }
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(
                 isPresented: Binding(
