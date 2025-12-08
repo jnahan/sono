@@ -4,8 +4,8 @@ import SwiftData
 struct CollectionDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query private var allRecordings: [Recording]
-    @Query private var collections: [Collection]
+    @Query(sort: \Recording.recordedAt, order: .reverse) private var allRecordings: [Recording]
+    @Query(sort: \Collection.name) private var collections: [Collection]
     
     @StateObject private var viewModel = RecordingListViewModel()
     

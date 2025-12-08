@@ -98,7 +98,7 @@ class RecordingFormViewModel: ObservableObject {
             // Pre-populate for editing
             title = recording.title
             selectedCollection = recording.collection
-            note = recording.notes ?? ""
+            note = recording.notes
             transcribedText = recording.fullText
             transcribedLanguage = recording.language
         } else if let url = audioURL {
@@ -306,66 +306,59 @@ class RecordingFormViewModel: ObservableObject {
     }
 
     /// Auto-save a recording immediately after recording stops, before transcription
+    @MainActor
     func autoSaveRecording(modelContext: ModelContext) {
         guard let url = audioURL else { return }
         guard autoSavedRecording == nil else { return } // Already auto-saved
 
         print("💾 [RecordingForm] Auto-saving recording before transcription")
 
-        // Perform save operation asynchronously to avoid blocking main thread
-        Task { @MainActor in
-            // Create recording with notStarted status
-            let recording = Recording(
-                title: title.trimmed.isEmpty ? url.deletingPathExtension().lastPathComponent : title.trimmed,
-                fileURL: url,
-                fullText: "",
-                language: "",
-                notes: "",
-                summary: nil,
-                segments: [],
-                collection: nil,
-                recordedAt: Date(),
-                transcriptionStatus: .notStarted,
-                failureReason: nil,
-                transcriptionStartedAt: nil
-            )
+        // Create recording with notStarted status
+        let recording = Recording(
+            title: title.trimmed.isEmpty ? url.deletingPathExtension().lastPathComponent : title.trimmed,
+            fileURL: url,
+            fullText: "",
+            language: "",
+            notes: "",
+            summary: nil,
+            segments: [],
+            collection: nil,
+            recordedAt: Date(),
+            transcriptionStatus: .notStarted,
+            failureReason: nil,
+            transcriptionStartedAt: nil
+        )
 
-            modelContext.insert(recording)
+        modelContext.insert(recording)
 
-            do {
-                try modelContext.save()
-                autoSavedRecording = recording
-                print("✅ [RecordingForm] Recording auto-saved successfully")
-            } catch {
-                print("❌ [RecordingForm] Failed to auto-save recording: \(error)")
-            }
+        do {
+            try modelContext.save()
+            autoSavedRecording = recording
+            print("✅ [RecordingForm] Recording auto-saved successfully")
+        } catch {
+            print("❌ [RecordingForm] Failed to auto-save recording: \(error)")
         }
     }
 
     /// Update the auto-saved recording when transcription starts
+    @MainActor
     func markTranscriptionStarted(modelContext: ModelContext) {
-        // Perform save operation asynchronously to avoid blocking main thread
-        Task { @MainActor in
-            guard let recording = autoSavedRecording else {
-                autoSaveRecording(modelContext: modelContext)
-                // Wait a bit for auto-save to complete
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-                guard let recording = autoSavedRecording else { return }
-                recording.status = .inProgress
-                recording.transcriptionStartedAt = Date()
-                try? modelContext.save()
-                return
-            }
+        // If no auto-saved recording exists, create one first
+        if autoSavedRecording == nil {
+            autoSaveRecording(modelContext: modelContext)
+        }
 
-            recording.status = .inProgress
-            recording.transcriptionStartedAt = Date()
+        // Now update the recording status
+        guard let recording = autoSavedRecording else { return }
 
-            do {
-                try modelContext.save()
-                print("✅ [RecordingForm] Marked transcription as in progress")
-            } catch {
-                print("❌ [RecordingForm] Failed to update recording status: \(error)")
-            }
+        recording.status = .inProgress
+        recording.transcriptionStartedAt = Date()
+
+        do {
+            try modelContext.save()
+            print("✅ [RecordingForm] Marked transcription as in progress")
+        } catch {
+            print("❌ [RecordingForm] Failed to update recording status: \(error)")
         }
     }
 
@@ -390,72 +383,21 @@ class RecordingFormViewModel: ObservableObject {
     
     // MARK: - Save
     
+    @MainActor
     func saveRecording(modelContext: ModelContext, onComplete: @escaping () -> Void) {
-        // Perform save operation asynchronously to avoid blocking main thread
-        Task { @MainActor in
-            // If we have an auto-saved recording, just update it
-            if let recording = autoSavedRecording {
-                updateAutoSavedRecording(recording, withTranscription: !transcribedText.isEmpty)
+        // If we have an auto-saved recording, just update it
+        if let recording = autoSavedRecording {
+            updateAutoSavedRecording(recording, withTranscription: !transcribedText.isEmpty)
 
-                // Add segments to context if transcription completed
-                if !transcribedText.isEmpty {
-                    for segment in transcribedSegments {
-                        if segment.modelContext == nil {
-                            modelContext.insert(segment)
-                        }
+            // Add segments to context if transcription completed
+            if !transcribedText.isEmpty {
+                for segment in transcribedSegments {
+                    if segment.modelContext == nil {
+                        modelContext.insert(segment)
                     }
                 }
-
-                do {
-                    try modelContext.save()
-                    print("✅ [RecordingForm] Recording saved successfully")
-                } catch {
-                    print("❌ [RecordingForm] Failed to save recording: \(error)")
-                }
-
-                onComplete()
-                return
             }
 
-            // Fallback: Create new recording if auto-save didn't happen
-            guard let url = audioURL else { return }
-
-            print("💾 [RecordingForm] Saving recording with fullText length: \(transcribedText.count)")
-
-            // Determine status based on transcription
-            let status: TranscriptionStatus
-            if transcribedText.isEmpty {
-                status = .notStarted
-            } else if isTranscribing {
-                status = .inProgress
-            } else {
-                status = .completed
-            }
-
-            // Create recording first (without segments)
-            let recording = Recording(
-                title: title.trimmed,
-                fileURL: url,
-                fullText: transcribedText,
-                language: transcribedLanguage,
-                notes: note,
-                summary: nil,  // Summary will be generated when user clicks Summary tab
-                segments: [],  // Start with empty array
-                collection: selectedCollection,
-                recordedAt: Date(),
-                transcriptionStatus: status
-            )
-
-            // Insert the recording into the context
-            modelContext.insert(recording)
-
-            // Now add each segment to the recording AND insert into context
-            for segment in transcribedSegments {
-                modelContext.insert(segment)
-                recording.segments.append(segment)
-            }
-
-            // Save the context to persist the recording
             do {
                 try modelContext.save()
                 print("✅ [RecordingForm] Recording saved successfully")
@@ -464,7 +406,56 @@ class RecordingFormViewModel: ObservableObject {
             }
 
             onComplete()
+            return
         }
+
+        // Fallback: Create new recording if auto-save didn't happen
+        guard let url = audioURL else { return }
+
+        print("💾 [RecordingForm] Saving recording with fullText length: \(transcribedText.count)")
+
+        // Determine status based on transcription
+        let status: TranscriptionStatus
+        if transcribedText.isEmpty {
+            status = .notStarted
+        } else if isTranscribing {
+            status = .inProgress
+        } else {
+            status = .completed
+        }
+
+        // Create recording first (without segments)
+        let recording = Recording(
+            title: title.trimmed,
+            fileURL: url,
+            fullText: transcribedText,
+            language: transcribedLanguage,
+            notes: note,
+            summary: nil,  // Summary will be generated when user clicks Summary tab
+            segments: [],  // Start with empty array
+            collection: selectedCollection,
+            recordedAt: Date(),
+            transcriptionStatus: status
+        )
+
+        // Insert the recording into the context
+        modelContext.insert(recording)
+
+        // Now add each segment to the recording AND insert into context
+        for segment in transcribedSegments {
+            modelContext.insert(segment)
+            recording.segments.append(segment)
+        }
+
+        // Save the context to persist the recording
+        do {
+            try modelContext.save()
+            print("✅ [RecordingForm] Recording saved successfully")
+        } catch {
+            print("❌ [RecordingForm] Failed to save recording: \(error)")
+        }
+
+        onComplete()
     }
     
     func saveEdit() {

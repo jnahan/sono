@@ -13,7 +13,7 @@ struct RecordingDetailsView: View {
     @StateObject private var audioPlayer = Player()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query private var collections: [Collection]
+    @Query(sort: \Collection.name) private var collections: [Collection]
 
     @State private var showNotePopup = false
     @State private var showEditRecording = false
@@ -417,7 +417,7 @@ struct RecordingDetailsView: View {
         recording.transcriptionStartedAt = Date()
         recording.failureReason = nil
 
-        Task {
+        Task { @MainActor in
             do {
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
@@ -425,57 +425,49 @@ struct RecordingDetailsView: View {
                     }
                 }
 
-                await MainActor.run {
-                    // Update recording with transcription
-                    recording.fullText = result.text
-                    recording.language = result.language
-                    recording.status = .completed
-                    recording.failureReason = nil
+                // Update recording with transcription
+                recording.fullText = result.text
+                recording.language = result.language
+                recording.status = .completed
+                recording.failureReason = nil
 
-                    // Clear existing segments and add new ones
-                    recording.segments.removeAll()
-                    for segment in result.segments {
-                        let recordingSegment = RecordingSegment(
-                            start: segment.start,
-                            end: segment.end,
-                            text: segment.text
-                        )
-                        modelContext.insert(recordingSegment)
-                        recording.segments.append(recordingSegment)
-                    }
+                // Clear existing segments and add new ones
+                recording.segments.removeAll()
+                for segment in result.segments {
+                    let recordingSegment = RecordingSegment(
+                        start: segment.start,
+                        end: segment.end,
+                        text: segment.text
+                    )
+                    modelContext.insert(recordingSegment)
+                    recording.segments.append(recordingSegment)
                 }
-                
-                // Save to database asynchronously to avoid blocking main thread
-                await Task { @MainActor in
-                    do {
-                        try modelContext.save()
-                        transcriptionProgress = 1.0
-                        isTranscribing = false
-                        withAnimation {
-                            showWarningToast = false
-                        }
-                        print("✅ [RecordingDetails] Transcription completed successfully")
-                    } catch {
-                        isTranscribing = false
-                        transcriptionProgress = 0.0
-                        transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
-                        recording.status = .failed
-                        recording.failureReason = transcriptionError
+
+                // Save to database
+                do {
+                    try modelContext.save()
+                    transcriptionProgress = 1.0
+                    isTranscribing = false
+                    withAnimation {
+                        showWarningToast = false
                     }
-                }
-            } catch {
-                await MainActor.run {
+                    print("✅ [RecordingDetails] Transcription completed successfully")
+                } catch {
                     isTranscribing = false
                     transcriptionProgress = 0.0
-                    transcriptionError = "Transcription failed: \(error.localizedDescription)"
+                    transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
                     recording.status = .failed
                     recording.failureReason = transcriptionError
                 }
+            } catch {
+                isTranscribing = false
+                transcriptionProgress = 0.0
+                transcriptionError = "Transcription failed: \(error.localizedDescription)"
+                recording.status = .failed
+                recording.failureReason = transcriptionError
                 
-                // Save asynchronously to avoid blocking main thread
-                await Task { @MainActor in
-                    try? modelContext.save()
-                }
+                // Save error state
+                try? modelContext.save()
             }
         }
     }

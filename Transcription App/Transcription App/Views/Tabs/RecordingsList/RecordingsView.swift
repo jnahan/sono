@@ -4,8 +4,8 @@ import SwiftData
 struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.showPlusButton) private var showPlusButton
-    @Query private var recordings: [Recording]
-    @Query private var collections: [Collection]
+    @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
+    @Query(sort: \Collection.name) private var collections: [Collection]
     
     @StateObject private var viewModel = RecordingListViewModel()
     

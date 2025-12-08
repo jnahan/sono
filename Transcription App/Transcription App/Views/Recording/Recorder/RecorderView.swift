@@ -3,7 +3,7 @@ import SwiftData
 
 struct RecorderView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query private var collections: [Collection]
+    @Query(sort: \Collection.name) private var collections: [Collection]
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 

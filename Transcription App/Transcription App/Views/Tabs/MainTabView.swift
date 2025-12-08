@@ -14,7 +14,7 @@ extension EnvironmentValues {
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var collections: [Collection]
+    @Query(sort: \Collection.name) private var collections: [Collection]
 
 
     @AppStorage("selectedTab") private var selectedTab = 0

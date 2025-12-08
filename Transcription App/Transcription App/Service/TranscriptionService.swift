@@ -90,13 +90,12 @@ class TranscriptionService {
                 // 6. Warm-up happens before any real transcriptions (during app init)
                 do {
                     let startTime = Date()
-                    let result = try await whisperKit.transcribe(
+                    _ = try await whisperKit.transcribe(
                         audioPath: tempAudioURL.path,
                         decodeOptions: DecodingOptions(wordTimestamps: false)
                     )
                     let warmupDuration = Date().timeIntervalSince(startTime)
                     print("🔥 [TranscriptionService] Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
-                    print("   [TranscriptionService] Warm-up result: \(result.count) segment(s)")
                     isModelReady = true
                     print("✅ [TranscriptionService] Model '\(modelName)' preloaded and warmed up successfully")
                 } catch {

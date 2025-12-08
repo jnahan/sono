@@ -4,8 +4,8 @@ import SwiftData
 struct CollectionsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.showPlusButton) private var showPlusButton
-    @Query private var collections: [Collection]
-    @Query private var recordings: [Recording]
+    @Query(sort: \Collection.createdAt, order: .reverse) private var collections: [Collection]
+    @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
     
     @State private var showCreateCollection = false
     @State private var newCollectionName = ""
