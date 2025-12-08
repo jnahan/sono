@@ -60,7 +60,6 @@ class TranscriptionService {
 
         do {
             // Create WhisperKit instance - this downloads model files if needed
-            // WhisperKit uses Documents/huggingface/models by default
             whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
             currentModelName = modelName
             
@@ -163,35 +162,51 @@ class TranscriptionService {
         return tempURL
     }
     
-    /// Checks if a specific model is already downloaded
-    /// - Parameter modelName: The model name to check (e.g., "base", "tiny", "small")
-    /// - Returns: True if the model files exist locally, false otherwise
-    func isModelDownloaded(_ modelName: String) -> Bool {
-        return ModelDownloadManager.shared.isModelDownloaded(modelName)
-    }
-
-    /// Deletes a specific downloaded model
-    /// - Parameter modelName: The model name to delete (e.g., "base", "tiny", "small")
-    /// - Returns: True if deletion was successful, false otherwise
-    func deleteModel(_ modelName: String) -> Bool {
-        let deleted = ModelDownloadManager.shared.deleteModel(modelName)
-
-        // Clear in-memory instance if it's the current model
-        if deleted && currentModelName == modelName {
-            whisperKit = nil
-            currentModelName = nil
-            isModelReady = false
-            print("🔄 [TranscriptionService] Cleared in-memory instance for deleted model '\(modelName)'")
+    /// Clears the cached model files to force re-download
+    /// - Parameter modelName: The model name to clear (e.g., "base", "tiny"). If nil, clears all models.
+    func clearModelCache(modelName: String? = nil) {
+        let fileManager = FileManager.default
+        var cleared = false
+        
+        // WhisperKit stores models in multiple possible locations
+        let possibleCachePaths = [
+            // Cache directory
+            fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit"),
+            // Application Support directory
+            fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit"),
+            // Documents directory (sometimes used)
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("whisperkit")
+        ]
+        
+        for cacheURL in possibleCachePaths.compactMap({ $0 }) {
+            guard fileManager.fileExists(atPath: cacheURL.path) else { continue }
+            
+            do {
+                if let modelName = modelName {
+                    // Clear specific model - try different naming patterns
+                    let modelVariants = [
+                        cacheURL.appendingPathComponent(modelName),
+                        cacheURL.appendingPathComponent("openai/whisper-\(modelName)"),
+                        cacheURL.appendingPathComponent("whisper-\(modelName)")
+                    ]
+                    
+                    for modelURL in modelVariants {
+                        if fileManager.fileExists(atPath: modelURL.path) {
+                            try fileManager.removeItem(at: modelURL)
+                            cleared = true
+                        }
+                    }
+                } else {
+                    // Clear all WhisperKit models
+                    try fileManager.removeItem(at: cacheURL)
+                    cleared = true
+                }
+            } catch {
+                // Silently continue
+            }
         }
-
-        return deleted
-    }
-
-    /// Clears all cached model files
-    func clearAllModels() {
-        ModelDownloadManager.shared.deleteAllModels()
-
-        // Clear the in-memory instance
+        
+        // Also clear the in-memory instance
         whisperKit = nil
         currentModelName = nil
         isModelReady = false
@@ -310,7 +325,6 @@ class TranscriptionService {
 
             do {
                 // Create WhisperKit instance
-                // WhisperKit uses Documents/huggingface/models by default
                 whisperKit = try await WhisperKit(WhisperKitConfig(model: finalModelName))
                 currentModelName = finalModelName
                 

@@ -54,7 +54,6 @@
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
 		5D962F282ECE935500049626 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F272ECE935500049626 /* Player.swift */; };
 		5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2A2ECEBAC000049626 /* SettingsView.swift */; };
-		5D769037E55464FDEF7961 /* ModelSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DEE860655F04894552ADB /* ModelSelectionView.swift */; };
 		5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */; };
 		5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */; };
 		5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */; };
@@ -69,7 +68,6 @@
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
-		5DE0A90C46A9E77D751B84 /* ModelDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3D071749209D5E5A34D2 /* ModelDownloadManager.swift */; };
 		5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */; };
 		5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */; };
 		5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */; };
@@ -130,7 +128,6 @@
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
 		5D962F272ECE935500049626 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		5D962F2A2ECEBAC000049626 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		5DEE860655F04894552ADB /* ModelSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectionView.swift; sourceTree = "<group>"; };
 		5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsView.swift; sourceTree = "<group>"; };
 		5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSlider.swift; sourceTree = "<group>"; };
 		5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
@@ -145,7 +142,6 @@
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
-		5D3D071749209D5E5A34D2 /* ModelDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadManager.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
 		5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LibreBaskerville-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Transcription-App-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -233,7 +229,6 @@
 				5D962F272ECE935500049626 /* Player.swift */,
 				5D962F212ECE87ED00049626 /* Recorder.swift */,
 				5DB579242ED8D143002DC84D /* TranscriptionService.swift */,
-				5D3D071749209D5E5A34D2 /* ModelDownloadManager.swift */,
 				5D12FFF72EE3500100F1FAE2 /* LLMService.swift */,
 				5D1300042EE3BA3000F1FAE2 /* AudioPlayerManager.swift */,
 				5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */,
@@ -334,7 +329,6 @@
 			isa = PBXGroup;
 			children = (
 				5D962F2A2ECEBAC000049626 /* SettingsView.swift */,
-				5DEE860655F04894552ADB /* ModelSelectionView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -541,7 +535,6 @@
 				5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */,
 				5D0ED1232EE131E90003E775 /* URL+Identifier.swift in Sources */,
 				5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */,
-				5D769037E55464FDEF7961 /* ModelSelectionView.swift in Sources */,
 				5D0ED1212EE131990003E775 /* AudioHelper.swift in Sources */,
 				5DB579062ED846A6002DC84D /* CollectionsView.swift in Sources */,
 				5D1570692EDA0F450094E13E /* CustomTopBar.swift in Sources */,
@@ -581,7 +574,6 @@
 				5DDA7CCA2EDD842100AFB6C0 /* View+Shadow.swift in Sources */,
 				5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */,
 				5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */,
-				5DE0A90C46A9E77D751B84 /* ModelDownloadManager.swift in Sources */,
 				5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */,
 				5D12FFF82EE3500200F1FAE2 /* RecordingDetailsViewModel.swift in Sources */,
 				5DB579102ED8BF6E002DC84D /* RecordingRowView.swift in Sources */,
