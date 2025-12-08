@@ -74,9 +74,11 @@
 		5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */; };
 		5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */; };
 		5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DE4CA742EDD37D20039A2AA /* Assets.xcassets */; };
+		94918ADBF1EFA021978333EF /* LLMPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDB7E00ECDDCEFCE38F0DD /* LLMPrompts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		57FDB7E00ECDDCEFCE38F0DD /* LLMPrompts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LLMPrompts.swift; path = "Transcription App/Core/LLMPrompts.swift"; sourceTree = "<group>"; };
 		5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppButtonStyle.swift; sourceTree = "<group>"; };
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionListView.swift; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				5D0ED1262EE134920003E775 /* AppConstants.swift */,
+				57FDB7E00ECDDCEFCE38F0DD /* LLMPrompts.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -466,7 +469,7 @@
 			mainGroup = 5D79259F2ECD8E4A002889A6;
 			packageReferences = (
 				5D70377A2ECD90B200D061E3 /* XCRemoteSwiftPackageReference "whisperkit" */,
-				5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */,
+				5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */,
 			);
 			productRefGroup = 5D7925A92ECD8E4A002889A6 /* Products */;
 			projectDirPath = "";
@@ -557,6 +560,7 @@
 				5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */,
 				5D12FFF82EE3500200F1FAE2 /* RecordingDetailsViewModel.swift in Sources */,
 				5DB579102ED8BF6E002DC84D /* RecordingRowView.swift in Sources */,
+				94918ADBF1EFA021978333EF /* LLMPrompts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,7 +776,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */ = {
+		5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eastriverlee/LLM.swift";
 			requirement = {
@@ -793,7 +797,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		5D12FFEF2EE33C7400F1FAE2 /* LLM */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM" */;
+			package = 5D12FFEE2EE33C7400F1FAE2 /* XCRemoteSwiftPackageReference "LLM.swift" */;
 			productName = LLM;
 		};
 		5D70377B2ECD90B200D061E3 /* WhisperKit */ = {

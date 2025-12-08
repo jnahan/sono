@@ -42,7 +42,7 @@ class LLMService {
     ///   - systemPrompt: The system prompt defining the assistant's behavior
     /// - Returns: The LLM's response
     @MainActor
-    func getCompletion(from input: String, systemPrompt: String = "You are a helpful assistant.") async throws -> String {
+    func getCompletion(from input: String, systemPrompt: String = LLMPrompts.defaultAssistant) async throws -> String {
         // Always reset to ensure clean state and avoid KV cache corruption
         llm = nil
         
@@ -86,7 +86,7 @@ class LLMService {
     @MainActor
     func getStreamingCompletion(
         from input: String,
-        systemPrompt: String = "You are a helpful assistant.",
+        systemPrompt: String = LLMPrompts.defaultAssistant,
         onChunk: @escaping (String) -> Void
     ) async throws -> String {
         // Always reset to ensure clean state and avoid KV cache corruption

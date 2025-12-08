@@ -208,21 +208,19 @@ class SummaryViewModel: ObservableObject {
                 transcriptionText = recording.fullText
             }
             
-            let systemPrompt = "You are a summarization assistant. Write summaries directly without any preamble."
-            
             let prompt = """
             Summarize the following transcription in 2-3 concise sentences:
 
             \(transcriptionText)
             """
-            
+
             // Reset streaming text
             streamingSummary = ""
-            
+
             // Stream the response
             let summary = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
-                systemPrompt: systemPrompt
+                systemPrompt: LLMPrompts.summarization
             ) { chunk in
                 // Update streaming summary on main thread
                 Task { @MainActor in

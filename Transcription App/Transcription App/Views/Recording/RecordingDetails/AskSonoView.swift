@@ -312,26 +312,24 @@ class AskSonoViewModel: ObservableObject {
                 transcriptionText = recording.fullText
             }
             
-            let systemPrompt = "You are a helpful assistant that answers questions about transcriptions. Answer questions directly and concisely based on the provided transcription."
-            
             let prompt = """
             Transcription:
             \(transcriptionText)
-            
+
             Question: \(promptText)
             """
-            
+
             // Create placeholder message for streaming
             let streamingId = UUID()
             streamingMessageId = streamingId
             streamingText = ""
             let placeholderMessage = ChatMessage(id: streamingId, text: "", isUser: false)
             messages.append(placeholderMessage)
-            
+
             // Stream the response
             let llmResponse = try await LLMService.shared.getStreamingCompletion(
                 from: prompt,
-                systemPrompt: systemPrompt
+                systemPrompt: LLMPrompts.transcriptionQA
             ) { chunk in
                 // Update streaming text on main thread
                 Task { @MainActor in
