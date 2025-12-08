@@ -322,17 +322,11 @@ struct RecordingsView: View {
     }
     
     private func deleteSelectedRecordings() {
-        let toDelete = selectedRecordingsArray
-        for recording in toDelete {
-            viewModel.deleteRecording(recording)
-        }
+        viewModel.deleteRecordings(selectedRecordingsArray)
     }
     
     private func copySelectedRecordings() {
-        let toCopy = selectedRecordingsArray
-        let combinedText = toCopy.map { $0.fullText }.joined(separator: "\n\n")
-        UIPasteboard.general.string = combinedText
-        viewModel.displayCopyToast()
+        viewModel.copyRecordings(selectedRecordingsArray)
     }
 }
 

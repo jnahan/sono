@@ -44,4 +44,20 @@ class RecordingListViewModel: ObservableObject {
             withAnimation { self.showCopyToast = false }
         }
     }
+    
+    // MARK: - Mass Actions
+    
+    /// Delete multiple recordings
+    func deleteRecordings(_ recordings: [Recording]) {
+        for recording in recordings {
+            deleteRecording(recording)
+        }
+    }
+    
+    /// Copy multiple recordings' text to clipboard
+    func copyRecordings(_ recordings: [Recording]) {
+        let combinedText = recordings.map { $0.fullText }.joined(separator: "\n\n")
+        UIPasteboard.general.string = combinedText
+        displayCopyToast()
+    }
 }

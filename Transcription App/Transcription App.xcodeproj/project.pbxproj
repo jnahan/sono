@@ -13,7 +13,6 @@
 		5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */; };
 		5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */; };
 		5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */; };
-		5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */ = {isa = PBXBuildFile; fileRef = 5D0ED1172EE118DF0003E775 /* EdgeCases.md */; };
 		5D0ED11B2EE1317D0003E775 /* TimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */; };
 		5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11C2EE131860003E775 /* ShareHelper.swift */; };
 		5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */; };
@@ -83,7 +82,6 @@
 		5D0ED10D2EE004090003E775 /* SelectionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionListView.swift; sourceTree = "<group>"; };
 		5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwitch.swift; sourceTree = "<group>"; };
 		5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationSheet.swift; sourceTree = "<group>"; };
-		5D0ED1172EE118DF0003E775 /* EdgeCases.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = EdgeCases.md; sourceTree = "<group>"; };
 		5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorToastView.swift; sourceTree = "<group>"; };
 		5D0ED11A2EE1317D0003E775 /* TimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatter.swift; sourceTree = "<group>"; };
 		5D0ED11C2EE131860003E775 /* ShareHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHelper.swift; sourceTree = "<group>"; };
@@ -261,7 +259,6 @@
 				5D7925B32ECD8E4B002889A6 /* Preview Content */,
 				5DE4CA742EDD37D20039A2AA /* Assets.xcassets */,
 				5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */,
-				5D0ED1172EE118DF0003E775 /* EdgeCases.md */,
 			);
 			path = "Transcription App";
 			sourceTree = "<group>";
@@ -491,7 +488,6 @@
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
-				5D0ED1182EE118DF0003E775 /* EdgeCases.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

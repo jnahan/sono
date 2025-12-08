@@ -293,7 +293,7 @@ class TranscriptionService {
                         }
                         do {
                             let startTime = Date()
-                            let result = try await whisperKit.transcribe(
+                            _ = try await whisperKit.transcribe(
                                 audioPath: tempAudioURL.path,
                                 decodeOptions: DecodingOptions(wordTimestamps: false)
                             )
