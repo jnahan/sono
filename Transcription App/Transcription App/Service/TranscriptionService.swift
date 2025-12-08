@@ -183,6 +183,8 @@ class TranscriptionService {
         
         for pattern in patterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                // Guard against empty strings to avoid range errors
+                guard !cleanedText.isEmpty else { break }
                 let range = NSRange(cleanedText.startIndex..., in: cleanedText)
                 cleanedText = regex.stringByReplacingMatches(in: cleanedText, options: [], range: range, withTemplate: "")
             }
@@ -219,6 +221,8 @@ class TranscriptionService {
         
         for pattern in garbagePatterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                // Guard against empty strings to avoid range errors
+                guard !trimmed.isEmpty else { continue }
                 let range = NSRange(trimmed.startIndex..., in: trimmed)
                 if regex.firstMatch(in: trimmed, options: [], range: range) != nil {
                     return false

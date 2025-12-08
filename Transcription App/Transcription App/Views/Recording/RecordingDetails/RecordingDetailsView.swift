@@ -509,6 +509,11 @@ struct RecordingDetailsView: View {
     private func attributedText(for text: String, isActive: Bool) -> AttributedString {
         var attributedString = AttributedString(text)
         
+        // Guard against empty strings to avoid range errors
+        guard !text.isEmpty, attributedString.startIndex < attributedString.endIndex else {
+            return attributedString
+        }
+        
         // Set font and color using attribute container
         var container = AttributeContainer()
         container.font = UIFont(name: "Inter-Regular", size: 16) ?? .systemFont(ofSize: 16)

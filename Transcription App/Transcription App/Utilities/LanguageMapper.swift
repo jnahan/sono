@@ -260,3 +260,4 @@ struct LanguageMapper {
         return englishNameMap[localizedName] ?? localizedName
     }
 }
+
