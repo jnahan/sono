@@ -272,10 +272,8 @@ class RecordingFormViewModel: ObservableObject {
         transcriptionProgress = 1.0 // Complete
         isTranscribing = false
 
-        // Update auto-saved recording if it exists
-        if let recording = autoSavedRecording {
-            updateAutoSavedRecording(recording, withTranscription: true)
-        }
+        // Note: auto-saved recording will be updated when user clicks save
+        // We don't have modelContext access here, so we just update the view state
         
         // If transcription is empty, it's still complete (might be very short recording)
         // Don't show error - just allow user to save with empty transcription
@@ -348,8 +346,11 @@ class RecordingFormViewModel: ObservableObject {
             autoSaveRecording(modelContext: modelContext)
         }
 
-        // Now update the recording status
-        guard let recording = autoSavedRecording else { return }
+        // Now update the recording status - ensure it was created successfully
+        guard let recording = autoSavedRecording else {
+            print("⚠️ [RecordingForm] Could not mark transcription started - auto-save recording is nil")
+            return
+        }
 
         recording.status = .inProgress
         recording.transcriptionStartedAt = Date()
@@ -363,7 +364,8 @@ class RecordingFormViewModel: ObservableObject {
     }
 
     /// Update the auto-saved recording with transcription results
-    private func updateAutoSavedRecording(_ recording: Recording, withTranscription: Bool) {
+    @MainActor
+    private func updateAutoSavedRecording(_ recording: Recording, withTranscription: Bool, modelContext: ModelContext) {
         recording.title = title.trimmed
         recording.fullText = transcribedText
         recording.language = transcribedLanguage
@@ -375,6 +377,10 @@ class RecordingFormViewModel: ObservableObject {
         // Clear existing segments and add new ones
         recording.segments.removeAll()
         for segment in transcribedSegments {
+            // CRITICAL: Insert segment into context if not already tracked
+            if segment.modelContext == nil {
+                modelContext.insert(segment)
+            }
             recording.segments.append(segment)
         }
 
@@ -387,16 +393,8 @@ class RecordingFormViewModel: ObservableObject {
     func saveRecording(modelContext: ModelContext, onComplete: @escaping () -> Void) {
         // If we have an auto-saved recording, just update it
         if let recording = autoSavedRecording {
-            updateAutoSavedRecording(recording, withTranscription: !transcribedText.isEmpty)
-
-            // Add segments to context if transcription completed
-            if !transcribedText.isEmpty {
-                for segment in transcribedSegments {
-                    if segment.modelContext == nil {
-                        modelContext.insert(segment)
-                    }
-                }
-            }
+            // Update recording with transcription (this also inserts segments into context)
+            updateAutoSavedRecording(recording, withTranscription: !transcribedText.isEmpty, modelContext: modelContext)
 
             do {
                 try modelContext.save()
