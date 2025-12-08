@@ -18,6 +18,7 @@ class RecordingFormViewModel: ObservableObject {
     @Published var isTranscribing = false
     @Published var transcriptionProgress: Double = 0.0 // 0.0 to 1.0
     @Published var isModelLoading = false // Track if model is being downloaded/loaded
+    @Published var isModelWarming = false // Track if model is warming up
     
     // Validation state
     @Published var titleError: String? = nil
@@ -43,27 +44,44 @@ class RecordingFormViewModel: ObservableObject {
     }
     
     var isFormValid: Bool {
-        // For new recordings, ensure transcription is complete and has text
+        // For new recordings, ensure transcription is complete (can be empty if silent)
         if !isEditing {
             return validateTitle() && 
                    validateNote() && 
                    !isTranscribing && 
-                   !transcribedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                   !isModelLoading &&
+                   !isModelWarming
         }
         // For editing, just validate title and note
         return validateTitle() && validateNote()
     }
     
     var saveButtonText: String {
-        if isModelLoading && !isEditing {
-            return "Downloading model..."
-        } else if isTranscribing && !isEditing {
-            return "Transcribing audio \(Int(transcriptionProgress * 100))%"
-        } else if isEditing {
+        if isEditing {
             return "Save changes"
-        } else {
+        }
+        
+        // For new recordings, NEVER show "Save transcription" until transcription is complete
+        if isModelLoading {
+            return "Downloading model..."
+        }
+        
+        if isModelWarming {
+            return "Warming up model..."
+        }
+        
+        if isTranscribing {
+            return "Transcribing audio \(Int(transcriptionProgress * 100))%"
+        }
+        
+        // If transcription is NOT in progress and NOT loading/warming, it's complete
+        // (even if empty - user may have been silent)
+        if !isTranscribing && !isModelLoading && !isModelWarming {
             return "Save transcription"
         }
+        
+        // Otherwise, we're still waiting
+        return "Preparing..."
     }
     
     // MARK: - Initialization
@@ -164,11 +182,28 @@ class RecordingFormViewModel: ObservableObject {
         }
         
         // Start transcription - if model isn't ready, wait for it
-        Task {
-            // First, wait for model to be ready (if it's not already)
-            if !TranscriptionService.shared.isModelReadyForTranscription {
-                await MainActor.run {
+        Task { @MainActor in
+            // Check if model is ready - if so, start transcription immediately
+            if TranscriptionService.shared.isModelReadyForTranscription {
+                isModelLoading = false
+                isModelWarming = false
+                isTranscribing = true
+                transcriptionProgress = 0.0
+            } else {
+                // Model not ready - wait for it
+                // Set initial state
+                let isLoading = TranscriptionService.shared.isModelLoading
+                let hasModel = TranscriptionService.shared.hasModelInstance
+                
+                if isLoading {
                     isModelLoading = true
+                    isModelWarming = false
+                } else if hasModel {
+                    isModelLoading = false
+                    isModelWarming = true
+                } else {
+                    isModelLoading = true
+                    isModelWarming = false
                 }
                 
                 // Wait for model to be ready (up to 60 seconds)
@@ -176,46 +211,49 @@ class RecordingFormViewModel: ObservableObject {
                 let startTime = Date()
                 
                 while !TranscriptionService.shared.isModelReadyForTranscription {
-                    // Update loading state
-                    await MainActor.run {
-                        isModelLoading = TranscriptionService.shared.isModelLoading
+                    // Update state based on current service state
+                    let currentIsLoading = TranscriptionService.shared.isModelLoading
+                    let currentHasModel = TranscriptionService.shared.hasModelInstance
+                    
+                    if currentIsLoading {
+                        isModelLoading = true
+                        isModelWarming = false
+                    } else if currentHasModel {
+                        isModelLoading = false
+                        isModelWarming = true
                     }
                     
                     if Date().timeIntervalSince(startTime) > maxWaitTime {
-                        await MainActor.run {
-                            isModelLoading = false
-                            showError("Transcription model failed to load. Please restart the app.")
-                        }
+                        isModelLoading = false
+                        isModelWarming = false
+                        showError("Transcription model failed to load. Please restart the app.")
                         return
                     }
                     try? await Task.sleep(nanoseconds: 500_000_000) // Wait 0.5 seconds
                 }
                 
-                await MainActor.run {
-                    isModelLoading = false
-                    isTranscribing = true
-                    transcriptionProgress = 0.0
-                }
-            } else {
-                await MainActor.run {
-                    isModelLoading = false
-                    isTranscribing = true
-                    transcriptionProgress = 0.0
-                }
+                // Model is now ready
+                isModelLoading = false
+                isModelWarming = false
+                isTranscribing = true
+                transcriptionProgress = 0.0
             }
             
             // Now transcribe with the ready model
             do {
+                print("🎯 [RecordingForm] Starting transcription for: \(url.lastPathComponent)")
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
                         self.transcriptionProgress = progress
                     }
                 }
-                await handleTranscriptionResult(result)
+                print("✅ [RecordingForm] Transcription completed successfully")
+                handleTranscriptionResult(result)
             } catch {
-                await MainActor.run {
-                    handleTranscriptionError(error)
-                }
+                print("❌ [RecordingForm] Transcription error: \(error)")
+                print("   Error type: \(type(of: error))")
+                print("   Error description: \(error.localizedDescription)")
+                handleTranscriptionError(error)
             }
         }
     }
@@ -238,12 +276,16 @@ class RecordingFormViewModel: ObservableObject {
         if let recording = autoSavedRecording {
             updateAutoSavedRecording(recording, withTranscription: true)
         }
+        
+        // If transcription is empty, it's still complete (might be very short recording)
+        // Don't show error - just allow user to save with empty transcription
     }
     
     @MainActor
     private func handleTranscriptionError(_ error: Error) {
         isTranscribing = false
         isModelLoading = false
+        isModelWarming = false
         transcriptionProgress = 0.0
         showError("Transcription failed: \(error.localizedDescription)")
 

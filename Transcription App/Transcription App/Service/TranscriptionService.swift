@@ -38,6 +38,11 @@ class TranscriptionService {
         return isLoadingModel
     }
     
+    /// Checks if the model instance exists (may not be ready yet)
+    var hasModelInstance: Bool {
+        return whisperKit != nil
+    }
+    
     /// Preloads the tiny model to reduce transcription latency
     /// This fully initializes the model including loading into Metal buffers
     func preloadModel() async {
@@ -251,65 +256,79 @@ class TranscriptionService {
             print("⏳ [TranscriptionService] Waiting for preload to complete...")
             await task.value
             preloadTask = nil
-            print("✅ [TranscriptionService] Preload task completed. isModelReady=\(isModelReady)")
+            print("✅ [TranscriptionService] Preload completed. whisperKit=\(whisperKit != nil), isModelReady=\(isModelReady)")
+        }
+
+        // Wait for any ongoing model loading to complete before proceeding
+        // This ensures we don't start a new download if one is already in progress
+        while isLoadingModel {
+            print("⏳ [TranscriptionService] Waiting for model loading to complete...")
+            try? await Task.sleep(nanoseconds: 500_000_000) // Wait 0.5 seconds
         }
 
         // Initialize WhisperKit if needed
         if whisperKit == nil || !isModelReady {
-            print("📥 [TranscriptionService] Loading model '\(modelName)' for transcription...")
-            print("   [TranscriptionService] Current state: whisperKit=\(whisperKit != nil), isModelReady=\(isModelReady)")
-            whisperKit = nil
-            isModelReady = false
-
-            // Report model loading progress (this is the slow part)
-            if let callback = progressCallback {
-                Task { @MainActor in
-                    callback(0.0)
-                }
-            }
-
-            do {
-                // Create WhisperKit instance
-                whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
+            // Only create new instance if we don't have one
+            if whisperKit == nil {
+                print("📥 [TranscriptionService] Loading model '\(modelName)' for transcription...")
                 
-                // Warm up the model to ensure it's fully initialized
-                if let whisperKit = whisperKit {
-                    print("🔥 [TranscriptionService] Warming up model for first use...")
-                    let tempAudioURL = createMinimalSilentAudio()
-                    defer {
-                        try? FileManager.default.removeItem(at: tempAudioURL)
+                if let callback = progressCallback {
+                    Task { @MainActor in
+                        callback(0.0)
                     }
-                    do {
-                        let startTime = Date()
-                        let result = try await whisperKit.transcribe(
-                            audioPath: tempAudioURL.path,
-                            decodeOptions: DecodingOptions(wordTimestamps: false)
-                        )
-                        let warmupDuration = Date().timeIntervalSince(startTime)
-                        print("🔥 [TranscriptionService] Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
-                        isModelReady = true
-                        print("✅ [TranscriptionService] Model warmed up successfully")
-                    } catch {
-                        print("⚠️ [TranscriptionService] Warm-up failed: \(error), but continuing...")
-                        isModelReady = true // Mark as ready anyway
-                    }
-                } else {
-                    isModelReady = false
                 }
-                
-                print("✅ [TranscriptionService] Model '\(modelName)' loaded and ready")
-            } catch {
-                print("❌ [TranscriptionService] Failed to load model: \(error)")
+
+                isLoadingModel = true
                 isModelReady = false
-                throw TranscriptionError.initializationFailed
+                defer { isLoadingModel = false }
+
+                do {
+                    whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
+                    
+                    if let whisperKit = whisperKit {
+                        print("🔥 [TranscriptionService] Warming up model for first use...")
+                        let tempAudioURL = createMinimalSilentAudio()
+                        defer {
+                            try? FileManager.default.removeItem(at: tempAudioURL)
+                        }
+                        do {
+                            let startTime = Date()
+                            let result = try await whisperKit.transcribe(
+                                audioPath: tempAudioURL.path,
+                                decodeOptions: DecodingOptions(wordTimestamps: false)
+                            )
+                            let warmupDuration = Date().timeIntervalSince(startTime)
+                            print("🔥 [TranscriptionService] Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
+                            isModelReady = true
+                            print("✅ [TranscriptionService] Model warmed up successfully")
+                        } catch {
+                            print("⚠️ [TranscriptionService] Warm-up failed: \(error), but continuing...")
+                            isModelReady = true
+                        }
+                    } else {
+                        isModelReady = false
+                    }
+                    
+                    print("✅ [TranscriptionService] Model '\(modelName)' loaded and ready")
+                } catch {
+                    print("❌ [TranscriptionService] Failed to load model: \(error)")
+                    whisperKit = nil
+                    isModelReady = false
+                    throw TranscriptionError.initializationFailed
+                }
+            } else if !isModelReady {
+                // Model exists but not ready - wait for warm-up to complete
+                print("⏳ [TranscriptionService] Model exists but not ready, waiting for warm-up...")
+                while !isModelReady && whisperKit != nil {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
+                if !isModelReady {
+                    isModelReady = true // Proceed anyway
+                }
             }
-        } else {
-            print("ℹ️ [TranscriptionService] Using already loaded and ready model '\(modelName)'")
-            print("   [TranscriptionService] Model state verified: whisperKit exists, isModelReady=true")
         }
         
         guard let whisperKit = whisperKit else {
-            print("❌ [TranscriptionService] WhisperKit instance is nil after initialization check")
             throw TranscriptionError.initializationFailed
         }
         
@@ -391,12 +410,14 @@ class TranscriptionService {
             ]
         }
         
-        // If we have no valid content, this is a transcription failure
-        if finalSegments.isEmpty && !isValidFullText {
-            throw TranscriptionError.noResults
-        }
-        
+        // For very short or silent recordings, empty results are valid and expected
+        // Return empty result instead of throwing error - user may have been silent
         let finalText = isValidFullText ? trimmedFullText : ""
+        
+        // Log if we got empty results (user may have been silent - this is fine)
+        if finalSegments.isEmpty && !isValidFullText {
+            print("ℹ️ [TranscriptionService] Transcription returned empty results - recording may have been silent or very short (this is normal)")
+        }
         
         return TranscriptionResult(
             text: finalText,

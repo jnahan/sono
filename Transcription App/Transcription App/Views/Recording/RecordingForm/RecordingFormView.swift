@@ -83,6 +83,15 @@ struct RecordingFormView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.warmGray500)
                                 .multilineTextAlignment(.center)
+                        } else if viewModel.isModelWarming {
+                            Text("Warming up model...")
+                                .font(.custom("LibreBaskerville-Regular", size: 24))
+                                .foregroundColor(.baseBlack)
+                            
+                            Text("Please wait while the model initializes")
+                                .font(.system(size: 16))
+                                .foregroundColor(.warmGray500)
+                                .multilineTextAlignment(.center)
                         } else {
                             Text("Transcribing audio")
                                 .font(.custom("LibreBaskerville-Regular", size: 24))
@@ -166,17 +175,7 @@ struct RecordingFormView: View {
                                 return
                             }
                             
-                            // Guard: Don't allow saving if transcription is still in progress
-                            guard !viewModel.isTranscribing else {
-                                viewModel.showError("Please wait for transcription to complete before saving.")
-                                return
-                            }
-                            
-                            // Guard: Don't allow saving if transcription hasn't started or failed
-                            guard !viewModel.transcribedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                                viewModel.showError("Transcription is not complete. Please wait for it to finish.")
-                                return
-                            }
+                            // Button is already disabled if transcription isn't complete, so no need for error
                             
                             viewModel.saveRecording(modelContext: modelContext) {
                                 onTranscriptionComplete()
@@ -188,7 +187,7 @@ struct RecordingFormView: View {
                     Text(viewModel.saveButtonText)
                 }
                 .buttonStyle(AppButtonStyle())
-                .disabled(viewModel.isTranscribing || viewModel.isModelLoading)
+                .disabled(viewModel.isTranscribing || viewModel.isModelLoading || viewModel.isModelWarming)
             }
         }
         .sheet(isPresented: $viewModel.showCollectionPicker) {
