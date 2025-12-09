@@ -3,15 +3,29 @@ import SwiftUI
 import SwiftData
 
 /// Global manager for audio playback across the app
-/// Note: Most playback functionality removed after removing AudioPreviewBar.
-/// This now only handles navigation triggers and tracking active recording details.
+/// Handles navigation triggers and tracking active recording details view state
 @MainActor
 class AudioPlayerManager: ObservableObject {
+    // MARK: - Singleton
+    
     static let shared = AudioPlayerManager()
     
+    // MARK: - Published Properties
+    
+    /// The currently active recording being played globally
     @Published var currentRecording: Recording?
+    
+    /// The global audio player instance
     @Published var player = Player()
-    @Published var activeRecordingDetailsId: UUID? = nil // Track which recording is in details view
+    
+    /// The ID of the recording currently displayed in details view (used to hide preview bar)
+    @Published var activeRecordingDetailsId: UUID? = nil
+    
+    // MARK: - Initialization
+    
+    private init() {}
+    
+    // MARK: - Public Methods
     
     private init() {}
     

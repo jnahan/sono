@@ -12,24 +12,23 @@ struct RecordingDetailsView: View {
     let recording: Recording
     var onDismiss: (() -> Void)? = nil
     @StateObject private var audioPlayback = AudioPlaybackService()
+    @StateObject private var viewModel: RecordingDetailsViewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.isPresented) private var isPresented
     @Environment(\.showPlusButton) private var showPlusButton
     @Query(sort: \Collection.name) private var collections: [Collection]
     
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
         self.recording = recording
         self.onDismiss = onDismiss
+        _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
     }
 
     @State private var showNotePopup = false
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var showMenu = false
-    @State private var currentActiveSegmentId: UUID?
     @State private var selectedTab: RecordingDetailTab = .transcript
-    @State private var showTranscriptionProgressSheet = false
     
     private var showTimestamps: Bool {
         SettingsManager.shared.showTimestamps
@@ -237,9 +236,11 @@ struct RecordingDetailsView: View {
                     if showTimestamps && !recording.segments.isEmpty {
                         // Show segments with timestamps when enabled
                         ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
-                            let isActive = audioPlayback.isPlaying &&
-                                         audioPlayback.currentTime >= segment.start &&
-                                         audioPlayback.currentTime < segment.end
+                            let isActive = viewModel.isSegmentActive(
+                                segment: segment,
+                                currentTime: audioPlayback.currentTime,
+                                isPlaying: audioPlayback.isPlaying
+                            )
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(TimeFormatter.formatTimestamp(segment.start))
@@ -266,7 +267,7 @@ struct RecordingDetailsView: View {
                                     }
                                 }
                                 // Scroll to tapped segment
-                                currentActiveSegmentId = segment.id
+                                viewModel.setActiveSegment(segment.id)
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     proxy.scrollTo(segment.id, anchor: .center)
                                 }
@@ -285,27 +286,22 @@ struct RecordingDetailsView: View {
                 .padding(.bottom, 180)
             }
             .onChange(of: audioPlayback.currentTime) { _, _ in
-                if audioPlayback.isPlaying && showTimestamps && !recording.segments.isEmpty {
-                    // Find the currently active segment
-                    let sortedSegments = recording.segments.sorted(by: { $0.start < $1.start })
-                    if let activeSegment = sortedSegments.first(where: { segment in
-                        audioPlayback.currentTime >= segment.start && 
-                        audioPlayback.currentTime < segment.end
-                    }) {
-                        // Only scroll if this is a new active segment
-                        if currentActiveSegmentId != activeSegment.id {
-                            currentActiveSegmentId = activeSegment.id
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                proxy.scrollTo(activeSegment.id, anchor: .center)
-                            }
-                        }
+                let previousActiveId = viewModel.currentActiveSegmentId
+                if let activeSegmentId = viewModel.updateActiveSegment(
+                    currentTime: audioPlayback.currentTime,
+                    isPlaying: audioPlayback.isPlaying,
+                    showTimestamps: showTimestamps
+                ), previousActiveId != activeSegmentId {
+                    // Only scroll if this is a new active segment
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        proxy.scrollTo(activeSegmentId, anchor: .center)
                     }
                 }
             }
             .onChange(of: audioPlayback.isPlaying) { _, isPlaying in
                 // Reset tracking when playback stops
                 if !isPlaying {
-                    currentActiveSegmentId = nil
+                    viewModel.resetActiveSegment()
                 }
             }
         }

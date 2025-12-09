@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+/// ViewModel for SummaryView handling AI-generated summaries
 @MainActor
 class SummaryViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -22,7 +23,8 @@ class SummaryViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Generates a summary for the recording
+    /// Generates an AI summary for the recording's transcription
+    /// - Parameter modelContext: The SwiftData model context to save the summary
     func generateSummary(modelContext: ModelContext) async {
         guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             summaryError = "Cannot generate summary: transcription is empty."

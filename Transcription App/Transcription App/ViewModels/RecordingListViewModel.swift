@@ -21,11 +21,17 @@ class RecordingListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     
     // MARK: - Initialization
+    
+    /// Configures the ViewModel with a SwiftData model context
+    /// - Parameter modelContext: The model context to use for database operations
     func configure(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
     
     // MARK: - Actions
+    
+    /// Copies a recording's transcription text to the clipboard
+    /// - Parameter recording: The recording to copy
     func copyRecording(_ recording: Recording) {
         UIPasteboard.general.string = recording.fullText
         withAnimation { showCopyToast = true }
@@ -34,20 +40,26 @@ class RecordingListViewModel: ObservableObject {
         }
     }
     
+    /// Sets a recording for editing
+    /// - Parameter recording: The recording to edit
     func editRecording(_ recording: Recording) {
         editingRecording = recording
     }
     
+    /// Deletes a recording and cancels any active transcription
+    /// - Parameter recording: The recording to delete
     @MainActor func deleteRecording(_ recording: Recording) {
         // Cancel any active transcription for this recording
         TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
         modelContext?.delete(recording)
     }
     
+    /// Cancels the current edit operation
     func cancelEdit() {
         editingRecording = nil
     }
     
+    /// Displays a copy confirmation toast
     func displayCopyToast() {
         withAnimation { showCopyToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -73,18 +85,19 @@ class RecordingListViewModel: ObservableObject {
     
     // MARK: - Selection Mode
     
-    /// Enter selection mode
+    /// Enters selection mode for multi-select operations
     func enterSelectionMode() {
         isSelectionMode = true
     }
     
-    /// Exit selection mode and clear selections
+    /// Exits selection mode and clears all selections
     func exitSelectionMode() {
         isSelectionMode = false
         selectedRecordings.removeAll()
     }
     
-    /// Toggle selection for a recording
+    /// Toggles selection state for a recording
+    /// - Parameter id: The UUID of the recording to toggle
     func toggleSelection(for id: UUID) {
         if selectedRecordings.contains(id) {
             selectedRecordings.remove(id)
@@ -93,17 +106,21 @@ class RecordingListViewModel: ObservableObject {
         }
     }
     
-    /// Check if a recording is selected
+    /// Checks if a recording is currently selected
+    /// - Parameter id: The UUID of the recording to check
+    /// - Returns: True if the recording is selected
     func isSelected(_ id: UUID) -> Bool {
         return selectedRecordings.contains(id)
     }
     
-    /// Get array of selected recordings from a list
+    /// Gets an array of selected recordings from a list
+    /// - Parameter recordings: The full list of recordings to filter
+    /// - Returns: An array containing only the selected recordings
     func selectedRecordingsArray(from recordings: [Recording]) -> [Recording] {
         return recordings.filter { selectedRecordings.contains($0.id) }
     }
     
-    /// Clear all selections
+    /// Clears all selected recordings without exiting selection mode
     func clearSelections() {
         selectedRecordings.removeAll()
     }
