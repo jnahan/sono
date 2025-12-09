@@ -180,17 +180,17 @@ struct RecordingFormView: View {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             // Handle app backgrounding during transcription
             if newPhase == .background && !viewModel.isEditing {
-                print("📱 [RecordingForm] App backgrounded - saving recording state")
+                Logger.info("RecordingForm", "App backgrounded - saving recording state")
                 // Save current state even if transcription is still in progress
                 _ = viewModel.saveRecording(modelContext: modelContext)
 
                 // Mark that we were backgrounded during transcription
                 if viewModel.isTranscribing {
-                    print("📱 [RecordingForm] Backgrounded during transcription")
+                    Logger.info("RecordingForm", "Backgrounded during transcription")
                     viewModel.markBackgrounded()
                 }
             } else if newPhase == .active && oldPhase == .background && !viewModel.isEditing {
-                print("📱 [RecordingForm] App returned from background")
+                Logger.info("RecordingForm", "App returned from background")
                 // Check if we need to resume transcription
                 viewModel.handleReturnFromBackground(modelContext: modelContext)
             }
@@ -198,7 +198,7 @@ struct RecordingFormView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
             // Low memory warning - save recording state
             if viewModel.isTranscribing && !viewModel.isEditing {
-                print("⚠️ [RecordingForm] Low memory warning during transcription - saving state")
+                Logger.warning("RecordingForm", "Low memory warning during transcription - saving state")
                 _ = viewModel.saveRecording(modelContext: modelContext)
                 viewModel.handleLowMemory(modelContext: modelContext)
             }
@@ -206,7 +206,7 @@ struct RecordingFormView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
             // App is being terminated - save recording state
             if viewModel.isTranscribing && !viewModel.isEditing {
-                print("⚠️ [RecordingForm] App terminating during transcription - saving state")
+                Logger.warning("RecordingForm", "App terminating during transcription - saving state")
                 _ = viewModel.saveRecording(modelContext: modelContext)
             }
         }

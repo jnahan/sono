@@ -164,7 +164,7 @@ struct RecorderControl: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             // App is about to go to background - stop recording to save audio
             if rec.isRecording {
-                print("⚠️ [RecorderControl] App backgrounding - stopping recording")
+                Logger.warning("RecorderControl", "App backgrounding - stopping recording")
                 stopRecording()
                 state.shouldAutoSave = true
             }
@@ -172,7 +172,7 @@ struct RecorderControl: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             // Backup: ensure recording is stopped when entering background
             if rec.isRecording {
-                print("⚠️ [RecorderControl] App entered background - stopping recording")
+                Logger.warning("RecorderControl", "App entered background - stopping recording")
                 stopRecording()
                 state.shouldAutoSave = true
             }
@@ -180,11 +180,11 @@ struct RecorderControl: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             // App returning from background - finalize any interrupted recording
             if let fileURL = rec.fileURL, !rec.isRecording {
-                print("ℹ️ [RecorderControl] App returning from background with stopped recording")
+                Logger.info("RecorderControl", "App returning from background with stopped recording")
 
                 // Verify file exists and is properly saved
                 if FileManager.default.fileExists(atPath: fileURL.path) {
-                    print("✅ [RecorderControl] Recording file confirmed at: \(fileURL.lastPathComponent)")
+                    Logger.success("RecorderControl", "Recording file confirmed at: \(fileURL.lastPathComponent)")
 
                     // Ensure UI shows check icon by keeping fileURL and stopped state
                     // The check icon appears when: !rec.isRecording && rec.fileURL != nil
@@ -192,7 +192,7 @@ struct RecorderControl: View {
                     // Trigger auto-save to ensure recording is in database
                     state.shouldAutoSave = true
                 } else {
-                    print("❌ [RecorderControl] Recording file missing after background")
+                    Logger.error("RecorderControl", "Recording file missing after background")
                 }
             }
         }
@@ -239,14 +239,14 @@ struct RecorderControl: View {
         if let fileURL = rec.fileURL {
             // Verify the file actually exists before proceeding
             guard FileManager.default.fileExists(atPath: fileURL.path) else {
-                print("❌ [RecorderControl] Recording file does not exist at: \(fileURL.path)")
+                Logger.error("RecorderControl", "Recording file does not exist at: \(fileURL.path)")
                 // Don't proceed if file doesn't exist
                 return
             }
             // Model will be loaded when transcription starts - no need to block here
             onFinishRecording?(fileURL)
         } else {
-            print("❌ [RecorderControl] No file URL available after recording")
+            Logger.error("RecorderControl", "No file URL available after recording")
         }
     }
     

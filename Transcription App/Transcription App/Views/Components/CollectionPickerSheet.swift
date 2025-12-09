@@ -197,7 +197,7 @@ struct CollectionPickerSheet: View {
                                     isPresented = false
                                 }
                             } catch {
-                                print("❌ [CollectionPicker] Failed to save new collection: \(error)")
+                                Logger.error("CollectionPicker", "Failed to save new collection: \(error.localizedDescription)")
                             }
                         }
                     }
@@ -228,7 +228,7 @@ struct CollectionPickerSheet: View {
                     isPresented = false
                     onMassMoveComplete?()
                 } catch {
-                    print("❌ [CollectionPicker] Failed to move recordings: \(error)")
+                    Logger.error("CollectionPicker", "Failed to move recordings: \(error.localizedDescription)")
                 }
             }
         } else {

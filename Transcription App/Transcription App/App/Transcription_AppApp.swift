@@ -12,8 +12,8 @@ struct Transcription_AppApp: App {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
             // If ModelContainer creation fails, delete existing store and create new one
-            print("❌ ModelContainer creation failed: \(error)")
-            print("⚠️ Attempting to create fresh ModelContainer...")
+            Logger.error("App", "ModelContainer creation failed: \(error.localizedDescription)")
+            Logger.warning("App", "Attempting to create fresh ModelContainer...")
 
             let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
             let shmURL = URL.applicationSupportDirectory.appending(path: "default.store-shm")
@@ -22,7 +22,7 @@ struct Transcription_AppApp: App {
             for url in [storeURL, shmURL, walURL] {
                 if FileManager.default.fileExists(atPath: url.path) {
                     try? FileManager.default.removeItem(at: url)
-                    print("🗑️ Removed \(url.lastPathComponent)")
+                    Logger.info("App", "Removed \(url.lastPathComponent)")
                 }
             }
 

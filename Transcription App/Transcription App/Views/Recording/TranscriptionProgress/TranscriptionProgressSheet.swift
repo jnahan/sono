@@ -136,32 +136,32 @@ struct TranscriptionProgressSheet: View {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             // Handle app backgrounding during transcription
             if newPhase == .background && recording.status == .inProgress {
-                print("📱 [TranscriptionProgressSheet] App backgrounded during transcription")
+                Logger.info("TranscriptionProgressSheet", "App backgrounded during transcription")
                 wasBackgrounded = true
 
                 // Save current state - iOS will likely suspend the transcription task
                 // The recording is already saved with .inProgress status
                 // TranscriptionService task may be cancelled by iOS
             } else if newPhase == .active && oldPhase == .background && wasBackgrounded {
-                print("📱 [TranscriptionProgressSheet] App returned from background")
+                Logger.info("TranscriptionProgressSheet", "App returned from background")
                 wasBackgrounded = false
 
                 // Check if transcription completed while backgrounded (unlikely but possible for short audio)
                 if recording.status == .completed {
-                    print("✅ [TranscriptionProgressSheet] Transcription completed while backgrounded")
+                    Logger.success("TranscriptionProgressSheet", "Transcription completed while backgrounded")
                     transcriptionProgress = 1.0
                     Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 500_000_000)
+                        try? await Task.sleep(nanoseconds: AppConstants.Transcription.modelWarmupWaitInterval)
                         onComplete?(recording)
                     }
                 } else if recording.status == .inProgress {
                     // Check if transcription is still running
                     if !progressManager.hasActiveTranscription(for: recording.id) {
-                        print("⚠️ [TranscriptionProgressSheet] Transcription was interrupted - restarting")
+                        Logger.warning("TranscriptionProgressSheet", "Transcription was interrupted - restarting")
                         // Transcription was interrupted - restart it
                         startTranscription()
                     } else {
-                        print("ℹ️ [TranscriptionProgressSheet] Transcription still running")
+                        Logger.info("TranscriptionProgressSheet", "Transcription still running")
                     }
                 }
             }
@@ -169,12 +169,12 @@ struct TranscriptionProgressSheet: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
             // Low memory warning - cancel transcription and save state
             if recording.status == .inProgress {
-                print("⚠️ [TranscriptionProgressSheet] Low memory warning - canceling transcription")
+                Logger.warning("TranscriptionProgressSheet", "Low memory warning - canceling transcription")
                 TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
 
                 // Update recording to allow resume
                 recording.status = .inProgress
-                recording.failureReason = "Transcription was interrupted due to low memory. Tap to resume."
+                recording.failureReason = ErrorMessages.Transcription.interruptedLowMemory
                 try? modelContext.save()
 
                 // Update UI
@@ -184,8 +184,8 @@ struct TranscriptionProgressSheet: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
             // App terminating - save current state
             if recording.status == .inProgress {
-                print("⚠️ [TranscriptionProgressSheet] App terminating - saving state")
-                recording.failureReason = "Transcription was interrupted. Tap to resume."
+                Logger.warning("TranscriptionProgressSheet", "App terminating - saving state")
+                recording.failureReason = ErrorMessages.Transcription.interrupted
                 try? modelContext.save()
             }
         }
@@ -212,7 +212,7 @@ struct TranscriptionProgressSheet: View {
             
             guard let existingRecordings = try? modelContext.fetch(descriptor),
                   let existingRecording = existingRecordings.first else {
-                print("ℹ️ [TranscriptionProgressSheet] Recording was deleted, cannot start transcription")
+                Logger.info("TranscriptionProgressSheet", "Recording was deleted, cannot start transcription")
                 return
             }
             
@@ -224,7 +224,7 @@ struct TranscriptionProgressSheet: View {
             do {
                 try modelContext.save()
             } catch {
-                print("⚠️ [TranscriptionProgressSheet] Failed to save initial status: \(error)")
+                Logger.warning("TranscriptionProgressSheet", "Failed to save initial status: \(error.localizedDescription)")
             }
             
             // Start transcription
@@ -253,7 +253,7 @@ struct TranscriptionProgressSheet: View {
                 
                 guard let verifyRecordings = try? modelContext.fetch(verifyDescriptor),
                       let verifyRecording = verifyRecordings.first else {
-                    print("ℹ️ [TranscriptionProgressSheet] Recording was deleted during transcription, skipping result update")
+                    Logger.info("TranscriptionProgressSheet", ErrorMessages.Transcription.recordingDeletedDuringTranscription)
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     return
                 }
@@ -281,20 +281,20 @@ struct TranscriptionProgressSheet: View {
                     try modelContext.save()
                     transcriptionProgress = 1.0
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                    print("✅ [TranscriptionProgressSheet] Transcription completed successfully")
+                    Logger.success("TranscriptionProgressSheet", "Transcription completed successfully")
                 } catch {
                     // Save error - keep as .inProgress so user can retry
                     transcriptionProgress = 0.0
-                    transcriptionError = "Transcription was interrupted. Tap to resume."
+                    transcriptionError = ErrorMessages.Transcription.interrupted
                     verifyRecording.status = .inProgress
                     verifyRecording.failureReason = transcriptionError
                     try? modelContext.save()
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                    print("⚠️ [TranscriptionProgressSheet] Save error handled gracefully: \(error.localizedDescription)")
+                    Logger.warning("TranscriptionProgressSheet", "Save error handled gracefully: \(error.localizedDescription)")
                 }
             } catch is CancellationError {
                 // User cancelled or app was backgrounded - save as .inProgress for resume
-                print("ℹ️ [TranscriptionProgressSheet] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                Logger.info("TranscriptionProgressSheet", "Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
 
                 // Update recording status to allow resume
                 let cancelDescriptor = FetchDescriptor<Recording>(
@@ -306,7 +306,7 @@ struct TranscriptionProgressSheet: View {
                 if let cancelRecordings = try? modelContext.fetch(cancelDescriptor),
                    let cancelRecording = cancelRecordings.first {
                     cancelRecording.status = .inProgress
-                    cancelRecording.failureReason = "Transcription was interrupted. Tap to resume."
+                    cancelRecording.failureReason = ErrorMessages.Transcription.interrupted
                     try? modelContext.save()
                 }
 
@@ -324,13 +324,13 @@ struct TranscriptionProgressSheet: View {
 
                 if let errorRecordings = try? modelContext.fetch(errorDescriptor),
                    let errorRecording = errorRecordings.first {
-                    transcriptionError = "Transcription was interrupted. Tap to resume."
+                    transcriptionError = ErrorMessages.Transcription.interrupted
                     errorRecording.status = .inProgress
                     errorRecording.failureReason = transcriptionError
                     try? modelContext.save()
-                    print("⚠️ [TranscriptionProgressSheet] Transcription error handled gracefully: \(error.localizedDescription)")
+                    Logger.warning("TranscriptionProgressSheet", "Transcription error handled gracefully: \(error.localizedDescription)")
                 } else {
-                    print("ℹ️ [TranscriptionProgressSheet] Recording was deleted, skipping error state update")
+                    Logger.info("TranscriptionProgressSheet", "Recording was deleted, skipping error state update")
                 }
 
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)

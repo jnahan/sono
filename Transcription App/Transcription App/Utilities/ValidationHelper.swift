@@ -10,6 +10,12 @@ struct ValidationHelper {
     /// - Returns: Error message if invalid, nil if valid
     static func validateNotEmpty(_ text: String, fieldName: String) -> String? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Use centralized error messages when possible
+        if fieldName == "Title" {
+            return trimmed.isEmpty ? ErrorMessages.Validation.titleRequired : nil
+        } else if fieldName == "Collection name" {
+            return trimmed.isEmpty ? ErrorMessages.Validation.collectionNameRequired : nil
+        }
         return trimmed.isEmpty ? "\(fieldName) is required" : nil
     }
     
@@ -20,6 +26,14 @@ struct ValidationHelper {
     ///   - fieldName: Name of the field for error message
     /// - Returns: Error message if invalid, nil if valid
     static func validateLength(_ text: String, max: Int, fieldName: String) -> String? {
+        // Use centralized error messages when possible
+        if fieldName == "Title" && max == AppConstants.Validation.maxTitleLength {
+            return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.titleTooLong, max) : nil
+        } else if fieldName == "Note" && max == AppConstants.Validation.maxNoteLength {
+            return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.noteTooLong, max) : nil
+        } else if fieldName == "Collection name" && max == AppConstants.Validation.maxCollectionNameLength {
+            return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.collectionNameTooLong, max) : nil
+        }
         return text.count > max ? "\(fieldName) must be less than \(max) characters" : nil
     }
     
@@ -39,6 +53,11 @@ struct ValidationHelper {
         let nameToCheck = ignoreCase ? name.lowercased() : name
         let isDuplicate = existingNames.contains { existing in
             ignoreCase ? existing.lowercased() == nameToCheck : existing == nameToCheck
+        }
+        
+        // Use centralized error messages when possible
+        if fieldName == "Collection" {
+            return isDuplicate ? ErrorMessages.Validation.duplicateCollectionName : nil
         }
         
         return isDuplicate ? "A \(fieldName.lowercased()) with this name already exists" : nil

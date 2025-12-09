@@ -124,11 +124,11 @@ struct RecorderView: View {
     private func handleReturnFromBackground() {
         guard let fileURL = recorderControl.currentFileURL else { return }
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            print("⚠️ [RecorderView] No recording file found on return from background")
+            Logger.warning("RecorderView", "No recording file found on return from background")
             return
         }
 
-        print("ℹ️ [RecorderView] Returned from background with recording file")
+        Logger.info("RecorderView", "Returned from background with recording file")
 
         // Check if recording was already saved to database
         let descriptor = FetchDescriptor<Recording>(
@@ -139,13 +139,13 @@ struct RecorderView: View {
 
         if let existingRecordings = try? modelContext.fetch(descriptor),
            !existingRecordings.isEmpty {
-            print("ℹ️ [RecorderView] Recording already saved in database")
+            Logger.info("RecorderView", "Recording already saved in database")
             // Recording already saved, UI should show check icon
             return
         }
 
         // Recording exists but not in database - auto-save it
-        print("💾 [RecorderView] Auto-saving recording after return from background")
+        Logger.info("RecorderView", "Auto-saving recording after return from background")
         performAutoSave(fileURL: fileURL)
     }
 
@@ -153,7 +153,7 @@ struct RecorderView: View {
     private func autoSaveRecordingIfNeeded() {
         guard let fileURL = recorderControl.currentFileURL else { return }
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            print("⚠️ [RecorderView] Audio file doesn't exist, skipping auto-save")
+            Logger.warning("RecorderView", "Audio file doesn't exist, skipping auto-save")
             return
         }
 
@@ -166,11 +166,11 @@ struct RecorderView: View {
 
         if let existingRecordings = try? modelContext.fetch(descriptor),
            !existingRecordings.isEmpty {
-            print("ℹ️ [RecorderView] Recording already saved, skipping auto-save")
+            Logger.info("RecorderView", "Recording already saved, skipping auto-save")
             return
         }
 
-        print("💾 [RecorderView] Auto-saving interrupted recording")
+        Logger.info("RecorderView", "Auto-saving interrupted recording")
         performAutoSave(fileURL: fileURL)
     }
 
@@ -198,9 +198,9 @@ struct RecorderView: View {
         Task { @MainActor in
             do {
                 try modelContext.save()
-                print("✅ [RecorderView] Auto-saved interrupted recording")
+                Logger.success("RecorderView", "Auto-saved interrupted recording")
             } catch {
-                print("❌ [RecorderView] Failed to auto-save recording: \(error)")
+                Logger.error("RecorderView", "Failed to auto-save recording: \(error.localizedDescription)")
             }
         }
     }

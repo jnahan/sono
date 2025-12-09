@@ -149,7 +149,7 @@ class RecordingListViewModel: ObservableObject {
     @MainActor
     func recoverIncompleteRecordings(_ recordings: [Recording]) {
         guard let modelContext = modelContext else {
-            print("⚠️ [RecordingListViewModel] No model context configured for recovery")
+            Logger.warning("RecordingListViewModel", ErrorMessages.Transcription.noModelContext)
             return
         }
         
@@ -161,7 +161,7 @@ class RecordingListViewModel: ObservableObject {
 
         guard !pendingRecordings.isEmpty else { return }
 
-        print("🔄 [Auto-Start] Found \(pendingRecordings.count) recording(s) needing transcription")
+        Logger.info("Auto-Start", "Found \(pendingRecordings.count) recording(s) needing transcription")
 
         // Auto-start transcriptions in background
         for recording in pendingRecordings {
@@ -171,7 +171,7 @@ class RecordingListViewModel: ObservableObject {
                 continue
             }
 
-            print("✅ [Auto-Start] Starting transcription for: \(recording.title)")
+            Logger.success("Auto-Start", "Starting transcription for: \(recording.title)")
 
             // Clear any old failure reasons
             recording.failureReason = nil
@@ -185,9 +185,9 @@ class RecordingListViewModel: ObservableObject {
         // Save status updates
         do {
             try modelContext.save()
-            print("✅ [Recovery] Successfully updated incomplete recordings")
+            Logger.success("Recovery", "Successfully updated incomplete recordings")
         } catch {
-            print("❌ [Recovery] Failed to save recovered recordings: \(error)")
+            Logger.error("Recovery", "Failed to save recovered recordings: \(error.localizedDescription)")
         }
     }
     
@@ -195,7 +195,7 @@ class RecordingListViewModel: ObservableObject {
     @MainActor
     private func startBackgroundTranscription(for recording: Recording, modelContext: ModelContext) {
         guard let url = recording.resolvedURL else {
-            print("❌ [Auto-Start] No audio URL for recording: \(recording.title)")
+            Logger.error("Auto-Start", ErrorMessages.format(ErrorMessages.Transcription.noAudioURL, recording.title))
             return
         }
 
@@ -204,7 +204,7 @@ class RecordingListViewModel: ObservableObject {
         // Create transcription task
         let transcriptionTask = Task { @MainActor in
             do {
-                print("🎯 [Auto-Start] Starting transcription for: \(url.lastPathComponent)")
+                Logger.info("Auto-Start", "Starting transcription for: \(url.lastPathComponent)")
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
                     Task { @MainActor in
                         if Task.isCancelled { return }
@@ -222,7 +222,7 @@ class RecordingListViewModel: ObservableObject {
 
                 guard let existingRecordings = try? modelContext.fetch(descriptor),
                       let existingRecording = existingRecordings.first else {
-                    print("ℹ️ [Auto-Start] Recording was deleted during transcription")
+                    Logger.info("Auto-Start", ErrorMessages.Transcription.recordingDeleted)
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     return
                 }
@@ -247,13 +247,13 @@ class RecordingListViewModel: ObservableObject {
 
                 try modelContext.save()
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                print("✅ [Auto-Start] Transcription completed for: \(existingRecording.title)")
+                Logger.success("Auto-Start", "Transcription completed for: \(existingRecording.title)")
 
             } catch is CancellationError {
-                print("ℹ️ [Auto-Start] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                Logger.info("Auto-Start", "Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             } catch {
-                print("❌ [Auto-Start] Transcription error: \(error)")
+                Logger.error("Auto-Start", "Transcription error: \(error.localizedDescription)")
 
                 // Check if recording still exists before updating error state
                 let errorDescriptor = FetchDescriptor<Recording>(
@@ -263,7 +263,7 @@ class RecordingListViewModel: ObservableObject {
                 if let errorRecordings = try? modelContext.fetch(errorDescriptor),
                    let errorRecording = errorRecordings.first {
                     errorRecording.status = .inProgress
-                    errorRecording.failureReason = "Transcription was interrupted. Tap to resume."
+                    errorRecording.failureReason = ErrorMessages.Transcription.interrupted
                     try? modelContext.save()
                 }
 

@@ -71,7 +71,7 @@ final class Recorder: ObservableObject {
             
             // Prepare the recorder before starting
             guard let recorder = recorder, recorder.prepareToRecord() else {
-                print("❌ [Recorder] Failed to prepare recorder")
+                Logger.error("Recorder", "Failed to prepare recorder")
                 self.recorder = nil
                 return
             }
@@ -80,7 +80,7 @@ final class Recorder: ObservableObject {
             
             // Actually start recording and verify it started
             guard recorder.record() else {
-                print("❌ [Recorder] Failed to start recording - recorder.record() returned false")
+                Logger.error("Recorder", "Failed to start recording - recorder.record() returned false")
                 self.recorder = nil
                 return
             }
@@ -91,10 +91,10 @@ final class Recorder: ObservableObject {
             playStartFeedback()
             startMetering()
             
-            print("✅ [Recorder] Recording started successfully at: \(url.lastPathComponent)")
+            Logger.success("Recorder", "Recording started successfully at: \(url.lastPathComponent)")
         } catch {
-            print("❌ [Recorder] Failed to start recording: \(error.localizedDescription)")
-            print("   [Recorder] Error details: \(error)")
+            Logger.error("Recorder", "Failed to start recording: \(error.localizedDescription)")
+            Logger.debug("Recorder", "Error details: \(error)")
             // Reset state on failure
             recorder = nil
             fileURL = nil
@@ -112,25 +112,25 @@ final class Recorder: ObservableObject {
             do {
                 let session = AVAudioSession.sharedInstance()
                 try session.setActive(false, options: .notifyOthersOnDeactivation)
-                print("✅ [Recorder] Audio session deactivated after stop")
+                Logger.success("Recorder", "Audio session deactivated after stop")
             } catch {
-                print("⚠️ [Recorder] Failed to deactivate audio session: \(error.localizedDescription)")
+                Logger.warning("Recorder", "Failed to deactivate audio session: \(error.localizedDescription)")
             }
 
             // Verify file exists and has content
             if let fileURL = fileURL {
                 let fileExists = FileManager.default.fileExists(atPath: fileURL.path)
                 let fileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64) ?? 0
-                print("✅ [Recorder] Recording stopped. File exists: \(fileExists), Size: \(fileSize) bytes")
+                Logger.success("Recorder", "Recording stopped. File exists: \(fileExists), Size: \(fileSize) bytes")
 
                 if fileExists && fileSize > 0 {
-                    print("✅ [Recorder] Recording file properly finalized at: \(fileURL.lastPathComponent)")
+                    Logger.success("Recorder", "Recording file properly finalized at: \(fileURL.lastPathComponent)")
                 } else {
-                    print("⚠️ [Recorder] Recording file may be corrupted or empty")
+                    Logger.warning("Recorder", "Recording file may be corrupted or empty")
                 }
             }
         } else {
-            print("⚠️ [Recorder] Stop called but recorder was not recording")
+            Logger.warning("Recorder", "Stop called but recorder was not recording")
         }
         playStopFeedback()
         isRecording = false
@@ -226,7 +226,7 @@ final class Recorder: ObservableObject {
         case .began:
             // Interruption began (phone call, alarm, etc.)
             if isRecording {
-                print("⚠️ [Recorder] Audio session interrupted - stopping recording")
+                Logger.warning("Recorder", "Audio session interrupted - stopping recording")
                 wasInterrupted = true
                 stop()
             }
@@ -239,7 +239,7 @@ final class Recorder: ObservableObject {
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
 
             if options.contains(.shouldResume) {
-                print("ℹ️ [Recorder] Audio session interruption ended - can resume")
+                Logger.info("Recorder", "Audio session interruption ended - can resume")
                 // We don't auto-resume recording, let user decide
             }
 
@@ -259,7 +259,7 @@ final class Recorder: ObservableObject {
         case .oldDeviceUnavailable:
             // Headphones unplugged or audio device removed
             if isRecording {
-                print("⚠️ [Recorder] Audio device removed - stopping recording")
+                Logger.warning("Recorder", "Audio device removed - stopping recording")
                 wasInterrupted = true
                 stop()
             }

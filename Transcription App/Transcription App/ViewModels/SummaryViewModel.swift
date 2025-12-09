@@ -27,7 +27,7 @@ class SummaryViewModel: ObservableObject {
     /// - Parameter modelContext: The SwiftData model context to save the summary
     func generateSummary(modelContext: ModelContext) async {
         guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            summaryError = "Cannot generate summary: transcription is empty."
+            summaryError = ErrorMessages.Summary.emptyTranscription
             return
         }
         
@@ -63,7 +63,7 @@ class SummaryViewModel: ObservableObject {
 
             // Validate response
             guard LLMResponseValidator.isValid(summary) else {
-                summaryError = "Model returned invalid response. Please try again."
+                summaryError = ErrorMessages.Summary.invalidResponse
                 isGeneratingSummary = false
                 return
             }
@@ -84,18 +84,18 @@ class SummaryViewModel: ObservableObject {
                 do {
                     try modelContext.save()
                 } catch {
-                    summaryError = "Failed to save summary: \(error.localizedDescription)"
+                    summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
                 }
             }
             
         } catch {
-            print("❌ [SummaryView] Summary generation error: \(error)")
-            summaryError = "Failed to generate summary: \(error.localizedDescription)"
+            Logger.error("SummaryViewModel", "Summary generation error: \(error.localizedDescription)")
+            summaryError = ErrorMessages.format(ErrorMessages.Summary.generationFailed, error.localizedDescription)
             streamingSummary = ""
         }
 
         isGeneratingSummary = false
-        print("📊 [SummaryView] Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
+        Logger.info("SummaryViewModel", "Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
     }
 }
 

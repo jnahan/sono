@@ -20,6 +20,8 @@
 		5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */; };
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
+		5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713C2EE50DC900A34B20 /* Logger.swift */; };
+		5D92713D2EE50DC900A34B21 /* ErrorMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */; };
 		5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */; };
 		5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */; };
 		5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */; };
@@ -102,6 +104,8 @@
 		5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifiable.swift"; sourceTree = "<group>"; };
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		5D92713C2EE50DC900A34B20 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessages.swift; sourceTree = "<group>"; };
 		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
 		5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateGradientView.swift; sourceTree = "<group>"; };
 		5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
@@ -216,6 +220,7 @@
 				5D0ED11C2EE131860003E775 /* ShareHelper.swift */,
 				5D0ED11E2EE1318F0003E775 /* ValidationHelper.swift */,
 				5D0ED1362EE150000003E775 /* LanguageMapper.swift */,
+				5D92713C2EE50DC900A34B20 /* Logger.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -236,6 +241,7 @@
 			isa = PBXGroup;
 			children = (
 				5D0ED1262EE134920003E775 /* AppConstants.swift */,
+				5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */,
 				A5EEB64612AFEDCE986F8B87 /* LLMPrompts.swift */,
 			);
 			path = Core;
@@ -575,6 +581,7 @@
 				5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */,
 				5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */,
 				5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */,
+				5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */,
 				5D214A372ED8238B0069565D /* Collection.swift in Sources */,
 				5D15706B2EDA154A0094E13E /* AudioPlayerControls.swift in Sources */,
 				5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */,
@@ -600,6 +607,7 @@
 				5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */,
 				5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */,
 				5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */,
+				5D92713D2EE50DC900A34B21 /* ErrorMessages.swift in Sources */,
 				5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */,
 				5D214A3A2ED8263B0069565D /* RecordingSegment.swift in Sources */,
 				5DB579082ED8475F002DC84D /* NewRecordingSheet.swift in Sources */,

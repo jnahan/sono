@@ -222,14 +222,14 @@ class RecordingFormViewModel: ObservableObject {
             
             // Now transcribe with the ready model
             guard let recordingId = autoSavedRecording?.id else {
-                print("⚠️ [RecordingForm] No recording ID available, cannot start transcription")
+                Logger.warning("RecordingForm", "No recording ID available, cannot start transcription")
                 return
             }
             
             // Create a cancellable task
             let transcriptionTask = Task { @MainActor in
                 do {
-                    print("🎯 [RecordingForm] Starting transcription for: \(url.lastPathComponent)")
+                    Logger.info("RecordingForm", "Starting transcription for: \(url.lastPathComponent)")
                     let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
                         Task { @MainActor in
                             // Check if task was cancelled
@@ -245,17 +245,15 @@ class RecordingFormViewModel: ObservableObject {
                     // Check if task was cancelled before processing results
                     try Task.checkCancellation()
                     
-                    print("✅ [RecordingForm] Transcription completed successfully")
+                    Logger.success("RecordingForm", "Transcription completed successfully")
                     handleTranscriptionResult(result, modelContext: transcriptionModelContext, recordingId: recordingId)
                 } catch is CancellationError {
-                    print("ℹ️ [RecordingForm] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                    Logger.info("RecordingForm", "Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
                     // Clean up on cancellation
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     isTranscribing = false
                 } catch {
-                    print("❌ [RecordingForm] Transcription error: \(error)")
-                    print("   Error type: \(type(of: error))")
-                    print("   Error description: \(error.localizedDescription)")
+                    Logger.error("RecordingForm", "Transcription error: \(error.localizedDescription)")
                     handleTranscriptionError(error, recordingId: recordingId)
                 }
             }
@@ -273,7 +271,7 @@ class RecordingFormViewModel: ObservableObject {
     private func handleTranscriptionResult(_ result: TranscriptionResult, modelContext: ModelContext?, recordingId: UUID) {
         // Check if recording still exists before updating
         guard let context = modelContext else {
-            print("⚠️ [RecordingForm] No model context, cannot update recording")
+            Logger.warning("RecordingForm", "No model context, cannot update recording")
             TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             return
         }
@@ -287,7 +285,7 @@ class RecordingFormViewModel: ObservableObject {
         
         guard let existingRecordings = try? context.fetch(descriptor),
               let recording = existingRecordings.first else {
-            print("ℹ️ [RecordingForm] Recording was deleted, skipping transcription result update")
+            Logger.info("RecordingForm", ErrorMessages.Transcription.recordingDeletedDuringTranscription)
             TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             isTranscribing = false
             return
@@ -305,10 +303,7 @@ class RecordingFormViewModel: ObservableObject {
         transcriptionProgress = 1.0 // Complete
         isTranscribing = false
 
-        print("✅ [RecordingForm] Transcription completed:")
-        print("   - Text length: \(transcribedText.count)")
-        print("   - Segments: \(transcribedSegments.count)")
-        print("   - Language: \(transcribedLanguage)")
+        Logger.success("RecordingForm", "Transcription completed - Text length: \(transcribedText.count), Segments: \(transcribedSegments.count), Language: \(transcribedLanguage)")
 
         // Update recording with transcription results
         recording.fullText = transcribedText
@@ -328,12 +323,12 @@ class RecordingFormViewModel: ObservableObject {
 
         do {
             try context.save()
-            print("✅ [RecordingForm] Auto-saved recording updated with transcription")
+            Logger.success("RecordingForm", "Auto-saved recording updated with transcription")
 
             // Mark transcription complete in progress manager
             TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
         } catch {
-            print("❌ [RecordingForm] Failed to update recording: \(error)")
+            Logger.error("RecordingForm", "Failed to update recording: \(error.localizedDescription)")
             TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
         }
     }
@@ -360,17 +355,17 @@ class RecordingFormViewModel: ObservableObject {
                     // Save as .inProgress so user can resume, not .failed
                     // This allows graceful recovery for all error types
                     recording.status = .inProgress
-                    recording.failureReason = "Transcription was interrupted. Tap to resume."
+                    recording.failureReason = ErrorMessages.Transcription.interrupted
 
                     // Save the context to persist the state
                     try? context.save()
 
                     // Show user-friendly error toast
-                    showError("Transcription was interrupted. You can resume from the home page.")
+                    showError(ErrorMessages.Transcription.interruptedWithDetails)
 
-                    print("⚠️ [RecordingForm] Transcription error handled gracefully: \(error.localizedDescription)")
+                    Logger.warning("RecordingForm", "Transcription error handled gracefully: \(error.localizedDescription)")
                 } else {
-                    print("ℹ️ [RecordingForm] Recording was deleted, skipping error handling")
+                    Logger.info("RecordingForm", "Recording was deleted, skipping error handling")
                 }
             }
         }
@@ -399,7 +394,7 @@ class RecordingFormViewModel: ObservableObject {
 
         // Check if transcription completed while backgrounded
         if recording.status == .completed {
-            print("✅ [RecordingForm] Transcription completed while backgrounded")
+            Logger.success("RecordingForm", "Transcription completed while backgrounded")
             isTranscribing = false
             transcriptionProgress = 1.0
             transcribedText = recording.fullText
@@ -414,12 +409,12 @@ class RecordingFormViewModel: ObservableObject {
 
             // Check if transcription task is still active
             if !TranscriptionProgressManager.shared.hasActiveTranscription(for: recordingId) {
-                print("⚠️ [RecordingForm] Transcription was interrupted - restarting")
+                Logger.warning("RecordingForm", "Transcription was interrupted - restarting")
                 // Transcription was interrupted by backgrounding - restart it
                 wasBackgroundedDuringTranscription = false
                 startTranscription(modelContext: modelContext)
             } else {
-                print("ℹ️ [RecordingForm] Transcription still running after return from background")
+                Logger.info("RecordingForm", "Transcription still running after return from background")
                 wasBackgroundedDuringTranscription = false
             }
         }
@@ -430,21 +425,21 @@ class RecordingFormViewModel: ObservableObject {
     func handleLowMemory(modelContext: ModelContext) {
         guard let recording = autoSavedRecording else { return }
 
-        print("⚠️ [RecordingForm] Handling low memory - stopping transcription")
+        Logger.warning("RecordingForm", "Handling low memory - stopping transcription")
 
         // Cancel the active transcription task
         TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
 
         // Update recording status to indicate interruption
         recording.status = .inProgress
-        recording.failureReason = "Transcription was interrupted due to low memory. Tap to resume."
+        recording.failureReason = ErrorMessages.Transcription.interruptedLowMemory
 
         // Save the state
         do {
             try modelContext.save()
-            print("✅ [RecordingForm] Saved recording state after low memory warning")
+            Logger.success("RecordingForm", "Saved recording state after low memory warning")
         } catch {
-            print("❌ [RecordingForm] Failed to save recording state: \(error)")
+            Logger.error("RecordingForm", "Failed to save recording state: \(error.localizedDescription)")
         }
 
         // Update UI state
@@ -458,7 +453,7 @@ class RecordingFormViewModel: ObservableObject {
         guard let url = audioURL else { return }
         guard autoSavedRecording == nil else { return } // Already auto-saved
 
-        print("💾 [RecordingForm] Auto-saving recording before transcription")
+        Logger.info("RecordingForm", "Auto-saving recording before transcription")
 
         // Create recording with notStarted status
         let recording = Recording(
@@ -481,9 +476,9 @@ class RecordingFormViewModel: ObservableObject {
         do {
             try modelContext.save()
             autoSavedRecording = recording
-            print("✅ [RecordingForm] Recording auto-saved successfully")
+            Logger.success("RecordingForm", "Recording auto-saved successfully")
         } catch {
-            print("❌ [RecordingForm] Failed to auto-save recording: \(error)")
+            Logger.error("RecordingForm", "Failed to auto-save recording: \(error.localizedDescription)")
         }
     }
 
@@ -497,7 +492,7 @@ class RecordingFormViewModel: ObservableObject {
 
         // Now update the recording status - ensure it was created successfully
         guard let recording = autoSavedRecording else {
-            print("⚠️ [RecordingForm] Could not mark transcription started - auto-save recording is nil")
+            Logger.warning("RecordingForm", "Could not mark transcription started - auto-save recording is nil")
             return
         }
 
@@ -506,9 +501,9 @@ class RecordingFormViewModel: ObservableObject {
 
         do {
             try modelContext.save()
-            print("✅ [RecordingForm] Marked transcription as in progress")
+            Logger.success("RecordingForm", "Marked transcription as in progress")
         } catch {
-            print("❌ [RecordingForm] Failed to update recording status: \(error)")
+            Logger.error("RecordingForm", "Failed to update recording status: \(error.localizedDescription)")
         }
     }
 
@@ -533,11 +528,7 @@ class RecordingFormViewModel: ObservableObject {
             recording.segments.append(segment)
         }
 
-        print("✅ [RecordingForm] Updated auto-saved recording:")
-        print("   - Title: \(recording.title)")
-        print("   - FullText length: \(recording.fullText.count)")
-        print("   - Segments: \(recording.segments.count)")
-        print("   - TranscribedText length: \(transcribedText.count)")
+        Logger.success("RecordingForm", "Updated auto-saved recording - Title: \(recording.title), FullText length: \(recording.fullText.count), Segments: \(recording.segments.count), TranscribedText length: \(transcribedText.count)")
     }
     
     // MARK: - Save
@@ -569,10 +560,10 @@ class RecordingFormViewModel: ObservableObject {
 
             do {
                 try modelContext.save()
-                print("✅ [RecordingForm] Recording saved successfully")
+                Logger.success("RecordingForm", "Recording saved successfully")
                 return recording
             } catch {
-                print("❌ [RecordingForm] Failed to save recording: \(error)")
+                Logger.error("RecordingForm", "Failed to save recording: \(error.localizedDescription)")
                 return nil
             }
         }
@@ -580,7 +571,7 @@ class RecordingFormViewModel: ObservableObject {
         // Fallback: Create new recording if auto-save didn't happen
         guard let url = audioURL else { return nil }
 
-        print("💾 [RecordingForm] Saving recording with fullText length: \(transcribedText.count)")
+        Logger.info("RecordingForm", "Saving recording with fullText length: \(transcribedText.count)")
 
         // Determine status based on transcription
         let status: TranscriptionStatus
@@ -618,11 +609,11 @@ class RecordingFormViewModel: ObservableObject {
         // Save the context to persist the recording
         do {
             try modelContext.save()
-            print("✅ [RecordingForm] Recording saved successfully")
+            Logger.success("RecordingForm", "Recording saved successfully")
             autoSavedRecording = recording
             return recording
         } catch {
-            print("❌ [RecordingForm] Failed to save recording: \(error)")
+            Logger.error("RecordingForm", "Failed to save recording: \(error.localizedDescription)")
             return nil
         }
     }

@@ -24,6 +24,24 @@ enum AppConstants {
         static let minValidResponseLength = 10
     }
     
+    /// Transcription service constants
+    enum Transcription {
+        /// Lock timeout for queue operations (seconds)
+        static let lockTimeout: TimeInterval = 5.0
+        
+        /// Lock retry interval (seconds)
+        static let lockRetryInterval: TimeInterval = 0.01
+        
+        /// Wait validation interval (number of retries before validating state)
+        static let waitValidationInterval = 150
+        
+        /// Wait interval between queue checks (seconds)
+        static let waitInterval: TimeInterval = 0.2
+        
+        /// Model warm-up wait interval (nanoseconds)
+        static let modelWarmupWaitInterval: UInt64 = 500_000_000 // 0.5 seconds
+    }
+    
     /// UI spacing and layout constants
     enum UI {
         /// Standard spacing values

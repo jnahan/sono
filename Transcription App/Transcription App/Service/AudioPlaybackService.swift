@@ -38,7 +38,7 @@ final class AudioPlaybackService: ObservableObject {
     /// - Parameter url: URL of the audio file to preload
     func preload(url: URL) {
         guard FileManager.default.fileExists(atPath: url.path) else {
-            print("⚠️ [AudioPlayback] File not found: \(url.path)")
+            Logger.warning("AudioPlayback", "File not found: \(url.path)")
             return
         }
 
@@ -66,12 +66,12 @@ final class AudioPlaybackService: ObservableObject {
             progress = 0
             
             if prepared {
-                print("✅ [AudioPlayback] Preloaded: \(url.lastPathComponent), duration: \(duration)s")
+                Logger.success("AudioPlayback", "Preloaded: \(url.lastPathComponent), duration: \(duration)s")
             } else {
-                print("⚠️ [AudioPlayback] Preloaded but prepareToPlay() returned false")
+                Logger.warning("AudioPlayback", "Preloaded but prepareToPlay() returned false")
             }
         } catch {
-            print("❌ [AudioPlayback] Failed to load: \(error.localizedDescription)")
+            Logger.error("AudioPlayback", "Failed to load: \(error.localizedDescription)")
             player = nil
             currentURL = nil
         }
@@ -100,7 +100,7 @@ final class AudioPlaybackService: ObservableObject {
     /// Plays the currently loaded audio
     func play() {
         guard let player else {
-            print("⚠️ [AudioPlayback] Cannot play - no player loaded")
+            Logger.warning("AudioPlayback", "Cannot play - no player loaded")
             return
         }
 
@@ -114,15 +114,15 @@ final class AudioPlaybackService: ObservableObject {
             try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
             try session.setActive(true)
             
-            print("✅ [AudioPlayback] Audio session configured and activated")
+            Logger.success("AudioPlayback", "Audio session configured and activated")
         } catch {
-            print("⚠️ [AudioPlayback] Failed to configure audio session: \(error.localizedDescription)")
+            Logger.warning("AudioPlayback", "Failed to configure audio session: \(error.localizedDescription)")
             return
         }
 
         // Ensure player is prepared
         if !player.prepareToPlay() {
-            print("⚠️ [AudioPlayback] prepareToPlay() returned false")
+            Logger.warning("AudioPlayback", "prepareToPlay() returned false")
         }
         
         let success = player.play()
@@ -133,14 +133,14 @@ final class AudioPlaybackService: ObservableObject {
                 if player.isPlaying {
                     self.isPlaying = true
                     self.startProgressTracking()
-                    print("✅ [AudioPlayback] Started playing - verified isPlaying=true")
+                    Logger.success("AudioPlayback", "Started playing - verified isPlaying=true")
                 } else {
-                    print("❌ [AudioPlayback] player.play() returned true but isPlaying=false")
+                    Logger.error("AudioPlayback", "player.play() returned true but isPlaying=false")
                     self.isPlaying = false
                 }
             }
         } else {
-            print("❌ [AudioPlayback] player.play() returned false")
+            Logger.error("AudioPlayback", "player.play() returned false")
             isPlaying = false
         }
     }
@@ -226,7 +226,7 @@ final class AudioPlaybackService: ObservableObject {
         if !player.isPlaying && isPlaying {
             isPlaying = false
             stopProgressTracking()
-            print("✅ [AudioPlayback] Playback finished")
+            Logger.success("AudioPlayback", "Playback finished")
         }
     }
 }
