@@ -1,85 +1,75 @@
 import SwiftUI
 
 /// Reusable mass action buttons component for selection mode
-/// Displays Delete, Copy, and Move buttons with gradient fade and divider
+/// Displays icon-only buttons for Move, Delete, Copy, and Export
 struct MassActionButtons: View {
     let onDelete: () -> Void
     let onCopy: () -> Void
     let onMove: () -> Void
-    
+    var onExport: (() -> Void)? = nil
+
     var horizontalPadding: CGFloat = AppConstants.UI.Spacing.large
     var bottomPadding: CGFloat = 0
     var bottomSafeAreaPadding: CGFloat = 0
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            // Gradient fade at top of buttons
-            LinearGradient(
-                colors: [Color.warmGray50.opacity(0), Color.warmGray50],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 20)
-            
-            Divider()
-                .background(Color.warmGray200)
-            
-            // Action buttons
-            HStack(spacing: 12) {
+            // Top stroke only
+            Rectangle()
+                .fill(Color.warmGray200)
+                .frame(height: 1)
+
+            // Icon buttons
+            HStack(spacing: 0) {
+                // Move button
+                Button(action: onMove) {
+                    Image("folder-open")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.baseBlack)
+                }
+
+                Spacer()
+
                 // Delete button
                 Button(action: onDelete) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .medium))
-                        Text("Delete")
-                            .font(.interMedium(size: 16))
-                    }
-                    .foregroundColor(.baseWhite)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.accent)
-                    .cornerRadius(12)
+                    Image(systemName: "trash")
+                        .font(.system(size: 24))
+                        .foregroundColor(.baseBlack)
                 }
-                
+
+                Spacer()
+
                 // Copy button
                 Button(action: onCopy) {
-                    HStack(spacing: 8) {
-                        Image("copy")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 16, height: 16)
-                        Text("Copy")
-                            .font(.interMedium(size: 16))
-                    }
-                    .foregroundColor(.baseBlack)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.warmGray200)
-                    .cornerRadius(12)
+                    Image("copy")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.baseBlack)
                 }
-                
-                // Move to collection button
-                Button(action: onMove) {
-                    HStack(spacing: 8) {
-                        Image("folder-plus")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 16, height: 16)
-                        Text("Move")
-                            .font(.interMedium(size: 16))
-                    }
-                    .foregroundColor(.baseBlack)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.warmGray200)
-                    .cornerRadius(12)
+
+                Spacer()
+
+                // Export button
+                Button(action: onExport ?? {}) {
+                    Image("export")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.baseBlack)
                 }
+                .disabled(onExport == nil)
+                .opacity(onExport == nil ? 0.3 : 1.0)
             }
-            .padding(.horizontal, horizontalPadding)
+            .padding(.horizontal, 32)
             .padding(.top, 12)
-            .padding(.bottom, bottomPadding)
+            .padding(.bottom, 48)
+            .background(Color.warmGray50)
         }
         .padding(.bottom, bottomSafeAreaPadding)
     }

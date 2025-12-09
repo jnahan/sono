@@ -41,7 +41,7 @@ struct SummaryView: View {
     private var streamingSummaryView: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(viewModel.streamingSummary)
-                .font(.custom("Inter-Regular", size: 16))
+                .font(.custom("DMSans-Regular", size: 16))
                 .foregroundColor(.baseBlack)
                 .transition(.opacity)
             
@@ -69,7 +69,7 @@ struct SummaryView: View {
             ProgressView()
                 .scaleEffect(1.2)
             Text("Generating summary...")
-                .font(.custom("Inter-Regular", size: 16))
+                .font(.custom("DMSans-Regular", size: 16))
                 .foregroundColor(.warmGray500)
         }
         .frame(maxWidth: .infinity)
@@ -83,7 +83,7 @@ struct SummaryView: View {
                     .font(.system(size: 32))
                     .foregroundColor(.warmGray400)
                 Text(error)
-                    .font(.custom("Inter-Regular", size: 16))
+                    .font(.custom("DMSans-Regular", size: 16))
                     .foregroundColor(.warmGray500)
                     .multilineTextAlignment(.center)
             }
@@ -94,7 +94,7 @@ struct SummaryView: View {
                 }
             }) {
                 Text("Try Again")
-                    .font(.interSemiBold(size: 16))
+                    .font(.dmSansSemiBold(size: 16))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -110,7 +110,7 @@ struct SummaryView: View {
     private func summaryContentView(summary: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(summary)
-                .font(.custom("Inter-Regular", size: 16))
+                .font(.custom("DMSans-Regular", size: 16))
                 .foregroundColor(.baseBlack)
             
             Button(action: {
@@ -119,7 +119,7 @@ struct SummaryView: View {
                 }
             }) {
                 Text("Regenerate Summary")
-                    .font(.interSemiBold(size: 14))
+                    .font(.dmSansSemiBold(size: 14))
                     .foregroundColor(Color.accent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
@@ -137,7 +137,7 @@ struct SummaryView: View {
                     .font(.system(size: 32))
                     .foregroundColor(.warmGray400)
                 Text("No summary available")
-                    .font(.custom("Inter-Regular", size: 16))
+                    .font(.custom("DMSans-Regular", size: 16))
                     .foregroundColor(.warmGray500)
             }
             
@@ -147,7 +147,7 @@ struct SummaryView: View {
                 }
             }) {
                 Text("Generate Summary")
-                    .font(.interSemiBold(size: 16))
+                    .font(.dmSansSemiBold(size: 16))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)

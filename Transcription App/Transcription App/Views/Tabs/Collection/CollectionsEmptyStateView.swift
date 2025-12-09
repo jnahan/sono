@@ -9,7 +9,7 @@ struct CollectionsEmptyStateView: View {
             
             VStack(spacing: 24) {
                 Text("Organize your\nrecordings")
-                    .font(.libreMedium(size: 24))
+                    .font(.dmSansMedium(size: 24))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.baseBlack)
 

@@ -37,7 +37,7 @@ struct AskSonoView: View {
                                 // Empty state
                                 VStack(spacing: 12) {
                                     Text("How can I help you")
-                                        .font(.libreMedium(size: 24))
+                                        .font(.dmSansMedium(size: 24))
                                         .foregroundColor(.baseBlack)
                                         .padding(.top, 40)
                                 }
@@ -54,7 +54,7 @@ struct AskSonoView: View {
                                         ProgressView()
                                             .scaleEffect(0.8)
                                         Text("Thinking...")
-                                            .font(.custom("Inter-Regular", size: 14))
+                                            .font(.custom("DMSans-Regular", size: 14))
                                             .foregroundColor(.warmGray500)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -100,14 +100,14 @@ struct AskSonoView: View {
                         ZStack(alignment: .leading) {
                             if viewModel.userPrompt.isEmpty {
                                 Text("Ask me anything...")
-                                    .font(.custom("Inter-Regular", size: 16))
+                                    .font(.custom("DMSans-Regular", size: 16))
                                     .foregroundColor(.warmGray400)
                                     .padding(.leading, 16)
                                     .padding(.vertical, 12)
                             }
 
                             TextField("", text: $viewModel.userPrompt, axis: .vertical)
-                                .font(.custom("Inter-Regular", size: 16))
+                                .font(.custom("DMSans-Regular", size: 16))
                                 .foregroundColor(.baseBlack)
                                 .tint(.baseBlack)
                                 .focused($isInputFocused)
@@ -164,7 +164,7 @@ struct AskSonoView: View {
                 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(message.text)
-                        .font(.custom("Inter-Regular", size: 16))
+                        .font(.custom("DMSans-Regular", size: 16))
                         .foregroundColor(.baseBlack)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
@@ -179,7 +179,7 @@ struct AskSonoView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .bottom, spacing: 0) {
                             Text(message.text)
-                                .font(.custom("Inter-Regular", size: 16))
+                                .font(.custom("DMSans-Regular", size: 16))
                                 .foregroundColor(.baseBlack)
                             
                             // Show typing cursor if this is the streaming message

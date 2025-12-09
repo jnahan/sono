@@ -60,7 +60,7 @@ struct SelectionListView: View {
                                 
                                 if let description = item.description {
                                     Text(description)
-                                        .font(.interMedium(size: 14))
+                                        .font(.dmSansMedium(size: 14))
                                         .foregroundColor(.warmGray400)
                                 }
                             }

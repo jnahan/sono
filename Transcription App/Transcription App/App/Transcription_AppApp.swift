@@ -48,7 +48,7 @@ struct Transcription_AppApp: App {
 
                 MainTabView()
                     .modelContainer(sharedModelContainer)
-                    .environment(\.font, .custom("Inter-Regular", size: 16))
+                    .environment(\.font, .custom("DMSans-Regular", size: 16))
             }
         }
     }

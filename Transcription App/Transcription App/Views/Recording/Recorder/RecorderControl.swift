@@ -26,7 +26,7 @@ struct RecorderControl: View {
                     // Timer display and waveform section
                     VStack(spacing: 0) {
                         Text(TimeFormatter.formatTimestamp(elapsedTime))
-                            .font(.interMedium(size: 14))
+                            .font(.dmSansMedium(size: 14))
                             .foregroundColor(.warmGray700)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)

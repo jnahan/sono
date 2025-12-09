@@ -5,7 +5,7 @@ struct AppButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.interSemiBold(size: 16))
+            .font(.dmSansSemiBold(size: 16))
             .foregroundColor(.baseWhite)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 16)
@@ -26,7 +26,7 @@ struct WarningButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.interSemiBold(size: 16))
+            .font(.dmSansSemiBold(size: 16))
             .foregroundColor(.baseWhite)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 16)
@@ -47,7 +47,7 @@ struct GhostButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.interSemiBold(size: 16))
+            .font(.dmSansSemiBold(size: 16))
             .foregroundColor(isEnabled ? .baseBlack : .warmGray400)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 16)

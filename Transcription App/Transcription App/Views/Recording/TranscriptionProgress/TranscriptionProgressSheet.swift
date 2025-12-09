@@ -30,7 +30,7 @@ struct TranscriptionProgressSheet: View {
                 if progressManager.isQueued(recordingId: recording.id) {
                     // Queued state
                     Text("Waiting to transcribe")
-                        .font(.custom("LibreBaskerville-Regular", size: 24))
+                        .font(.custom("DMSans-Medium", size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                     
@@ -42,11 +42,11 @@ struct TranscriptionProgressSheet: View {
                 } else if transcriptionError == nil {
                     // Progress percentage (actively transcribing)
                     Text("\(Int(transcriptionProgress * 100))%")
-                        .font(.custom("LibreBaskerville-Regular", size: 64))
+                        .font(.custom("DMSans-Bold", size: 64))
                         .foregroundColor(.baseBlack)
-                    
+
                     Text("Transcription in progress")
-                        .font(.custom("LibreBaskerville-Regular", size: 24))
+                        .font(.custom("DMSans-Medium", size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                     
@@ -63,21 +63,21 @@ struct TranscriptionProgressSheet: View {
                         .padding(.bottom, 16)
                     
                     Text("Transcription Failed")
-                        .font(.custom("LibreBaskerville-Regular", size: 24))
+                        .font(.custom("DMSans-Medium", size: 24))
                         .foregroundColor(.baseBlack)
-                    
+
                     Text(transcriptionError ?? "Unknown error")
                         .font(.system(size: 16))
                         .foregroundColor(.warmGray500)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                         .padding(.top, 8)
-                    
+
                     Button {
                         dismiss()
                     } label: {
                         Text("Go Back")
-                            .font(.custom("LibreBaskerville-Regular", size: 16))
+                            .font(.custom("DMSans-Regular", size: 16))
                     }
                     .buttonStyle(AppButtonStyle())
                     .padding(.top, 24)

@@ -20,8 +20,6 @@
 		5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */; };
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
-		5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713C2EE50DC900A34B20 /* Logger.swift */; };
-		5D92713D2EE50DC900A34B21 /* ErrorMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */; };
 		5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */; };
 		5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */; };
 		5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */; };
@@ -42,6 +40,8 @@
 		5D214A3A2ED8263B0069565D /* RecordingSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D214A392ED8263B0069565D /* RecordingSegment.swift */; };
 		5D4622D42ED83570009A454D /* RecordingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4622D32ED83570009A454D /* RecordingFormView.swift */; };
 		5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */; };
+		5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */; };
+		5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */; };
 		5D70377C2ECD90B200D061E3 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5D70377B2ECD90B200D061E3 /* WhisperKit */; };
 		5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */; };
 		5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */; };
@@ -54,6 +54,8 @@
 		5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */; };
 		5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271382EE50DC900A34B18 /* MassActionButtons.swift */; };
 		5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */; };
+		5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713C2EE50DC900A34B20 /* Logger.swift */; };
+		5D92713D2EE50DC900A34B21 /* ErrorMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */; };
 		5D962F222ECE87ED00049626 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F212ECE87ED00049626 /* Recorder.swift */; };
 		5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */; };
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
@@ -104,8 +106,6 @@
 		5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifiable.swift"; sourceTree = "<group>"; };
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
-		5D92713C2EE50DC900A34B20 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessages.swift; sourceTree = "<group>"; };
 		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
 		5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateGradientView.swift; sourceTree = "<group>"; };
 		5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
@@ -125,6 +125,8 @@
 		5D214A392ED8263B0069565D /* RecordingSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegment.swift; sourceTree = "<group>"; };
 		5D4622D32ED83570009A454D /* RecordingFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormView.swift; sourceTree = "<group>"; };
 		5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-Italic-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
+		5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5D7925A82ECD8E4A002889A6 /* Transcription App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transcription App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcription_AppApp.swift; sourceTree = "<group>"; };
 		5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
@@ -137,6 +139,8 @@
 		5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryViewModel.swift; sourceTree = "<group>"; };
 		5D9271382EE50DC900A34B18 /* MassActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassActionButtons.swift; sourceTree = "<group>"; };
 		5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsListView.swift; sourceTree = "<group>"; };
+		5D92713C2EE50DC900A34B20 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessages.swift; sourceTree = "<group>"; };
 		5D962F212ECE87ED00049626 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderVisualizer.swift; sourceTree = "<group>"; };
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
@@ -406,6 +410,8 @@
 		5DB579282ED8EC99002DC84D /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */,
+				5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */,
 				5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */,
 				5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */,
 			);
@@ -553,10 +559,12 @@
 			files = (
 				5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */,
 				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
+				5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */,
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
 				5DC587812EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
+				5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

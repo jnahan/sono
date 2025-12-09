@@ -26,7 +26,7 @@ struct CollectionsRowView: View {
             // Collection Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(collection.name)
-                    .font(.interMedium(size: 16))
+                    .font(.dmSansMedium(size: 16))
                     .foregroundColor(.baseBlack)
                 
                 Text("\(recordingCount) recordings")

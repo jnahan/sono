@@ -29,7 +29,7 @@ struct CollectionFormSheet: View {
             
             // Title
             Text(isEditing ? "Rename collection" : "Create collection")
-                .font(.custom("LibreBaskerville-Regular", size: 24))
+                .font(.custom("DMSans-Medium", size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.bottom, 32)
             

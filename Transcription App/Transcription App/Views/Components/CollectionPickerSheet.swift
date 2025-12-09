@@ -44,7 +44,7 @@ struct CollectionPickerSheet: View {
             
             // Title
             Text("Choose a collection")
-                .font(.custom("LibreBaskerville-Regular", size: 24))
+                .font(.custom("DMSans-Medium", size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.bottom, 32)
             
@@ -68,7 +68,7 @@ struct CollectionPickerSheet: View {
                         }
                         
                         Text("Create collection")
-                            .font(.interMedium(size: 16))
+                            .font(.dmSansMedium(size: 16))
                             .foregroundColor(.baseBlack)
                         
                         Spacer()
@@ -95,7 +95,7 @@ struct CollectionPickerSheet: View {
                             }
                             
                             Text("Remove from collection")
-                                .font(.interMedium(size: 16))
+                                .font(.dmSansMedium(size: 16))
                                 .foregroundColor(.baseBlack)
                             
                             Spacer()
@@ -137,7 +137,7 @@ struct CollectionPickerSheet: View {
                             }
                             
                             Text(collection.name)
-                                .font(.interMedium(size: 16))
+                                .font(.dmSansMedium(size: 16))
                                 .foregroundColor(.baseBlack)
                             
                             Spacer()

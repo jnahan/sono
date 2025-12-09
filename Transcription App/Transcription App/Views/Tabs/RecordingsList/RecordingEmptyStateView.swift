@@ -7,7 +7,7 @@ struct RecordingEmptyStateView: View {
             
             VStack(spacing: 32) {
                 Text("Create your \nfirst recording")
-                    .font(.libreMedium(size: 24))
+                    .font(.dmSansMedium(size: 24))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.baseBlack)
                 

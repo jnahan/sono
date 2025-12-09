@@ -62,7 +62,7 @@ struct RecordingDetailsView: View {
                         .foregroundColor(.warmGray500)
 
                     Text(recording.title)
-                        .font(.custom("LibreBaskerville-Medium", size: 24))
+                        .font(.custom("DMSans-Medium", size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
@@ -242,12 +242,12 @@ struct RecordingDetailsView: View {
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(TimeFormatter.formatTimestamp(segment.start))
-                                    .font(.custom("Inter-Regular", size: 14))
+                                    .font(.custom("DMSans-Regular", size: 14))
                                     .foregroundColor(.warmGray400)
                                     .monospacedDigit()
                                 
                                 Text(attributedText(for: segment.text, isActive: isActive))
-                                    .font(.custom("Inter-Regular", size: 16))
+                                    .font(.custom("DMSans-Regular", size: 16))
                                     .foregroundColor(.baseBlack)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -274,7 +274,7 @@ struct RecordingDetailsView: View {
                     } else {
                         // Show full text when timestamps are disabled or no segments
                         Text(recording.fullText)
-                            .font(.custom("Inter-Regular", size: 16))
+                            .font(.custom("DMSans-Regular", size: 16))
                             .foregroundColor(.baseBlack)
                     }
                 }
@@ -333,7 +333,7 @@ struct RecordingDetailsView: View {
         
         // Set font and color using attribute container
         var container = AttributeContainer()
-        container.font = UIFont(name: "Inter-Regular", size: 16) ?? .systemFont(ofSize: 16)
+        container.font = UIFont(name: "DMSans-Regular", size: 16) ?? .systemFont(ofSize: 16)
         container.foregroundColor = UIColor(Color.baseBlack)
         
         if isActive {

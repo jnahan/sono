@@ -52,12 +52,12 @@ struct RecordingRowView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     // Date with time
                     Text(formattedDateWithTime)
-                        .font(.interMedium(size: 14))
+                        .font(.dmSansMedium(size: 14))
                         .foregroundColor(.warmGray400)
                     
                     // Title
                     Text(recording.title)
-                        .font(.interMedium(size: 16))
+                        .font(.dmSansMedium(size: 16))
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
