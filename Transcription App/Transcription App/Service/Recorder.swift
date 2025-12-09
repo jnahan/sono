@@ -106,7 +106,29 @@ final class Recorder: ObservableObject {
         stopMetering()
         if let recorder = recorder, recorder.isRecording {
             recorder.stop()
-            print("✅ [Recorder] Recording stopped. File exists: \(fileURL != nil && FileManager.default.fileExists(atPath: fileURL?.path ?? ""))")
+
+            // Ensure file is properly finalized by deactivating audio session
+            // This is crucial for recordings interrupted by backgrounding
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setActive(false, options: .notifyOthersOnDeactivation)
+                print("✅ [Recorder] Audio session deactivated after stop")
+            } catch {
+                print("⚠️ [Recorder] Failed to deactivate audio session: \(error.localizedDescription)")
+            }
+
+            // Verify file exists and has content
+            if let fileURL = fileURL {
+                let fileExists = FileManager.default.fileExists(atPath: fileURL.path)
+                let fileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64) ?? 0
+                print("✅ [Recorder] Recording stopped. File exists: \(fileExists), Size: \(fileSize) bytes")
+
+                if fileExists && fileSize > 0 {
+                    print("✅ [Recorder] Recording file properly finalized at: \(fileURL.lastPathComponent)")
+                } else {
+                    print("⚠️ [Recorder] Recording file may be corrupted or empty")
+                }
+            }
         } else {
             print("⚠️ [Recorder] Stop called but recorder was not recording")
         }

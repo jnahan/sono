@@ -96,3 +96,4 @@ class SummaryViewModel: ObservableObject {
         print("📊 [SummaryView] Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
     }
 }
+

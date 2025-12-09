@@ -98,9 +98,13 @@ struct RecorderView: View {
                 )
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
-                // Auto-save recording if app is backgrounded or terminated
+                // Handle app lifecycle transitions
                 if newPhase == .background || newPhase == .inactive {
+                    // App going to background - auto-save if needed
                     autoSaveRecordingIfNeeded()
+                } else if newPhase == .active && oldPhase == .background {
+                    // App returning to foreground from background
+                    handleReturnFromBackground()
                 }
             }
             .onChange(of: recorderControl.shouldAutoSave) { _, shouldSave in
@@ -114,6 +118,35 @@ struct RecorderView: View {
                 autoSaveRecordingIfNeeded()
             }
         }
+    }
+
+    /// Handle app returning from background
+    private func handleReturnFromBackground() {
+        guard let fileURL = recorderControl.currentFileURL else { return }
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            print("⚠️ [RecorderView] No recording file found on return from background")
+            return
+        }
+
+        print("ℹ️ [RecorderView] Returned from background with recording file")
+
+        // Check if recording was already saved to database
+        let descriptor = FetchDescriptor<Recording>(
+            predicate: #Predicate { recording in
+                recording.filePath.contains(fileURL.lastPathComponent)
+            }
+        )
+
+        if let existingRecordings = try? modelContext.fetch(descriptor),
+           !existingRecordings.isEmpty {
+            print("ℹ️ [RecorderView] Recording already saved in database")
+            // Recording already saved, UI should show check icon
+            return
+        }
+
+        // Recording exists but not in database - auto-save it
+        print("💾 [RecorderView] Auto-saving recording after return from background")
+        performAutoSave(fileURL: fileURL)
     }
 
     /// Auto-save recording if there's an audio file but user hasn't finished
@@ -138,7 +171,11 @@ struct RecorderView: View {
         }
 
         print("💾 [RecorderView] Auto-saving interrupted recording")
+        performAutoSave(fileURL: fileURL)
+    }
 
+    /// Perform the actual auto-save operation
+    private func performAutoSave(fileURL: URL) {
         // Create recording with notStarted status
         let recording = Recording(
             title: fileURL.deletingPathExtension().lastPathComponent,

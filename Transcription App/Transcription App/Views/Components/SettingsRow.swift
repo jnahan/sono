@@ -37,3 +37,4 @@ struct SettingsRow: View {
         .padding(.vertical, 16)
     }
 }
+

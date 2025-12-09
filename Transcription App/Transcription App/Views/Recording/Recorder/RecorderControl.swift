@@ -169,6 +169,33 @@ struct RecorderControl: View {
                 state.shouldAutoSave = true
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            // Backup: ensure recording is stopped when entering background
+            if rec.isRecording {
+                print("⚠️ [RecorderControl] App entered background - stopping recording")
+                stopRecording()
+                state.shouldAutoSave = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // App returning from background - finalize any interrupted recording
+            if let fileURL = rec.fileURL, !rec.isRecording {
+                print("ℹ️ [RecorderControl] App returning from background with stopped recording")
+
+                // Verify file exists and is properly saved
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    print("✅ [RecorderControl] Recording file confirmed at: \(fileURL.lastPathComponent)")
+
+                    // Ensure UI shows check icon by keeping fileURL and stopped state
+                    // The check icon appears when: !rec.isRecording && rec.fileURL != nil
+
+                    // Trigger auto-save to ensure recording is in database
+                    state.shouldAutoSave = true
+                } else {
+                    print("❌ [RecorderControl] Recording file missing after background")
+                }
+            }
+        }
         .alert("Microphone Access Needed", isPresented: $micDenied) {
             Button("OK", role: .cancel) {}
             #if canImport(UIKit)
