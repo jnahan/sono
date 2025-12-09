@@ -139,6 +139,12 @@ struct CollectionsView: View {
                         onConfirm: {
                             // Delete all recordings in this collection
                             let recordingsInCollection = recordings.filter { $0.collection?.id == collection.id }
+                            
+                            // Cancel any active transcriptions before deleting
+                            for recording in recordingsInCollection {
+                                TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+                            }
+                            
                             for recording in recordingsInCollection {
                                 modelContext.delete(recording)
                             }

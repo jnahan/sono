@@ -143,6 +143,11 @@ struct CollectionDetailView: View {
                 confirmButtonText: "Delete collection",
                 cancelButtonText: "Cancel",
                 onConfirm: {
+                    // Cancel any active transcriptions before deleting
+                    for recording in recordings {
+                        TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+                    }
+                    
                     // Delete all recordings in this collection
                     for recording in recordings {
                         modelContext.delete(recording)
@@ -279,6 +284,10 @@ struct CollectionDetailView: View {
     }
     
     private func deleteSelectedRecordings() {
+        // Cancel any active transcriptions before deleting
+        for recording in selectedRecordingsArray {
+            TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+        }
         viewModel.deleteRecordings(selectedRecordingsArray)
     }
     
@@ -347,7 +356,10 @@ struct CollectionDetailView: View {
     private func deleteRecordings(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(filteredRecordings[index])
+                let recording = filteredRecordings[index]
+                // Cancel any active transcription before deleting
+                TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+                modelContext.delete(recording)
             }
         }
     }

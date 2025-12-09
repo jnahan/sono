@@ -177,6 +177,8 @@ struct RecordingDetailsView: View {
                 confirmButtonText: "Delete recording",
                 cancelButtonText: "Cancel",
                 onConfirm: {
+                    // Cancel any active transcription before deleting
+                    TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                     modelContext.delete(recording)
                     showDeleteConfirm = false
                     dismiss()

@@ -352,6 +352,7 @@ struct RecordingsView: View {
     }
     
     private func deleteSelectedRecordings() {
+        // Cancel any active transcriptions before deleting (handled in viewModel.deleteRecordings)
         viewModel.deleteRecordings(selectedRecordingsArray)
     }
     

@@ -361,6 +361,11 @@ class TranscriptionService {
             audioPath: audioURL.path,
             decodeOptions: options,
             callback: { progress in
+                // Check for cancellation
+                if Task.isCancelled {
+                    return false // Stop transcription
+                }
+                
                 // WhisperKit provides progress through TranscriptionProgress
                 // Calculate overall progress from current and total segments
                 if let callback = progressCallback {
@@ -377,10 +382,13 @@ class TranscriptionService {
                     let estimatedProgress = min(maxLoopsSeen / 200.0, 0.95)
 
                     Task { @MainActor in
-                        callback(estimatedProgress)
+                        // Check again before calling callback
+                        if !Task.isCancelled {
+                            callback(estimatedProgress)
+                        }
                     }
                 }
-                return true // Continue transcription
+                return !Task.isCancelled // Continue transcription unless cancelled
             }
         )
         

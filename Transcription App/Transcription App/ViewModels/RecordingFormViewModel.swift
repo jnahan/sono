@@ -220,25 +220,47 @@ class RecordingFormViewModel: ObservableObject {
             }
             
             // Now transcribe with the ready model
-            do {
-                print("🎯 [RecordingForm] Starting transcription for: \(url.lastPathComponent)")
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
-                    Task { @MainActor in
-                        self.transcriptionProgress = progress
-                        // Update shared progress manager for cross-view updates
-                        if let recordingId = self.autoSavedRecording?.id {
+            guard let recordingId = autoSavedRecording?.id else {
+                print("⚠️ [RecordingForm] No recording ID available, cannot start transcription")
+                return
+            }
+            
+            // Create a cancellable task
+            let transcriptionTask = Task { @MainActor in
+                do {
+                    print("🎯 [RecordingForm] Starting transcription for: \(url.lastPathComponent)")
+                    let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                        Task { @MainActor in
+                            // Check if task was cancelled
+                            if Task.isCancelled {
+                                return
+                            }
+                            self.transcriptionProgress = progress
+                            // Update shared progress manager for cross-view updates
                             TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
                         }
                     }
+                    
+                    // Check if task was cancelled before processing results
+                    try Task.checkCancellation()
+                    
+                    print("✅ [RecordingForm] Transcription completed successfully")
+                    handleTranscriptionResult(result, modelContext: transcriptionModelContext, recordingId: recordingId)
+                } catch is CancellationError {
+                    print("ℹ️ [RecordingForm] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                    // Clean up on cancellation
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    isTranscribing = false
+                } catch {
+                    print("❌ [RecordingForm] Transcription error: \(error)")
+                    print("   Error type: \(type(of: error))")
+                    print("   Error description: \(error.localizedDescription)")
+                    handleTranscriptionError(error, recordingId: recordingId)
                 }
-                print("✅ [RecordingForm] Transcription completed successfully")
-                handleTranscriptionResult(result, modelContext: transcriptionModelContext)
-            } catch {
-                print("❌ [RecordingForm] Transcription error: \(error)")
-                print("   Error type: \(type(of: error))")
-                print("   Error description: \(error.localizedDescription)")
-                handleTranscriptionError(error)
             }
+            
+            // Register the task for cancellation
+            TranscriptionProgressManager.shared.registerTask(for: recordingId, task: transcriptionTask)
         }
     }
 
@@ -247,7 +269,29 @@ class RecordingFormViewModel: ObservableObject {
     }
     
     @MainActor
-    private func handleTranscriptionResult(_ result: TranscriptionResult, modelContext: ModelContext?) {
+    private func handleTranscriptionResult(_ result: TranscriptionResult, modelContext: ModelContext?, recordingId: UUID) {
+        // Check if recording still exists before updating
+        guard let context = modelContext else {
+            print("⚠️ [RecordingForm] No model context, cannot update recording")
+            TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            return
+        }
+        
+        // Verify recording still exists in database
+        let descriptor = FetchDescriptor<Recording>(
+            predicate: #Predicate { recording in
+                recording.id == recordingId
+            }
+        )
+        
+        guard let existingRecordings = try? context.fetch(descriptor),
+              let recording = existingRecordings.first else {
+            print("ℹ️ [RecordingForm] Recording was deleted, skipping transcription result update")
+            TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            isTranscribing = false
+            return
+        }
+        
         transcribedText = result.text
         transcribedLanguage = result.language
         transcribedSegments = result.segments.map { segment in
@@ -265,48 +309,64 @@ class RecordingFormViewModel: ObservableObject {
         print("   - Segments: \(transcribedSegments.count)")
         print("   - Language: \(transcribedLanguage)")
 
-        // Update auto-saved recording immediately with transcription results
-        if let recording = autoSavedRecording, let context = modelContext {
-            recording.fullText = transcribedText
-            recording.language = transcribedLanguage
-            recording.status = .completed
-            recording.failureReason = nil
+        // Update recording with transcription results
+        recording.fullText = transcribedText
+        recording.language = transcribedLanguage
+        recording.status = .completed
+        recording.failureReason = nil
 
-            // Clear existing segments and add new ones
-            recording.segments.removeAll()
-            for segment in transcribedSegments {
-                // Insert segment into context if not already tracked
-                if segment.modelContext == nil {
-                    context.insert(segment)
-                }
-                recording.segments.append(segment)
+        // Clear existing segments and add new ones
+        recording.segments.removeAll()
+        for segment in transcribedSegments {
+            // Insert segment into context if not already tracked
+            if segment.modelContext == nil {
+                context.insert(segment)
             }
+            recording.segments.append(segment)
+        }
 
-            do {
-                try context.save()
-                print("✅ [RecordingForm] Auto-saved recording updated with transcription")
+        do {
+            try context.save()
+            print("✅ [RecordingForm] Auto-saved recording updated with transcription")
 
-                // Mark transcription complete in progress manager
-                TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
-            } catch {
-                print("❌ [RecordingForm] Failed to update recording: \(error)")
-            }
+            // Mark transcription complete in progress manager
+            TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+        } catch {
+            print("❌ [RecordingForm] Failed to update recording: \(error)")
+            TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
         }
     }
     
     @MainActor
-    private func handleTranscriptionError(_ error: Error) {
+    private func handleTranscriptionError(_ error: Error, recordingId: UUID) {
         isTranscribing = false
         isModelLoading = false
         isModelWarming = false
         transcriptionProgress = 0.0
-        showError("Transcription failed: \(error.localizedDescription)")
-
-        // Mark auto-saved recording as failed
+        
+        // Only show error if recording still exists
         if let recording = autoSavedRecording {
-            recording.status = .failed
-            recording.failureReason = "Transcription failed: \(error.localizedDescription)"
+            // Check if recording still exists in database
+            if let context = transcriptionModelContext {
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in
+                        r.id == recordingId
+                    }
+                )
+                
+                if let existingRecordings = try? context.fetch(descriptor),
+                   existingRecordings.first != nil {
+                    // Recording exists, update it and show error
+                    recording.status = .failed
+                    recording.failureReason = "Transcription failed: \(error.localizedDescription)"
+                    showError("Transcription failed: \(error.localizedDescription)")
+                } else {
+                    print("ℹ️ [RecordingForm] Recording was deleted, skipping error handling")
+                }
+            }
         }
+        
+        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
     }
     
     func showError(_ message: String) {

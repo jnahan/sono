@@ -30,7 +30,9 @@ class RecordingListViewModel: ObservableObject {
         editingRecording = recording
     }
     
-    func deleteRecording(_ recording: Recording) {
+    @MainActor func deleteRecording(_ recording: Recording) {
+        // Cancel any active transcription for this recording
+        TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
         modelContext?.delete(recording)
     }
     
@@ -48,7 +50,7 @@ class RecordingListViewModel: ObservableObject {
     // MARK: - Mass Actions
     
     /// Delete multiple recordings
-    func deleteRecordings(_ recordings: [Recording]) {
+    @MainActor func deleteRecordings(_ recordings: [Recording]) {
         for recording in recordings {
             deleteRecording(recording)
         }

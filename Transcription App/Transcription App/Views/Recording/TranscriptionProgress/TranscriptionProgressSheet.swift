@@ -122,11 +122,26 @@ struct TranscriptionProgressSheet: View {
             return
         }
         
+        let recordingId = recording.id
+        
         // Update recording status
-        Task { @MainActor in
-            recording.status = .inProgress
-            recording.transcriptionStartedAt = Date()
-            recording.failureReason = nil
+        let transcriptionTask = Task { @MainActor in
+            // Check if recording still exists before starting
+            let descriptor = FetchDescriptor<Recording>(
+                predicate: #Predicate { r in
+                    r.id == recordingId
+                }
+            )
+            
+            guard let existingRecordings = try? modelContext.fetch(descriptor),
+                  let existingRecording = existingRecordings.first else {
+                print("ℹ️ [TranscriptionProgressSheet] Recording was deleted, cannot start transcription")
+                return
+            }
+            
+            existingRecording.status = .inProgress
+            existingRecording.transcriptionStartedAt = Date()
+            existingRecording.failureReason = nil
             
             // Save initial status update
             do {
@@ -139,20 +154,41 @@ struct TranscriptionProgressSheet: View {
             do {
                 let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
                     Task { @MainActor in
+                        // Check if task was cancelled
+                        if Task.isCancelled {
+                            return
+                        }
                         self.transcriptionProgress = progress
                         // Update shared progress manager for cross-view updates
-                        TranscriptionProgressManager.shared.updateProgress(for: recording.id, progress: progress)
+                        TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
                     }
                 }
                 
+                // Check if task was cancelled before processing results
+                try Task.checkCancellation()
+                
+                // Verify recording still exists before updating
+                let verifyDescriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in
+                        r.id == recordingId
+                    }
+                )
+                
+                guard let verifyRecordings = try? modelContext.fetch(verifyDescriptor),
+                      let verifyRecording = verifyRecordings.first else {
+                    print("ℹ️ [TranscriptionProgressSheet] Recording was deleted during transcription, skipping result update")
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    return
+                }
+                
                 // Update recording with transcription results
-                recording.fullText = result.text
-                recording.language = result.language
-                recording.status = .completed
-                recording.failureReason = nil
+                verifyRecording.fullText = result.text
+                verifyRecording.language = result.language
+                verifyRecording.status = .completed
+                verifyRecording.failureReason = nil
                 
                 // Clear existing segments and add new ones
-                recording.segments.removeAll()
+                verifyRecording.segments.removeAll()
                 for segment in result.segments {
                     let recordingSegment = RecordingSegment(
                         start: segment.start,
@@ -160,32 +196,51 @@ struct TranscriptionProgressSheet: View {
                         text: segment.text
                     )
                     modelContext.insert(recordingSegment)
-                    recording.segments.append(recordingSegment)
+                    verifyRecording.segments.append(recordingSegment)
                 }
                 
                 // Save to database
                 do {
                     try modelContext.save()
                     transcriptionProgress = 1.0
-                    TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     print("✅ [TranscriptionProgressSheet] Transcription completed successfully")
                 } catch {
                     transcriptionProgress = 0.0
                     transcriptionError = "Failed to save transcription: \(error.localizedDescription)"
-                    recording.status = .failed
-                    recording.failureReason = transcriptionError
+                    verifyRecording.status = .failed
+                    verifyRecording.failureReason = transcriptionError
                     try? modelContext.save()
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                 }
+            } catch is CancellationError {
+                print("ℹ️ [TranscriptionProgressSheet] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             } catch {
                 transcriptionProgress = 0.0
-                transcriptionError = "Transcription failed: \(error.localizedDescription)"
-                recording.status = .failed
-                recording.failureReason = transcriptionError
-                TranscriptionProgressManager.shared.completeTranscription(for: recording.id)
                 
-                // Save error state
-                try? modelContext.save()
+                // Check if recording still exists before updating error state
+                let errorDescriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in
+                        r.id == recordingId
+                    }
+                )
+                
+                if let errorRecordings = try? modelContext.fetch(errorDescriptor),
+                   let errorRecording = errorRecordings.first {
+                    transcriptionError = "Transcription failed: \(error.localizedDescription)"
+                    errorRecording.status = .failed
+                    errorRecording.failureReason = transcriptionError
+                    try? modelContext.save()
+                } else {
+                    print("ℹ️ [TranscriptionProgressSheet] Recording was deleted, skipping error state update")
+                }
+                
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             }
         }
+        
+        // Register the task for cancellation
+        TranscriptionProgressManager.shared.registerTask(for: recordingId, task: transcriptionTask)
     }
 }
