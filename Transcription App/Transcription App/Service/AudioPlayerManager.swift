@@ -25,10 +25,6 @@ class AudioPlayerManager: ObservableObject {
     
     private init() {}
     
-    // MARK: - Public Methods
-    
-    private init() {}
-    
     /// Stop playback and clear current recording
     func stop() {
         player.stop()

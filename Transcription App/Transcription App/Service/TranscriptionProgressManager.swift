@@ -22,7 +22,7 @@ class TranscriptionProgressManager: ObservableObject {
 
     func updateProgress(for recordingId: UUID, progress: Double) {
         guard progress >= 0 && progress <= 1.0 else {
-            Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidProgressValue, progress, recordingId.uuidString.prefix(8)))
+            Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidProgressValue, progress, String(recordingId.uuidString.prefix(8))))
             return
         }
         activeTranscriptions[recordingId] = progress
@@ -67,7 +67,7 @@ class TranscriptionProgressManager: ObservableObject {
     /// Add a recording to the queue
     func addToQueue(recordingId: UUID, position: Int) {
         guard position > 0 else {
-            Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidQueuePosition, position, recordingId.uuidString.prefix(8)))
+            Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidQueuePosition, position, String(recordingId.uuidString.prefix(8))))
             return
         }
         queuedRecordings.insert(recordingId)
