@@ -9,13 +9,9 @@ struct RecordingsView: View {
     
     @StateObject private var viewModel = RecordingListViewModel()
     
-    @State private var searchText = ""
-    @State private var filteredRecordings: [Recording] = []
     @State private var selectedRecording: Recording?
     @State private var selectedRecordingForProgress: Recording?
     @State private var showSettings = false
-    @State private var isSelectionMode = false
-    @State private var selectedRecordings: Set<UUID> = []
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
     @State private var navigationPath = NavigationPath()
@@ -24,7 +20,7 @@ struct RecordingsView: View {
         NavigationStack(path: $navigationPath) {
             ZStack {
                 // Gradient at absolute top of screen (when empty)
-                if filteredRecordings.isEmpty {
+                if viewModel.filteredRecordings.isEmpty {
                     EmptyStateGradientView()
                 }
                 
@@ -32,17 +28,14 @@ struct RecordingsView: View {
                     VStack(spacing: 0) {
                         // Custom Top Bar
                         CustomTopBar(
-                            title: isSelectionMode ? "\(selectedRecordings.count) selected" : "Recordings",
-                            leftIcon: isSelectionMode ? "x" : "check-circle",
-                            rightIcon: isSelectionMode ? nil : "gear-six",
+                            title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
+                            leftIcon: viewModel.isSelectionMode ? "x" : "check-circle",
+                            rightIcon: viewModel.isSelectionMode ? nil : "gear-six",
                             onLeftTap: {
-                                if isSelectionMode {
-                                    // Exit selection mode
-                                    isSelectionMode = false
-                                    selectedRecordings.removeAll()
+                                if viewModel.isSelectionMode {
+                                    viewModel.exitSelectionMode()
                                 } else {
-                                    // Enter selection mode
-                                    isSelectionMode = true
+                                    viewModel.enterSelectionMode()
                                 }
                             },
                             onRightTap: { showSettings = true }
@@ -57,7 +50,7 @@ struct RecordingsView: View {
                         
                         VStack(alignment: .leading, spacing: 16) {
                             if !recordings.isEmpty {
-                                SearchBar(text: $searchText, placeholder: "Search recordings")
+                                SearchBar(text: $viewModel.searchText, placeholder: "Search recordings")
                                     .padding(.horizontal, AppConstants.UI.Spacing.large)
                             }
                             
@@ -66,7 +59,7 @@ struct RecordingsView: View {
                     }
                     
                     // Mass action buttons (fixed at bottom above tab bar, only in selection mode)
-                    if isSelectionMode && !selectedRecordings.isEmpty {
+                    if viewModel.isSelectionMode && !viewModel.selectedRecordings.isEmpty {
                         MassActionButtons(
                             onDelete: { showDeleteConfirm = true },
                             onCopy: { copySelectedRecordings() },
@@ -78,15 +71,15 @@ struct RecordingsView: View {
                     }
                 }
             }
-            .onChange(of: searchText) { oldValue, newValue in
-                updateFilteredRecordings()
+            .onChange(of: viewModel.searchText) { oldValue, newValue in
+                viewModel.updateFilteredRecordings(from: recordings)
             }
             .onChange(of: recordings) { oldValue, newValue in
-                updateFilteredRecordings()
+                viewModel.updateFilteredRecordings(from: recordings)
             }
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
-                updateFilteredRecordings()
+                viewModel.updateFilteredRecordings(from: recordings)
                 viewModel.recoverIncompleteRecordings(recordings)
                 // Reset navigation state when returning to this tab
                 selectedRecording = nil
@@ -102,25 +95,23 @@ struct RecordingsView: View {
                     selectedCollection: .constant(nil),
                     modelContext: modelContext,
                     isPresented: $showMoveToCollection,
-                    recordings: selectedRecordingsArray,
+                    recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),
                     onMassMoveComplete: {
-                        isSelectionMode = false
-                        selectedRecordings.removeAll()
+                        viewModel.exitSelectionMode()
                     }
                 )
             }
             .sheet(isPresented: $showDeleteConfirm) {
                 ConfirmationSheet(
                     isPresented: $showDeleteConfirm,
-                    title: "Delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")?",
-                    message: "Are you sure you want to delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")? This action cannot be undone.",
+                    title: "Delete \(viewModel.selectedRecordings.count) recording\(viewModel.selectedRecordings.count == 1 ? "" : "s")?",
+                    message: "Are you sure you want to delete \(viewModel.selectedRecordings.count) recording\(viewModel.selectedRecordings.count == 1 ? "" : "s")? This action cannot be undone.",
                     confirmButtonText: "Delete",
                     cancelButtonText: "Cancel",
                     onConfirm: {
                         deleteSelectedRecordings()
                         showDeleteConfirm = false
-                        isSelectionMode = false
-                        selectedRecordings.removeAll()
+                        viewModel.exitSelectionMode()
                     }
                 )
             }
@@ -177,19 +168,15 @@ struct RecordingsView: View {
     
     private var recordingsList: some View {
         Group {
-            if filteredRecordings.isEmpty {
+            if viewModel.filteredRecordings.isEmpty {
                 RecordingEmptyStateView()
             } else {
                 List {
-                    ForEach(filteredRecordings) { recording in
+                    ForEach(viewModel.filteredRecordings) { recording in
                         Button {
-                            if isSelectionMode {
+                            if viewModel.isSelectionMode {
                                 // Toggle selection
-                                if selectedRecordings.contains(recording.id) {
-                                    selectedRecordings.remove(recording.id)
-                                } else {
-                                    selectedRecordings.insert(recording.id)
-                                }
+                                viewModel.toggleSelection(for: recording.id)
                             } else {
                                 // Only allow navigation to details if transcription is completed
                                 // Otherwise show progress sheet
@@ -206,14 +193,10 @@ struct RecordingsView: View {
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
                                 onDelete: { viewModel.deleteRecording(recording) },
-                                isSelectionMode: isSelectionMode,
-                                isSelected: selectedRecordings.contains(recording.id),
+                                isSelectionMode: viewModel.isSelectionMode,
+                                isSelected: viewModel.isSelected(recording.id),
                                 onSelectionToggle: {
-                                    if selectedRecordings.contains(recording.id) {
-                                        selectedRecordings.remove(recording.id)
-                                    } else {
-                                        selectedRecordings.insert(recording.id)
-                                    }
+                                    viewModel.toggleSelection(for: recording.id)
                                 }
                             )
                         }
@@ -232,32 +215,14 @@ struct RecordingsView: View {
         }
     }
 
-    private func updateFilteredRecordings() {
-        let sortedRecordings = recordings.sorted { $0.recordedAt > $1.recordedAt }
-
-        if searchText.isEmpty {
-            filteredRecordings = sortedRecordings
-        } else {
-            filteredRecordings = sortedRecordings.filter {
-                $0.title.localizedCaseInsensitiveContains(searchText) ||
-                $0.fullText.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-
-
-    // MARK: - Selection Mode
-    
-    private var selectedRecordingsArray: [Recording] {
-        filteredRecordings.filter { selectedRecordings.contains($0.id) }
-    }
+    // MARK: - Selection Mode Actions
     
     private func deleteSelectedRecordings() {
         // Cancel any active transcriptions before deleting (handled in viewModel.deleteRecordings)
-        viewModel.deleteRecordings(selectedRecordingsArray)
+        viewModel.deleteRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
     }
     
     private func copySelectedRecordings() {
-        viewModel.copyRecordings(selectedRecordingsArray)
+        viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
     }
 }

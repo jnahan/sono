@@ -9,6 +9,14 @@ class RecordingListViewModel: ObservableObject {
     // MARK: - Toast State
     @Published var showCopyToast = false
     
+    // MARK: - Selection Mode State
+    @Published var isSelectionMode = false
+    @Published var selectedRecordings: Set<UUID> = []
+    
+    // MARK: - Filtering State
+    @Published var searchText = ""
+    @Published var filteredRecordings: [Recording] = []
+    
     // MARK: - Model Context
     private var modelContext: ModelContext?
     
@@ -61,6 +69,60 @@ class RecordingListViewModel: ObservableObject {
         let combinedText = recordings.map { $0.fullText }.joined(separator: "\n\n")
         UIPasteboard.general.string = combinedText
         displayCopyToast()
+    }
+    
+    // MARK: - Selection Mode
+    
+    /// Enter selection mode
+    func enterSelectionMode() {
+        isSelectionMode = true
+    }
+    
+    /// Exit selection mode and clear selections
+    func exitSelectionMode() {
+        isSelectionMode = false
+        selectedRecordings.removeAll()
+    }
+    
+    /// Toggle selection for a recording
+    func toggleSelection(for id: UUID) {
+        if selectedRecordings.contains(id) {
+            selectedRecordings.remove(id)
+        } else {
+            selectedRecordings.insert(id)
+        }
+    }
+    
+    /// Check if a recording is selected
+    func isSelected(_ id: UUID) -> Bool {
+        return selectedRecordings.contains(id)
+    }
+    
+    /// Get array of selected recordings from a list
+    func selectedRecordingsArray(from recordings: [Recording]) -> [Recording] {
+        return recordings.filter { selectedRecordings.contains($0.id) }
+    }
+    
+    /// Clear all selections
+    func clearSelections() {
+        selectedRecordings.removeAll()
+    }
+    
+    // MARK: - Filtering
+    
+    /// Update filtered recordings based on search text and source recordings
+    /// - Parameter recordings: The source recordings to filter
+    func updateFilteredRecordings(from recordings: [Recording]) {
+        let sortedRecordings = recordings.sorted { $0.recordedAt > $1.recordedAt }
+        
+        if searchText.isEmpty {
+            filteredRecordings = sortedRecordings
+        } else {
+            filteredRecordings = sortedRecordings.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText) ||
+                $0.fullText.localizedCaseInsensitiveContains(searchText)
+            }
+        }
     }
     
     // MARK: - Transcription Recovery

@@ -12,14 +12,11 @@ struct CollectionDetailView: View {
     let collection: Collection
     var showPlusButton: Binding<Bool>
     
-    @State private var searchText = ""
     @State private var selectedRecording: Recording?
     @State private var showMenu = false
     @State private var editingCollection = false
     @State private var editCollectionName = ""
     @State private var deletingCollection = false
-    @State private var isSelectionMode = false
-    @State private var selectedRecordings: Set<UUID> = []
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
     
@@ -28,39 +25,25 @@ struct CollectionDetailView: View {
             .sorted { $0.recordedAt > $1.recordedAt }
     }
     
-    private var filteredRecordings: [Recording] {
-        if searchText.isEmpty {
-            return recordings
-        } else {
-            return recordings.filter {
-                $0.title.localizedCaseInsensitiveContains(searchText) ||
-                $0.fullText.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-    
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 CustomTopBar(
-                    title: isSelectionMode ? "\(selectedRecordings.count) selected" : collection.name,
-                    leftIcon: isSelectionMode ? "x" : "caret-left",
-                    rightIcon: isSelectionMode ? nil : (filteredRecordings.isEmpty ? "dots-three-bold" : "check-circle"),
+                    title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : collection.name,
+                    leftIcon: viewModel.isSelectionMode ? "x" : "caret-left",
+                    rightIcon: viewModel.isSelectionMode ? nil : (viewModel.filteredRecordings.isEmpty ? "dots-three-bold" : "check-circle"),
                     onLeftTap: {
-                        if isSelectionMode {
-                            // Exit selection mode
-                            isSelectionMode = false
-                            selectedRecordings.removeAll()
+                        if viewModel.isSelectionMode {
+                            viewModel.exitSelectionMode()
                         } else {
                             dismiss()
                         }
                     },
                     onRightTap: {
-                        if isSelectionMode {
+                        if viewModel.isSelectionMode {
                             // Shouldn't happen, but handle it
-                        } else if !filteredRecordings.isEmpty {
-                            // Enter selection mode
-                            isSelectionMode = true
+                        } else if !viewModel.filteredRecordings.isEmpty {
+                            viewModel.enterSelectionMode()
                         } else {
                             showMenu = true
                         }
@@ -76,7 +59,7 @@ struct CollectionDetailView: View {
                 
                 VStack(alignment: .leading, spacing: 16) {
                     if !recordings.isEmpty {
-                        SearchBar(text: $searchText, placeholder: "Search recordings...")
+                        SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                             .padding(.horizontal, 20)
                     }
                     
@@ -85,7 +68,7 @@ struct CollectionDetailView: View {
             }
             
             // Mass action buttons (fixed at bottom, 8px above safe area, only in selection mode)
-            if isSelectionMode && !selectedRecordings.isEmpty {
+            if viewModel.isSelectionMode && !viewModel.selectedRecordings.isEmpty {
                 MassActionButtons(
                     onDelete: { showDeleteConfirm = true },
                     onCopy: { copySelectedRecordings() },
@@ -174,10 +157,9 @@ struct CollectionDetailView: View {
                 selectedCollection: .constant(nil),
                 modelContext: modelContext,
                 isPresented: $showMoveToCollection,
-                recordings: selectedRecordingsArray,
+                recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),
                 onMassMoveComplete: {
-                    isSelectionMode = false
-                    selectedRecordings.removeAll()
+                    viewModel.exitSelectionMode()
                 },
                 showRemoveFromCollection: true
             )
@@ -185,42 +167,45 @@ struct CollectionDetailView: View {
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
-                title: "Delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")?",
-                message: "Are you sure you want to delete \(selectedRecordings.count) recording\(selectedRecordings.count == 1 ? "" : "s")? This action cannot be undone.",
+                title: "Delete \(viewModel.selectedRecordings.count) recording\(viewModel.selectedRecordings.count == 1 ? "" : "s")?",
+                message: "Are you sure you want to delete \(viewModel.selectedRecordings.count) recording\(viewModel.selectedRecordings.count == 1 ? "" : "s")? This action cannot be undone.",
                 confirmButtonText: "Delete",
                 cancelButtonText: "Cancel",
                 onConfirm: {
                     deleteSelectedRecordings()
                     showDeleteConfirm = false
-                    isSelectionMode = false
-                    selectedRecordings.removeAll()
+                    viewModel.exitSelectionMode()
                 }
             )
         }
+        .onChange(of: viewModel.searchText) { oldValue, newValue in
+            viewModel.updateFilteredRecordings(from: recordings)
+        }
+        .onChange(of: recordings) { oldValue, newValue in
+            viewModel.updateFilteredRecordings(from: recordings)
+        }
         .onAppear {
             viewModel.configure(modelContext: modelContext)
+            viewModel.updateFilteredRecordings(from: recordings)
             showPlusButton.wrappedValue = false
             // Reset navigation state when returning to this view
             selectedRecording = nil
         }
     }
     
-    // MARK: - Selection Mode
-    
-    private var selectedRecordingsArray: [Recording] {
-        filteredRecordings.filter { selectedRecordings.contains($0.id) }
-    }
+    // MARK: - Selection Mode Actions
     
     private func deleteSelectedRecordings() {
+        let selectedArray = viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings)
         // Cancel any active transcriptions before deleting
-        for recording in selectedRecordingsArray {
+        for recording in selectedArray {
             TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
         }
-        viewModel.deleteRecordings(selectedRecordingsArray)
+        viewModel.deleteRecordings(selectedArray)
     }
     
     private func copySelectedRecordings() {
-        viewModel.copyRecordings(selectedRecordingsArray)
+        viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
     }
     
     private var recordingsList: some View {
@@ -237,15 +222,11 @@ struct CollectionDetailView: View {
                 Spacer()
             } else {
                 List {
-                    ForEach(filteredRecordings) { recording in
+                    ForEach(viewModel.filteredRecordings) { recording in
                         Button {
-                            if isSelectionMode {
+                            if viewModel.isSelectionMode {
                                 // Toggle selection
-                                if selectedRecordings.contains(recording.id) {
-                                    selectedRecordings.remove(recording.id)
-                                } else {
-                                    selectedRecordings.insert(recording.id)
-                                }
+                                viewModel.toggleSelection(for: recording.id)
                             } else {
                                 selectedRecording = recording
                             }
@@ -255,14 +236,10 @@ struct CollectionDetailView: View {
                                 onCopy: { viewModel.copyRecording(recording) },
                                 onEdit: { viewModel.editRecording(recording) },
                                 onDelete: { viewModel.deleteRecording(recording) },
-                                isSelectionMode: isSelectionMode,
-                                isSelected: selectedRecordings.contains(recording.id),
+                                isSelectionMode: viewModel.isSelectionMode,
+                                isSelected: viewModel.isSelected(recording.id),
                                 onSelectionToggle: {
-                                    if selectedRecordings.contains(recording.id) {
-                                        selectedRecordings.remove(recording.id)
-                                    } else {
-                                        selectedRecordings.insert(recording.id)
-                                    }
+                                    viewModel.toggleSelection(for: recording.id)
                                 }
                             )
                         }
@@ -284,7 +261,7 @@ struct CollectionDetailView: View {
     private func deleteRecordings(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                let recording = filteredRecordings[index]
+                let recording = viewModel.filteredRecordings[index]
                 // Cancel any active transcription before deleting
                 TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                 modelContext.delete(recording)
