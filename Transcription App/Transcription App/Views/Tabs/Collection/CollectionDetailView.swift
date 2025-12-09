@@ -209,8 +209,10 @@ struct CollectionDetailView: View {
     }
     
     private var recordingsList: some View {
-        Group {
-            if recordings.isEmpty {
+        RecordingsListView(
+            recordings: viewModel.filteredRecordings,
+            viewModel: viewModel,
+            emptyStateView: AnyView(
                 VStack(spacing: 16) {
                     Text(collection.name + " is empty")
                         .font(.libreMedium(size: 24))
@@ -219,43 +221,14 @@ struct CollectionDetailView: View {
                 }
                 .frame(maxWidth: 280)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                Spacer()
-            } else {
-                List {
-                    ForEach(viewModel.filteredRecordings) { recording in
-                        Button {
-                            if viewModel.isSelectionMode {
-                                // Toggle selection
-                                viewModel.toggleSelection(for: recording.id)
-                            } else {
-                                selectedRecording = recording
-                            }
-                        } label: {
-                            RecordingRowView(
-                                recording: recording,
-                                onCopy: { viewModel.copyRecording(recording) },
-                                onEdit: { viewModel.editRecording(recording) },
-                                onDelete: { viewModel.deleteRecording(recording) },
-                                isSelectionMode: viewModel.isSelectionMode,
-                                isSelected: viewModel.isSelected(recording.id),
-                                onSelectionToggle: {
-                                    viewModel.toggleSelection(for: recording.id)
-                                }
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .listRowBackground(Color.warmGray50)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-                        .listRowSpacing(24)
-                        .listRowSeparator(.hidden)
-                    }
-                    .onDelete(perform: deleteRecordings)
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .background(Color.warmGray50)
-            }
-        }
+            ),
+            onRecordingTap: { recording in
+                selectedRecording = recording
+            },
+            onDelete: deleteRecordings,
+            horizontalPadding: 20,
+            bottomContentMargin: nil
+        )
     }
     
     private func deleteRecordings(offsets: IndexSet) {

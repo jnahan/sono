@@ -51,6 +51,7 @@
 		5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271322EE50DC900A34B15 /* SettingsRow.swift */; };
 		5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */; };
 		5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271382EE50DC900A34B18 /* MassActionButtons.swift */; };
+		5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */; };
 		5D962F222ECE87ED00049626 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F212ECE87ED00049626 /* Recorder.swift */; };
 		5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */; };
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
@@ -131,6 +132,7 @@
 		5D9271322EE50DC900A34B15 /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryViewModel.swift; sourceTree = "<group>"; };
 		5D9271382EE50DC900A34B18 /* MassActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassActionButtons.swift; sourceTree = "<group>"; };
+		5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsListView.swift; sourceTree = "<group>"; };
 		5D962F212ECE87ED00049626 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderVisualizer.swift; sourceTree = "<group>"; };
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 				5D9271302EE50DC900A34B14 /* TypingCursorView.swift */,
 				5D9271322EE50DC900A34B15 /* SettingsRow.swift */,
 				5D9271382EE50DC900A34B18 /* MassActionButtons.swift */,
+				5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -608,6 +611,7 @@
 				5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */,
 				5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */,
 				5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */,
+				5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */,
 				5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */,
 				5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */,
 				5D15706D2EDA172F0094E13E /* NoteOverlay.swift in Sources */,

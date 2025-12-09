@@ -167,52 +167,24 @@ struct RecordingsView: View {
     }
     
     private var recordingsList: some View {
-        Group {
-            if viewModel.filteredRecordings.isEmpty {
-                RecordingEmptyStateView()
-            } else {
-                List {
-                    ForEach(viewModel.filteredRecordings) { recording in
-                        Button {
-                            if viewModel.isSelectionMode {
-                                // Toggle selection
-                                viewModel.toggleSelection(for: recording.id)
-                            } else {
-                                // Only allow navigation to details if transcription is completed
-                                // Otherwise show progress sheet
-                                if recording.status == .completed {
-                                    selectedRecording = recording
-                                } else {
-                                    // Show progress sheet for in-progress, failed, or notStarted
-                                    selectedRecordingForProgress = recording
-                                }
-                            }
-                        } label: {
-                            RecordingRowView(
-                                recording: recording,
-                                onCopy: { viewModel.copyRecording(recording) },
-                                onEdit: { viewModel.editRecording(recording) },
-                                onDelete: { viewModel.deleteRecording(recording) },
-                                isSelectionMode: viewModel.isSelectionMode,
-                                isSelected: viewModel.isSelected(recording.id),
-                                onSelectionToggle: {
-                                    viewModel.toggleSelection(for: recording.id)
-                                }
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .listRowBackground(Color.warmGray50)
-                        .listRowInsets(EdgeInsets(top: 0, leading: AppConstants.UI.Spacing.large, bottom: 0, trailing: AppConstants.UI.Spacing.large))
-                        .listRowSpacing(24)
-                        .listRowSeparator(.hidden)
-                    }
+        RecordingsListView(
+            recordings: viewModel.filteredRecordings,
+            viewModel: viewModel,
+            emptyStateView: AnyView(RecordingEmptyStateView()),
+            onRecordingTap: { recording in
+                // Only allow navigation to details if transcription is completed
+                // Otherwise show progress sheet
+                if recording.status == .completed {
+                    selectedRecording = recording
+                } else {
+                    // Show progress sheet for in-progress, failed, or notStarted
+                    selectedRecordingForProgress = recording
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .background(Color.warmGray50)
-                .contentMargins(.bottom, 120, for: .scrollContent)
-            }
-        }
+            },
+            onDelete: nil,
+            horizontalPadding: AppConstants.UI.Spacing.large,
+            bottomContentMargin: 120
+        )
     }
 
     // MARK: - Selection Mode Actions
