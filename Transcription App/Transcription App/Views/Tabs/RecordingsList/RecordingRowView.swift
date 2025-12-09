@@ -61,8 +61,14 @@ struct RecordingRowView: View {
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
-                    // Transcript preview, progress indicator, or interruption message
-                    if recording.status == .inProgress {
+                    // Transcript preview, progress indicator, queue status, or interruption message
+                    if progressManager.isQueued(recordingId: recording.id) {
+                        // Queued state
+                        Text("Waiting to transcribe")
+                            .font(.system(size: 14))
+                            .foregroundColor(.warmGray500)
+                            .italic()
+                    } else if recording.status == .inProgress {
                         HStack(spacing: 8) {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))

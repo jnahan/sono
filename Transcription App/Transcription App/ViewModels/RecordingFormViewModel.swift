@@ -229,7 +229,7 @@ class RecordingFormViewModel: ObservableObject {
             let transcriptionTask = Task { @MainActor in
                 do {
                     print("🎯 [RecordingForm] Starting transcription for: \(url.lastPathComponent)")
-                    let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                    let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
                         Task { @MainActor in
                             // Check if task was cancelled
                             if Task.isCancelled {

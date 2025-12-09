@@ -24,8 +24,21 @@ struct TranscriptionProgressSheet: View {
             VStack(spacing: 24) {
                 Spacer()
                 
-                // Progress percentage
-                if transcriptionError == nil {
+                // Check if queued
+                if progressManager.isQueued(recordingId: recording.id) {
+                    // Queued state
+                    Text("Waiting to transcribe")
+                        .font(.custom("LibreBaskerville-Regular", size: 24))
+                        .foregroundColor(.baseBlack)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Your recording will be transcribed\nwhen the current transcription finishes")
+                        .font(.system(size: 16))
+                        .foregroundColor(.warmGray500)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
+                } else if transcriptionError == nil {
+                    // Progress percentage (actively transcribing)
                     Text("\(Int(transcriptionProgress * 100))%")
                         .font(.custom("LibreBaskerville-Regular", size: 64))
                         .foregroundColor(.baseBlack)
@@ -98,6 +111,12 @@ struct TranscriptionProgressSheet: View {
                 transcriptionProgress = progress
             }
         }
+        .onChange(of: progressManager.queuePositions[recording.id]) { _, newPosition in
+            // Queue position updated - UI will automatically reflect this
+        }
+        .onChange(of: progressManager.queuedRecordings) { _, _ in
+            // Queue updated - UI will automatically reflect this
+        }
         .onChange(of: recording.status) { oldStatus, newStatus in
             // When transcription completes, navigate to details
             if oldStatus == .inProgress && newStatus == .completed {
@@ -152,7 +171,7 @@ struct TranscriptionProgressSheet: View {
             
             // Start transcription
             do {
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url) { progress in
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
                     Task { @MainActor in
                         // Check if task was cancelled
                         if Task.isCancelled {

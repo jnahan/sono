@@ -12,8 +12,31 @@ class TranscriptionService {
     private var preloadTask: Task<Void, Never>? = nil
     private var isModelReady = false // Track if model is fully loaded and ready
     
+    // MARK: - Queue Management (Sequential)
+    private var isTranscribing: Bool = false
+    private var activeTranscriptionId: UUID? = nil
+    private var transcriptionQueue: [UUID] = []
+    private var queuedTasks: [UUID: Task<Void, Never>] = [:]
+    private let queueLock = NSLock()
+    
     // MARK: - Constants
     private let modelName = "tiny" // Only model we support
+    
+    // MARK: - Queue Management Methods
+    
+    /// Cancel a transcription (removes from queue if queued, cancels if active)
+    func cancelTranscription(recordingId: UUID) {
+        queueLock.lock()
+        // Remove from queue if present
+        transcriptionQueue.removeAll { $0 == recordingId }
+        // If this is the active transcription, it will be cancelled by the task cancellation
+        queueLock.unlock()
+        
+        // Notify progress manager
+        Task { @MainActor in
+            TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+        }
+    }
     
     // MARK: - Initialization
     private init() {
@@ -245,13 +268,121 @@ class TranscriptionService {
     }
     
     /// Transcribes an audio file and returns the result
+    /// Uses sequential queue to ensure only one transcription runs at a time (mobile-safe)
     /// - Parameters:
     ///   - audioURL: URL of the audio file to transcribe
+    ///   - recordingId: UUID of the recording (for queue management)
     ///   - languageCode: Optional language code (e.g., "en", "ko"). If nil, uses automatic detection.
     ///   - progressCallback: Optional closure called with progress updates (0.0 to 1.0)
     /// - Returns: TranscriptionResult with text, language, and segments
     /// - Throws: TranscriptionError if transcription fails
-    func transcribe(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
+    func transcribe(audioURL: URL, recordingId: UUID, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
+        // Check if this recording is already being transcribed or queued
+        queueLock.lock()
+        let isActive = activeTranscriptionId == recordingId
+        let isQueued = transcriptionQueue.contains(recordingId)
+        queueLock.unlock()
+        
+        if isActive {
+            // Already transcribing this recording - this shouldn't happen, but handle gracefully
+            print("⚠️ [TranscriptionService] Recording \(recordingId.uuidString.prefix(8)) is already being transcribed")
+            throw TranscriptionError.initializationFailed
+        }
+        
+        if isQueued {
+            // Already in queue - don't add again, just wait
+            print("ℹ️ [TranscriptionService] Recording \(recordingId.uuidString.prefix(8)) is already queued")
+            // Wait until it becomes active
+            while true {
+                queueLock.lock()
+                let currentActive = activeTranscriptionId
+                let isNowActive = currentActive == recordingId
+                queueLock.unlock()
+                
+                if isNowActive {
+                    break // Our turn!
+                }
+                
+                // Check if cancelled
+                try Task.checkCancellation()
+                
+                // Wait a bit before checking again
+                try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+            }
+            // Continue to transcription logic below
+        }
+        
+        // If transcription is active, add to queue and wait
+        queueLock.lock()
+        let shouldQueue = isTranscribing
+        if shouldQueue {
+            transcriptionQueue.append(recordingId)
+            let queuePosition = transcriptionQueue.count
+            queueLock.unlock()
+            
+            // Notify progress manager about queue position
+            await MainActor.run {
+                TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition)
+            }
+            
+            // Wait until this recording's turn
+            while true {
+                queueLock.lock()
+                let currentActive = activeTranscriptionId
+                let isNowActive = currentActive == recordingId
+                queueLock.unlock()
+                
+                if isNowActive {
+                    break // Our turn!
+                }
+                
+                // Check if cancelled
+                try Task.checkCancellation()
+                
+                // Wait a bit before checking again
+                try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+            }
+        } else {
+            // Can start immediately
+            isTranscribing = true
+            activeTranscriptionId = recordingId
+            queueLock.unlock()
+        }
+        
+        // Perform the actual transcription
+        defer {
+            queueLock.lock()
+            isTranscribing = false
+            activeTranscriptionId = nil
+            
+            // Remove from queue if it was there
+            transcriptionQueue.removeAll { $0 == recordingId }
+            
+            // Process next in queue
+            if let nextId = transcriptionQueue.first {
+                activeTranscriptionId = nextId
+                isTranscribing = true
+                // Update queue positions for remaining items (shift positions)
+                for (index, id) in transcriptionQueue.enumerated() {
+                    Task { @MainActor in
+                        TranscriptionProgressManager.shared.updateQueuePosition(recordingId: id, position: index + 1)
+                    }
+                }
+            }
+            queueLock.unlock()
+            
+            // Notify progress manager that this recording is done
+            Task { @MainActor in
+                TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+            }
+        }
+        
+        // Continue with existing transcription logic
+        return try await performTranscription(audioURL: audioURL, languageCode: languageCode, progressCallback: progressCallback)
+    }
+    
+    /// Internal method that performs the actual transcription
+    private func performTranscription(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
         let settings = SettingsManager.shared
 
         // Wait for preload to complete if it's still running
