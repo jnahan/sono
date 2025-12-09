@@ -42,9 +42,14 @@ struct Transcription_AppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .modelContainer(sharedModelContainer)
-                .environment(\.font, .custom("Inter-Regular", size: 16))
+            ZStack {
+                Color.warmGray50
+                    .ignoresSafeArea()
+
+                MainTabView()
+                    .modelContainer(sharedModelContainer)
+                    .environment(\.font, .custom("Inter-Regular", size: 16))
+            }
         }
     }
 }

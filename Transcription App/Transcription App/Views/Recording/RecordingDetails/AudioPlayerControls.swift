@@ -93,6 +93,6 @@ struct AudioPlayerControls: View {
             .padding(.horizontal, 32)
             .padding(.bottom, 28)
         }
-        .background(Color.warmGray100)
+        .background(Color.warmGray50)
     }
 }

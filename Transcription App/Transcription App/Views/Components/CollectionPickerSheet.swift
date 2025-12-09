@@ -172,6 +172,7 @@ struct CollectionPickerSheet: View {
         .background(Color.warmGray50)
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.hidden)
+        .presentationBackground(Color.warmGray50)
         .sheet(isPresented: $showCreateCollection) {
             CollectionFormSheet(
                 isPresented: $showCreateCollection,

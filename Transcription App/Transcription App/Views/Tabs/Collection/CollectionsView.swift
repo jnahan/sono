@@ -74,7 +74,6 @@ struct CollectionsView: View {
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
-                        .background(Color.warmGray50)
                         .contentMargins(.bottom, 80, for: .scrollContent)
                     }
                 }

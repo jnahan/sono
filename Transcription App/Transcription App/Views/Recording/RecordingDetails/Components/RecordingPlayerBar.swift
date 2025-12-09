@@ -61,7 +61,7 @@ struct RecordingPlayerBar: View {
             .padding(.horizontal, AppConstants.UI.Spacing.large)
             .padding(.bottom, 28)
         }
-        .background(Color.warmGray100)
+        .background(Color.warmGray50)
     }
 
     // MARK: - Subviews

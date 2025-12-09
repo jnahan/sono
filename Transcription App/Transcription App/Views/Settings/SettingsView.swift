@@ -25,7 +25,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.warmGray100
+                Color.warmGray50
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -125,6 +125,7 @@ struct SettingsView: View {
             .navigationBarHidden(true)
         }
         .presentationDragIndicator(.hidden)
+        .presentationBackground(Color.warmGray50)
         .onChange(of: audioLanguage) { oldValue, newValue in
             SettingsManager.shared.audioLanguage = newValue
         }

@@ -28,9 +28,6 @@ struct AskSonoView: View {
     
     var body: some View {
         ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-
             VStack(spacing: 0) {
                 // Chat Messages
                 ScrollViewReader { proxy in
@@ -151,7 +148,6 @@ struct AskSonoView: View {
                     }
                     .padding(.horizontal, AppConstants.UI.Spacing.large)
                     .padding(.vertical, 12)
-                    .background(Color.warmGray50)
                 }
             }
         }

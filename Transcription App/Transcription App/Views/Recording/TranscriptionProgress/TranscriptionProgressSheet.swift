@@ -89,6 +89,7 @@ struct TranscriptionProgressSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .presentationBackground(Color.warmGray50)
         .onAppear {
             // Check if already completed when view appears
             if recording.status == .completed {

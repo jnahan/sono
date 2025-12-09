@@ -80,7 +80,6 @@ struct MassActionButtons: View {
             .padding(.horizontal, horizontalPadding)
             .padding(.top, 12)
             .padding(.bottom, bottomPadding)
-            .background(Color.warmGray50)
         }
         .padding(.bottom, bottomSafeAreaPadding)
     }

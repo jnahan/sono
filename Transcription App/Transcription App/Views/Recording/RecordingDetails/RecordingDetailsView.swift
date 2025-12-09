@@ -36,9 +36,6 @@ struct RecordingDetailsView: View {
     
     var body: some View {
         ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-            
             VStack(spacing: 0) {
                 // Custom Top Bar
                 CustomTopBar(
@@ -142,6 +139,7 @@ struct RecordingDetailsView: View {
                 .zIndex(100)
             }
         }
+        .background(Color.warmGray50.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.2), value: showNotePopup)
         .navigationBarHidden(true)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {

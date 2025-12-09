@@ -88,9 +88,8 @@ struct SelectionListView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(Color.warmGray50)
         }
-        .background(Color.warmGray50)
+        .background(Color.warmGray50.ignoresSafeArea())
         .navigationBarHidden(true)
     }
 }

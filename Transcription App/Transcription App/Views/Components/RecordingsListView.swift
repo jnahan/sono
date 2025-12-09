@@ -69,7 +69,6 @@ struct RecordingsListView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .background(Color.warmGray50)
                 .ifLet(bottomContentMargin) { view, margin in
                     view.contentMargins(.bottom, margin, for: .scrollContent)
                 }

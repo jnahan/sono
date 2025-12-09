@@ -21,7 +21,7 @@ struct RecorderView: View {
         NavigationStack {
             ZStack {
                 // Base color layer
-                Color.warmGray100
+                Color.warmGray50
                     .ignoresSafeArea()
                 
                 // Gradient background - fill entire screen

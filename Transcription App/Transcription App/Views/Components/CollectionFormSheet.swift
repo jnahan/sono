@@ -70,10 +70,10 @@ struct CollectionFormSheet: View {
             }
             .buttonStyle(AppButtonStyle())
         }
-        .background(Color.warmGray100)
+        .background(Color.warmGray50)
         .presentationDetents([.height(320)])
         .presentationDragIndicator(.hidden)
-        .presentationBackground(Color.warmGray100)
+        .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(24)
         .onAppear {
             #if !os(macOS)

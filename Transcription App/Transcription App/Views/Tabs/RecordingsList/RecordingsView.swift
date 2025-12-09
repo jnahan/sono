@@ -161,7 +161,7 @@ struct RecordingsView: View {
                 )
                 .onAppear { showPlusButton.wrappedValue = false }
             }
-            .background(Color.warmGray50)
+            .background(Color.warmGray50.ignoresSafeArea())
             .navigationBarHidden(true)
         }
     }

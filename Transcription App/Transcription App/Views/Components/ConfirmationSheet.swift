@@ -50,10 +50,10 @@ struct ConfirmationSheet: View {
                 .buttonStyle(GhostButtonStyle())
             }
         }
-        .background(Color.warmGray100)
+        .background(Color.warmGray50)
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.hidden)
-        .presentationBackground(Color.warmGray100)
+        .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(24)
     }
     
