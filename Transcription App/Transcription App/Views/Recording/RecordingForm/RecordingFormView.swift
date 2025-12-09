@@ -195,6 +195,21 @@ struct RecordingFormView: View {
                 viewModel.handleReturnFromBackground(modelContext: modelContext)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+            // Low memory warning - save recording state
+            if viewModel.isTranscribing && !viewModel.isEditing {
+                print("⚠️ [RecordingForm] Low memory warning during transcription - saving state")
+                _ = viewModel.saveRecording(modelContext: modelContext)
+                viewModel.handleLowMemory(modelContext: modelContext)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+            // App is being terminated - save recording state
+            if viewModel.isTranscribing && !viewModel.isEditing {
+                print("⚠️ [RecordingForm] App terminating during transcription - saving state")
+                _ = viewModel.saveRecording(modelContext: modelContext)
+            }
+        }
         .navigationBarHidden(true)
     }
 }

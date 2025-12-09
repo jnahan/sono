@@ -13,29 +13,6 @@ This document outlines all edge cases and error scenarios that need to be handle
 
 ## ❌ Not Yet Handled
 
-### 1. App Lifecycle Issues
-
-#### App Backgrounded During Transcription
-
-- **Problem**: iOS may suspend transcription when app goes to background
-- **Impact**: Transcription may pause/fail, recording stuck in `.inProgress`
-- **Current State**: Only saves recording state, doesn't handle active transcription
-- **Needed**: Pause/resume or cancel transcription on background, or use background task
-
-#### App Terminated During Transcription
-
-- **Problem**: App killed by system or user, transcription in progress
-- **Impact**: Recording stuck in `.inProgress` (partially handled by recovery)
-- **Current State**: Recovery marks as failed, but no way to resume
-- **Needed**: Better recovery strategy or background task continuation
-
-#### Low Memory Warnings
-
-- **Problem**: System may kill transcription process under memory pressure
-- **Impact**: Transcription fails silently, recording stuck
-- **Current State**: No handling
-- **Needed**: Listen for memory warnings, gracefully cancel/retry
-
 ### 2. File System Issues
 
 #### Audio File Deleted/Moved During Transcription
@@ -286,4 +263,3 @@ This document outlines all edge cases and error scenarios that need to be handle
 10. Very long recordings
 11. Format validation
 12. Battery monitoring
-

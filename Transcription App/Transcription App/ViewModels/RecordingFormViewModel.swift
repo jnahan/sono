@@ -344,7 +344,7 @@ class RecordingFormViewModel: ObservableObject {
         isModelLoading = false
         isModelWarming = false
         transcriptionProgress = 0.0
-        
+
         // Only show error if recording still exists
         if let recording = autoSavedRecording {
             // Check if recording still exists in database
@@ -354,19 +354,27 @@ class RecordingFormViewModel: ObservableObject {
                         r.id == recordingId
                     }
                 )
-                
+
                 if let existingRecordings = try? context.fetch(descriptor),
                    existingRecordings.first != nil {
-                    // Recording exists, update it and show error
-                    recording.status = .failed
-                    recording.failureReason = "Transcription failed: \(error.localizedDescription)"
-                    showError("Transcription failed: \(error.localizedDescription)")
+                    // Save as .inProgress so user can resume, not .failed
+                    // This allows graceful recovery for all error types
+                    recording.status = .inProgress
+                    recording.failureReason = "Transcription was interrupted. Tap to resume."
+
+                    // Save the context to persist the state
+                    try? context.save()
+
+                    // Show user-friendly error toast
+                    showError("Transcription was interrupted. You can resume from the home page.")
+
+                    print("⚠️ [RecordingForm] Transcription error handled gracefully: \(error.localizedDescription)")
                 } else {
                     print("ℹ️ [RecordingForm] Recording was deleted, skipping error handling")
                 }
             }
         }
-        
+
         TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
     }
     
@@ -415,6 +423,33 @@ class RecordingFormViewModel: ObservableObject {
                 wasBackgroundedDuringTranscription = false
             }
         }
+    }
+
+    /// Handle low memory warning during transcription
+    @MainActor
+    func handleLowMemory(modelContext: ModelContext) {
+        guard let recording = autoSavedRecording else { return }
+
+        print("⚠️ [RecordingForm] Handling low memory - stopping transcription")
+
+        // Cancel the active transcription task
+        TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+
+        // Update recording status to indicate interruption
+        recording.status = .inProgress
+        recording.failureReason = "Transcription was interrupted due to low memory. Tap to resume."
+
+        // Save the state
+        do {
+            try modelContext.save()
+            print("✅ [RecordingForm] Saved recording state after low memory warning")
+        } catch {
+            print("❌ [RecordingForm] Failed to save recording state: \(error)")
+        }
+
+        // Update UI state
+        isTranscribing = false
+        transcriptionProgress = 0.0
     }
 
     /// Auto-save a recording immediately after recording stops, before transcription

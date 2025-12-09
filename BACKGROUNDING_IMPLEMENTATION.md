@@ -3,6 +3,8 @@
 ## Overview
 This implementation handles the edge case where a user backgrounds the app while transcription is in progress. The app now properly saves state, attempts to continue transcription, and gracefully recovers when the user returns.
 
+**Note:** For comprehensive error handling covering all edge cases (low memory, app termination, errors, etc.), see [TRANSCRIPTION_ERROR_HANDLING.md](./TRANSCRIPTION_ERROR_HANDLING.md).
+
 ## Changes Made
 
 ### 1. TranscriptionProgressSheet.swift

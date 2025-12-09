@@ -69,19 +69,35 @@ struct RecordingRowView: View {
                             .foregroundColor(.warmGray500)
                             .italic()
                     } else if recording.status == .inProgress {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
-                                .scaleEffect(0.8)
-                            if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
-                                Text("Transcribing \(Int(progress * 100))%")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.warmGray600)
-                            } else {
-                                Text("Transcribing...")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.warmGray600)
+                        // Check if there's a failure reason (interrupted transcription)
+                        if let failureReason = recording.failureReason, !failureReason.isEmpty {
+                            // Show interruption message instead of progress
+                            Text(failureReason)
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray500)
+                                .italic()
+                        } else if progressManager.hasActiveTranscription(for: recording.id) {
+                            // Actively transcribing
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                    .scaleEffect(0.8)
+                                if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
+                                    Text("Transcribing \(Int(progress * 100))%")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.warmGray600)
+                                } else {
+                                    Text("Transcribing...")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.warmGray600)
+                                }
                             }
+                        } else {
+                            // In progress but not active - interrupted without message
+                            Text("Transcription interrupted. Tap to resume.")
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray500)
+                                .italic()
                         }
                     } else if recording.status == .failed || recording.status == .notStarted {
                         Text("Transcription interrupted")
