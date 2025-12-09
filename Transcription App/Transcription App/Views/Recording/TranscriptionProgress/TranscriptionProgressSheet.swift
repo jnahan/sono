@@ -7,9 +7,11 @@ struct TranscriptionProgressSheet: View {
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var transcriptionProgress: Double = 0.0
     @State private var transcriptionError: String?
+    @State private var wasBackgrounded = false
     
     init(recording: Recording, onComplete: ((Recording) -> Void)? = nil) {
         self.recording = recording
@@ -129,6 +131,39 @@ struct TranscriptionProgressSheet: View {
                 }
             } else if newStatus == .failed {
                 transcriptionError = recording.failureReason ?? "Transcription failed"
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            // Handle app backgrounding during transcription
+            if newPhase == .background && recording.status == .inProgress {
+                print("📱 [TranscriptionProgressSheet] App backgrounded during transcription")
+                wasBackgrounded = true
+
+                // Save current state - iOS will likely suspend the transcription task
+                // The recording is already saved with .inProgress status
+                // TranscriptionService task may be cancelled by iOS
+            } else if newPhase == .active && oldPhase == .background && wasBackgrounded {
+                print("📱 [TranscriptionProgressSheet] App returned from background")
+                wasBackgrounded = false
+
+                // Check if transcription completed while backgrounded (unlikely but possible for short audio)
+                if recording.status == .completed {
+                    print("✅ [TranscriptionProgressSheet] Transcription completed while backgrounded")
+                    transcriptionProgress = 1.0
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 500_000_000)
+                        onComplete?(recording)
+                    }
+                } else if recording.status == .inProgress {
+                    // Check if transcription is still running
+                    if !progressManager.hasActiveTranscription(for: recording.id) {
+                        print("⚠️ [TranscriptionProgressSheet] Transcription was interrupted - restarting")
+                        // Transcription was interrupted - restart it
+                        startTranscription()
+                    } else {
+                        print("ℹ️ [TranscriptionProgressSheet] Transcription still running")
+                    }
+                }
             }
         }
     }

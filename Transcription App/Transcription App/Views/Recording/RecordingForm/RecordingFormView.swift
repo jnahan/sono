@@ -178,11 +178,21 @@ struct RecordingFormView: View {
             viewModel.startTranscriptionIfNeeded()
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            // Save recording state when app goes to background
+            // Handle app backgrounding during transcription
             if newPhase == .background && !viewModel.isEditing {
                 print("📱 [RecordingForm] App backgrounded - saving recording state")
                 // Save current state even if transcription is still in progress
                 _ = viewModel.saveRecording(modelContext: modelContext)
+
+                // Mark that we were backgrounded during transcription
+                if viewModel.isTranscribing {
+                    print("📱 [RecordingForm] Backgrounded during transcription")
+                    viewModel.markBackgrounded()
+                }
+            } else if newPhase == .active && oldPhase == .background && !viewModel.isEditing {
+                print("📱 [RecordingForm] App returned from background")
+                // Check if we need to resume transcription
+                viewModel.handleReturnFromBackground(modelContext: modelContext)
             }
         }
         .navigationBarHidden(true)

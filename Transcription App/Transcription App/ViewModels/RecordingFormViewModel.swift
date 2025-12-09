@@ -19,6 +19,7 @@ class RecordingFormViewModel: ObservableObject {
     @Published var transcriptionProgress: Double = 0.0 // 0.0 to 1.0
     @Published var isModelLoading = false // Track if model is being downloaded/loaded
     @Published var isModelWarming = false // Track if model is warming up
+    @Published var wasBackgroundedDuringTranscription = false // Track if app was backgrounded during transcription
     
     // Validation state
     @Published var titleError: String? = nil
@@ -374,6 +375,44 @@ class RecordingFormViewModel: ObservableObject {
             errorMessage = message
             withAnimation {
                 showErrorToast = true
+            }
+        }
+    }
+
+    /// Mark that the app was backgrounded during transcription
+    func markBackgrounded() {
+        wasBackgroundedDuringTranscription = true
+    }
+
+    /// Handle app returning from background - resume transcription if needed
+    @MainActor
+    func handleReturnFromBackground(modelContext: ModelContext) {
+        guard let recording = autoSavedRecording else { return }
+
+        // Check if transcription completed while backgrounded
+        if recording.status == .completed {
+            print("✅ [RecordingForm] Transcription completed while backgrounded")
+            isTranscribing = false
+            transcriptionProgress = 1.0
+            transcribedText = recording.fullText
+            transcribedLanguage = recording.language
+            wasBackgroundedDuringTranscription = false
+            return
+        }
+
+        // If transcription was in progress and we were backgrounded, check if it's still running
+        if wasBackgroundedDuringTranscription && recording.status == .inProgress {
+            let recordingId = recording.id
+
+            // Check if transcription task is still active
+            if !TranscriptionProgressManager.shared.hasActiveTranscription(for: recordingId) {
+                print("⚠️ [RecordingForm] Transcription was interrupted - restarting")
+                // Transcription was interrupted by backgrounding - restart it
+                wasBackgroundedDuringTranscription = false
+                startTranscription(modelContext: modelContext)
+            } else {
+                print("ℹ️ [RecordingForm] Transcription still running after return from background")
+                wasBackgroundedDuringTranscription = false
             }
         }
     }
