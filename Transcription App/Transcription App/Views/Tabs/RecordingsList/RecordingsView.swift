@@ -256,34 +256,129 @@ struct RecordingsView: View {
         }
     }
 
+    /// Start transcription in background for a recording
+    private func startBackgroundTranscription(for recording: Recording) {
+        guard let url = recording.resolvedURL else {
+            print("❌ [Auto-Start] No audio URL for recording: \(recording.title)")
+            return
+        }
+
+        let recordingId = recording.id
+
+        // Create transcription task
+        let transcriptionTask = Task { @MainActor in
+            do {
+                print("🎯 [Auto-Start] Starting transcription for: \(url.lastPathComponent)")
+                let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
+                    Task { @MainActor in
+                        if Task.isCancelled { return }
+                        TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
+                    }
+                }
+
+                // Check if task was cancelled
+                try Task.checkCancellation()
+
+                // Verify recording still exists before updating
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                guard let existingRecordings = try? modelContext.fetch(descriptor),
+                      let existingRecording = existingRecordings.first else {
+                    print("ℹ️ [Auto-Start] Recording was deleted during transcription")
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    return
+                }
+
+                // Update recording with results
+                existingRecording.fullText = result.text
+                existingRecording.language = result.language
+                existingRecording.status = .completed
+                existingRecording.failureReason = nil
+
+                // Clear existing segments and add new ones
+                existingRecording.segments.removeAll()
+                for segment in result.segments {
+                    let recordingSegment = RecordingSegment(
+                        start: segment.start,
+                        end: segment.end,
+                        text: segment.text
+                    )
+                    modelContext.insert(recordingSegment)
+                    existingRecording.segments.append(recordingSegment)
+                }
+
+                try modelContext.save()
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                print("✅ [Auto-Start] Transcription completed for: \(existingRecording.title)")
+
+            } catch is CancellationError {
+                print("ℹ️ [Auto-Start] Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            } catch {
+                print("❌ [Auto-Start] Transcription error: \(error)")
+
+                // Check if recording still exists before updating error state
+                let errorDescriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                if let errorRecordings = try? modelContext.fetch(errorDescriptor),
+                   let errorRecording = errorRecordings.first {
+                    errorRecording.status = .inProgress
+                    errorRecording.failureReason = "Transcription was interrupted. Tap to resume."
+                    try? modelContext.save()
+                }
+
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            }
+        }
+
+        // Register the task for cancellation
+        TranscriptionProgressManager.shared.registerTask(for: recordingId, task: transcriptionTask)
+    }
+
     /// Detect and recover incomplete recordings on app launch
     private func recoverIncompleteRecordings() {
-        let incompleteRecordings = recordings.filter { recording in
-            recording.status == .inProgress
+        // Auto-start transcriptions for any recordings that need it
+        let pendingRecordings = recordings.filter { recording in
+            (recording.status == .inProgress || recording.status == .notStarted) &&
+            recording.resolvedURL != nil
         }
 
-        guard !incompleteRecordings.isEmpty else { return }
+        guard !pendingRecordings.isEmpty else { return }
 
-        print("🔄 [Recovery] Found \(incompleteRecordings.count) incomplete recording(s)")
+        print("🔄 [Auto-Start] Found \(pendingRecordings.count) recording(s) needing transcription")
 
-        // Perform save operation asynchronously to avoid blocking main thread
-        Task { @MainActor in
-            for recording in incompleteRecordings {
-                // Mark as failed with explanation
-                recording.status = .failed
-                recording.failureReason = "Recording was interrupted. The app may have been closed or an error occurred during transcription."
-                print("⚠️ [Recovery] Marked recording '\(recording.title)' as failed")
+        // Auto-start transcriptions in background
+        for recording in pendingRecordings {
+            // Skip if already transcribing or queued
+            if TranscriptionProgressManager.shared.hasActiveTranscription(for: recording.id) ||
+               TranscriptionProgressManager.shared.isQueued(recordingId: recording.id) {
+                continue
             }
 
-            do {
-                try modelContext.save()
-                print("✅ [Recovery] Successfully updated incomplete recordings")
-            } catch {
-                print("❌ [Recovery] Failed to save recovered recordings: \(error)")
-            }
+            print("✅ [Auto-Start] Starting transcription for: \(recording.title)")
+
+            // Clear any old failure reasons
+            recording.failureReason = nil
+            recording.status = .inProgress
+            recording.transcriptionStartedAt = Date()
+
+            // Start transcription in background
+            startBackgroundTranscription(for: recording)
+        }
+
+        // Save status updates
+        do {
+            try modelContext.save()
+            print("✅ [Recovery] Successfully updated incomplete recordings")
+        } catch {
+            print("❌ [Recovery] Failed to save recovered recordings: \(error)")
         }
     }
-    
+
     // MARK: - Selection Mode
     
     private var selectedRecordingsArray: [Recording] {
