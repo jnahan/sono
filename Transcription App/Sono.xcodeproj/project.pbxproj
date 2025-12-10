@@ -159,7 +159,7 @@
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
 		5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LibreBaskerville-VariableFont_wght.ttf"; sourceTree = "<group>"; };
-		5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Transcription-App-Info.plist"; sourceTree = SOURCE_ROOT; };
+		5DB5792A2ED8ECE5002DC84D /* Sono-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Sono-Info.plist"; sourceTree = SOURCE_ROOT; };
 		5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
@@ -294,7 +294,7 @@
 				5D12FFF12EE3411000F1FAE2 /* LLM */,
 				5DB579232ED8D041002DC84D /* App */,
 				5D0ED1192EE131650003E775 /* Utilities */,
-				5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */,
+				5DB5792A2ED8ECE5002DC84D /* Sono-Info.plist */,
 				5D0ED1082EDFD0F90003E775 /* Styles */,
 				5DDA7CC42EDD837200AFB6C0 /* Extensions */,
 				5DB579282ED8EC99002DC84D /* Fonts */,
@@ -781,7 +781,7 @@
 				DEVELOPMENT_TEAM = 485K7R6W7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Transcription-App-Info.plist";
+				INFOPLIST_FILE = "Sono-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Sono;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to save and record audio";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -815,7 +815,7 @@
 				DEVELOPMENT_TEAM = 485K7R6W7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Transcription-App-Info.plist";
+				INFOPLIST_FILE = "Sono-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Sono;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to save and record audio";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
