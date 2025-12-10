@@ -10,7 +10,7 @@ class LLMService {
     private var llm: LLM?
     
     // MARK: - Configuration
-    private let modelName = "Llama-3.2-1B-Instruct-Q4_K_M"
+    private let modelName = "Llama-3.2-1B-Instruct-Q5_K_M"
     
     // MARK: - Initialization
     private init() {

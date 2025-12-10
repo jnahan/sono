@@ -29,7 +29,15 @@ struct Transcription_AppApp: App {
             do {
                 return try ModelContainer(for: schema, configurations: [config])
             } catch {
-                fatalError("Could not create ModelContainer even after cleanup: \(error)")
+                Logger.error("App", "Could not create ModelContainer even after cleanup: \(error)")
+                // Try one more time with in-memory storage as fallback
+                let inMemoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                do {
+                    return try ModelContainer(for: schema, configurations: [inMemoryConfig])
+                } catch {
+                    // Last resort: fatal error
+                    fatalError("Could not create ModelContainer: \(error)")
+                }
             }
         }
     }()
@@ -53,3 +61,4 @@ struct Transcription_AppApp: App {
         }
     }
 }
+

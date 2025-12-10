@@ -42,7 +42,7 @@
 		5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */; };
 		5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */; };
 		5D70377C2ECD90B200D061E3 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5D70377B2ECD90B200D061E3 /* WhisperKit */; };
-		5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */; };
+		5D7925AC2ECD8E4A002889A6 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AB2ECD8E4A002889A6 /* App.swift */; };
 		5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */; };
 		5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D7925B42ECD8E4B002889A6 /* Preview Assets.xcassets */; };
 		5D7925BD2ECD8E6C002889A6 /* Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7925BC2ECD8E6B002889A6 /* Recording.swift */; };
@@ -77,7 +77,6 @@
 		5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */; };
 		5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */; };
 		5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */; };
-		5DC587812EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
 		5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */; };
 		5DDA7CCA2EDD842100AFB6C0 /* View+Shadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC92EDD842100AFB6C0 /* View+Shadow.swift */; };
@@ -85,6 +84,7 @@
 		5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */; };
 		5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */; };
 		5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DE4CA742EDD37D20039A2AA /* Assets.xcassets */; };
+		5DEC80202EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5DEC801F2EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf */; };
 		813E26A12C6C6D09EF563F53 /* Transcription App/Helpers/TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D01689DC246FCDF3CB5275 /* Transcription App/Helpers/TranscriptionHelper.swift */; };
 		81767EC7719D89FF5DB97F80 /* AskSonoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF3D673207A77FC96D4DDB /* AskSonoViewModel.swift */; };
 		8D902EC4EA9C314DA855042A /* TranscriptionProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */; };
@@ -125,8 +125,8 @@
 		5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-Italic-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
-		5D7925A82ECD8E4A002889A6 /* Transcription App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transcription App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcription_AppApp.swift; sourceTree = "<group>"; };
+		5D7925A82ECD8E4A002889A6 /* Sono.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sono.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D7925AB2ECD8E4A002889A6 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsView.swift; sourceTree = "<group>"; };
 		5D7925B42ECD8E4B002889A6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5D7925BC2ECD8E6B002889A6 /* Recording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recording.swift; sourceTree = "<group>"; };
@@ -162,7 +162,6 @@
 		5DB5792A2ED8ECE5002DC84D /* Transcription-App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Transcription-App-Info.plist"; sourceTree = SOURCE_ROOT; };
 		5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
-		5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC92EDD842100AFB6C0 /* View+Shadow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Shadow.swift"; sourceTree = "<group>"; };
@@ -170,6 +169,7 @@
 		5DDA7CCF2EDD864C00AFB6C0 /* CollectionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailView.swift; sourceTree = "<group>"; };
 		5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEmptyStateView.swift; sourceTree = "<group>"; };
 		5DE4CA742EDD37D20039A2AA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5DEC801F2EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q5_K_M.gguf"; sourceTree = "<group>"; };
 		A5EEB64612AFEDCE986F8B87 /* LLMPrompts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LLMPrompts.swift; sourceTree = "<group>"; };
 		B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TranscriptionProgressManager.swift; path = "Transcription App/Service/TranscriptionProgressManager.swift"; sourceTree = SOURCE_ROOT; };
 		E4D01689DC246FCDF3CB5275 /* Transcription App/Helpers/TranscriptionHelper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Helpers/TranscriptionHelper.swift"; sourceTree = SOURCE_ROOT; };
@@ -252,7 +252,7 @@
 		5D12FFF12EE3411000F1FAE2 /* LLM */ = {
 			isa = PBXGroup;
 			children = (
-				5DC587802EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf */,
+				5DEC801F2EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf */,
 			);
 			path = LLM;
 			sourceTree = "<group>";
@@ -283,7 +283,7 @@
 		5D7925A92ECD8E4A002889A6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5D7925A82ECD8E4A002889A6 /* Transcription App.app */,
+				5D7925A82ECD8E4A002889A6 /* Sono.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -399,7 +399,7 @@
 		5DB579232ED8D041002DC84D /* App */ = {
 			isa = PBXGroup;
 			children = (
-				5D7925AB2ECD8E4A002889A6 /* Transcription_AppApp.swift */,
+				5D7925AB2ECD8E4A002889A6 /* App.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -491,9 +491,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5D7925A72ECD8E4A002889A6 /* Transcription App */ = {
+		5D7925A72ECD8E4A002889A6 /* Sono */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5D7925B82ECD8E4B002889A6 /* Build configuration list for PBXNativeTarget "Transcription App" */;
+			buildConfigurationList = 5D7925B82ECD8E4B002889A6 /* Build configuration list for PBXNativeTarget "Sono" */;
 			buildPhases = (
 				5D7925A42ECD8E4A002889A6 /* Sources */,
 				5D7925A52ECD8E4A002889A6 /* Frameworks */,
@@ -503,13 +503,13 @@
 			);
 			dependencies = (
 			);
-			name = "Transcription App";
+			name = Sono;
 			packageProductDependencies = (
 				5D70377B2ECD90B200D061E3 /* WhisperKit */,
 				5D12FFEF2EE33C7400F1FAE2 /* LLM */,
 			);
 			productName = "Transcription App";
-			productReference = 5D7925A82ECD8E4A002889A6 /* Transcription App.app */;
+			productReference = 5D7925A82ECD8E4A002889A6 /* Sono.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -527,7 +527,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5D7925A32ECD8E4A002889A6 /* Build configuration list for PBXProject "Transcription App" */;
+			buildConfigurationList = 5D7925A32ECD8E4A002889A6 /* Build configuration list for PBXProject "Sono" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -544,7 +544,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5D7925A72ECD8E4A002889A6 /* Transcription App */,
+				5D7925A72ECD8E4A002889A6 /* Sono */,
 			);
 		};
 /* End PBXProject section */
@@ -557,9 +557,9 @@
 				5D7925B52ECD8E4B002889A6 /* Preview Assets.xcassets in Resources */,
 				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
 				5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */,
+				5DEC80202EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf in Resources */,
 				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
-				5DC587812EE782730071CD87 /* Llama-3.2-1B-Instruct-Q4_K_M.gguf in Resources */,
 				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
 				5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */,
 			);
@@ -582,7 +582,7 @@
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */,
 				5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */,
-				5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */,
+				5D7925AC2ECD8E4A002889A6 /* App.swift in Sources */,
 				5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */,
 				5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */,
 				5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */,
@@ -839,7 +839,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5D7925A32ECD8E4A002889A6 /* Build configuration list for PBXProject "Transcription App" */ = {
+		5D7925A32ECD8E4A002889A6 /* Build configuration list for PBXProject "Sono" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5D7925B62ECD8E4B002889A6 /* Debug */,
@@ -848,7 +848,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5D7925B82ECD8E4B002889A6 /* Build configuration list for PBXNativeTarget "Transcription App" */ = {
+		5D7925B82ECD8E4B002889A6 /* Build configuration list for PBXNativeTarget "Sono" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5D7925B92ECD8E4B002889A6 /* Debug */,
