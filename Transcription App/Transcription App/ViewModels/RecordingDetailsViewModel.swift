@@ -36,18 +36,28 @@ class RecordingDetailsViewModel: ObservableObject {
         
         isGeneratingSummary = true
         summaryError = nil
-        
+
         do {
-            // Truncate transcription if needed
-            let truncatedTranscription = TranscriptionHelper.truncate(
-                recording.fullText,
-                maxLength: AppConstants.LLM.maxContextLength
-            )
+            // Check if transcription exceeds max context length
+            if recording.fullText.count > AppConstants.LLM.maxContextLength {
+                recording.summary = "Failed to summarize recording"
+                isGeneratingSummary = false
+
+                // Save the failure message
+                await MainActor.run {
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        summaryError = "Failed to save: \(error.localizedDescription)"
+                    }
+                }
+                return
+            }
 
             let prompt = """
             Summarize the following transcription in 2-3 concise sentences:
 
-            \(truncatedTranscription)
+            \(recording.fullText)
             """
 
             // Reset streaming text

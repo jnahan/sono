@@ -19,7 +19,7 @@ enum AppConstants {
 
     /// LLM configuration constants
     enum LLM {
-        static let maxContextLength = 3000
+        static let maxContextLength = 80000
         static let maxSummaryLength = 500
         static let minValidResponseLength = 10
     }

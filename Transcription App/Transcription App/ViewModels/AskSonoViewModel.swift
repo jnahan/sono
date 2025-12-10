@@ -53,16 +53,18 @@ class AskSonoViewModel: ObservableObject {
         error = nil
 
         do {
-            // Truncate transcription if needed
-            let truncatedTranscription = TranscriptionHelper.truncate(
-                recording.fullText,
-                maxLength: AppConstants.LLM.maxContextLength
-            )
+            // Check if transcription exceeds max context length
+            if recording.fullText.count > AppConstants.LLM.maxContextLength {
+                let aiMessage = ChatMessage(text: "Failed to summarize recording", isUser: false)
+                messages.append(aiMessage)
+                isProcessing = false
+                return
+            }
 
             // Build prompt
             let prompt = """
             Transcription:
-            \(truncatedTranscription)
+            \(recording.fullText)
 
             Question: \(promptText)
             """
