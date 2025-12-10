@@ -44,14 +44,15 @@ struct RecordingsView: View {
                                 .padding(.top, 10)
                         }
                         
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 12) {
                             if !recordings.isEmpty {
-                                SearchBar(text: $viewModel.searchText, placeholder: "Search recordings")
+                                SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                                     .padding(.horizontal, AppConstants.UI.Spacing.large)
                             }
                             
                             recordingsList
                         }
+                        .padding(.top, 8)
                     }
                     
                     // Mass action buttons (fixed at bottom above tab bar, only in selection mode)
@@ -62,7 +63,7 @@ struct RecordingsView: View {
                             onMove: { showMoveToCollection = true },
                             horizontalPadding: AppConstants.UI.Spacing.large,
                             bottomPadding: 12,
-                            bottomSafeAreaPadding: 68 // Space for tab bar
+                            bottomSafeAreaPadding: 8
                         )
                     }
                 }

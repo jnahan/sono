@@ -108,7 +108,7 @@ struct SettingsView: View {
                             .frame(width: 24, height: 24)
                         
                         Text("SONO")
-                            .font(.custom("DMSans-Medium", size: 20))
+                            .font(.dmSansMedium(size: 20))
                             .foregroundColor(.baseBlack)
                         
                         Text("Made with love")

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct IconButton: View {
     let icon: String
+    var iconSize: CGFloat = 28
+    var frameSize: CGFloat = 40
     let action: () -> Void
     
     var body: some View {
@@ -16,9 +18,9 @@ struct IconButton: View {
             Image(icon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 28, height: 28)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundColor(.warmGray500)
-                .frame(width: 40, height: 40)
+                .frame(width: frameSize, height: frameSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

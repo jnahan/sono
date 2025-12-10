@@ -41,7 +41,7 @@ struct SummaryView: View {
     private var streamingSummaryView: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(viewModel.streamingSummary)
-                .font(.custom("DMSans-Regular", size: 16))
+                .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
                 .transition(.opacity)
             
@@ -69,7 +69,7 @@ struct SummaryView: View {
             ProgressView()
                 .scaleEffect(1.2)
             Text("Generating summary...")
-                .font(.custom("DMSans-Regular", size: 16))
+                .font(.dmSansRegular(size: 16))
                 .foregroundColor(.warmGray500)
         }
         .frame(maxWidth: .infinity)
@@ -83,7 +83,7 @@ struct SummaryView: View {
                     .font(.system(size: 32))
                     .foregroundColor(.warmGray400)
                 Text(error)
-                    .font(.custom("DMSans-Regular", size: 16))
+                    .font(.dmSansRegular(size: 16))
                     .foregroundColor(.warmGray500)
                     .multilineTextAlignment(.center)
             }
@@ -110,7 +110,7 @@ struct SummaryView: View {
     private func summaryContentView(summary: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(summary)
-                .font(.custom("DMSans-Regular", size: 16))
+                .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
             
             Button(action: {
@@ -137,7 +137,7 @@ struct SummaryView: View {
                     .font(.system(size: 32))
                     .foregroundColor(.warmGray400)
                 Text("No summary available")
-                    .font(.custom("DMSans-Regular", size: 16))
+                    .font(.dmSansRegular(size: 16))
                     .foregroundColor(.warmGray500)
             }
             

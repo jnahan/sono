@@ -54,7 +54,7 @@ struct AskSonoView: View {
                                         ProgressView()
                                             .scaleEffect(0.8)
                                         Text("Thinking...")
-                                            .font(.custom("DMSans-Regular", size: 14))
+                                            .font(.dmSansRegular(size: 14))
                                             .foregroundColor(.warmGray500)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -100,7 +100,7 @@ struct AskSonoView: View {
                         ZStack(alignment: .leading) {
                             if viewModel.userPrompt.isEmpty {
                                 Text("Ask me anything...")
-                                    .font(.custom("DMSans-Regular", size: 16))
+                                    .font(.dmSansRegular(size: 16))
                                     .foregroundColor(.warmGray400)
                                     .padding(.leading, 16)
                                     .padding(.vertical, 12)

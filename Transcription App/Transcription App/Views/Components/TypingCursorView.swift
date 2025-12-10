@@ -5,7 +5,7 @@ struct TypingCursorView: View {
     
     var body: some View {
         Text("▋")
-            .font(.custom("DMSans-Regular", size: 16))
+            .font(.dmSansRegular(size: 16))
             .foregroundColor(.baseBlack)
             .opacity(blink ? 0.3 : 1.0)
             .animation(

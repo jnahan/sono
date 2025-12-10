@@ -40,6 +40,7 @@ struct CollectionsView: View {
                     if !collections.isEmpty {
                         SearchBar(text: $searchText, placeholder: "Search collections...")
                             .padding(.horizontal, AppConstants.UI.Spacing.large)
+                            .padding(.top, 8)
                     }
                     
                     if collections.isEmpty {

@@ -36,31 +36,51 @@ struct RecordingsListView: View {
                 emptyStateView
             } else {
                 List {
-                    ForEach(recordings) { recording in
-                        Button {
-                            if viewModel.isSelectionMode {
-                                // Toggle selection
-                                viewModel.toggleSelection(for: recording.id)
-                            } else {
-                                onRecordingTap(recording)
+                    ForEach(Array(recordings.enumerated()), id: \.element.id) { index, recording in
+                        VStack(spacing: 0) {
+                            // 12px spacing above first recording
+                            if index == 0 {
+                                Spacer()
+                                    .frame(height: 12)
                             }
-                        } label: {
-                            RecordingRowView(
-                                recording: recording,
-                                onCopy: { viewModel.copyRecording(recording) },
-                                onEdit: { viewModel.editRecording(recording) },
-                                onDelete: { viewModel.deleteRecording(recording) },
-                                isSelectionMode: viewModel.isSelectionMode,
-                                isSelected: viewModel.isSelected(recording.id),
-                                onSelectionToggle: {
+                            
+                            Button {
+                                if viewModel.isSelectionMode {
+                                    // Toggle selection
                                     viewModel.toggleSelection(for: recording.id)
+                                } else {
+                                    onRecordingTap(recording)
                                 }
-                            )
+                            } label: {
+                                RecordingRowView(
+                                    recording: recording,
+                                    onCopy: { viewModel.copyRecording(recording) },
+                                    onEdit: { viewModel.editRecording(recording) },
+                                    onDelete: { viewModel.deleteRecording(recording) },
+                                    isSelectionMode: viewModel.isSelectionMode,
+                                    isSelected: viewModel.isSelected(recording.id),
+                                    onSelectionToggle: {
+                                        viewModel.toggleSelection(for: recording.id)
+                                    }
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            
+                            // 12px spacing + border after each recording (except last)
+                            if index < recordings.count - 1 {
+                                Spacer()
+                                    .frame(height: 12)
+                                
+                                Rectangle()
+                                    .fill(Color.warmGray200)
+                                    .frame(height: 1)
+                                
+                                Spacer()
+                                    .frame(height: 12)
+                            }
                         }
-                        .buttonStyle(.plain)
                         .listRowBackground(Color.warmGray50)
                         .listRowInsets(EdgeInsets(top: 0, leading: horizontalPadding, bottom: 0, trailing: horizontalPadding))
-                        .listRowSpacing(24)
                         .listRowSeparator(.hidden)
                     }
                     .ifLet(onDelete) { view, deleteHandler in

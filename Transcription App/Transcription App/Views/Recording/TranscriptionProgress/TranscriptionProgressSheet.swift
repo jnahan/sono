@@ -30,7 +30,7 @@ struct TranscriptionProgressSheet: View {
                 if progressManager.isQueued(recordingId: recording.id) {
                     // Queued state
                     Text("Waiting to transcribe")
-                        .font(.custom("DMSans-Medium", size: 24))
+                        .font(.dmSansMedium(size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                     
@@ -42,11 +42,11 @@ struct TranscriptionProgressSheet: View {
                 } else if transcriptionError == nil {
                     // Progress percentage (actively transcribing)
                     Text("\(Int(transcriptionProgress * 100))%")
-                        .font(.custom("DMSans-Bold", size: 64))
+                        .font(.dmSansBold(size: 64))
                         .foregroundColor(.baseBlack)
 
                     Text("Transcription in progress")
-                        .font(.custom("DMSans-Medium", size: 24))
+                        .font(.dmSansMedium(size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                     
@@ -63,7 +63,7 @@ struct TranscriptionProgressSheet: View {
                         .padding(.bottom, 16)
                     
                     Text("Transcription Failed")
-                        .font(.custom("DMSans-Medium", size: 24))
+                        .font(.dmSansMedium(size: 24))
                         .foregroundColor(.baseBlack)
 
                     Text(transcriptionError ?? "Unknown error")
@@ -77,7 +77,7 @@ struct TranscriptionProgressSheet: View {
                         dismiss()
                     } label: {
                         Text("Go Back")
-                            .font(.custom("DMSans-Regular", size: 16))
+                            .font(.dmSansRegular(size: 16))
                     }
                     .buttonStyle(AppButtonStyle())
                     .padding(.top, 24)

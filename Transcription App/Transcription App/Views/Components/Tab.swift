@@ -9,7 +9,7 @@ struct TabButton: View {
         Button(action: action) {
             VStack(spacing: 8) {
                 Text(title)
-                    .font(.custom("DMSans-Regular", size: 16))
+                    .font(.dmSansRegular(size: 16))
                     .foregroundColor(isSelected ? .baseBlack : .warmGray400)
                 
                 Rectangle()

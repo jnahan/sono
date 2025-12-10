@@ -40,18 +40,11 @@ struct SearchBar: View {
         .padding(.vertical, 12)
         .background(Color.baseWhite)
         .cornerRadius(32)
+        .overlay(
+            RoundedRectangle(cornerRadius: 32)
+                .stroke(Color.warmGray200, lineWidth: 1)
+        )
         .zIndex(1)
-        .appShadow()
-
-    }
-}
-
-#Preview {
-    VStack(spacing: 20) {
-        SearchBar(text: .constant(""))
-            .padding()
         
-        SearchBar(text: .constant("Test search"))
-            .padding()
     }
 }

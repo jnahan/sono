@@ -19,7 +19,7 @@ struct ConfirmationSheet: View {
             
             // Title
             Text(title)
-                .font(.custom("DMSans-Medium", size: 24))
+                .font(.dmSansMedium(size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.bottom, 16)
             

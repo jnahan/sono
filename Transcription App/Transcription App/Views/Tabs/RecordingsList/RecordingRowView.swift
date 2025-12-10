@@ -52,12 +52,12 @@ struct RecordingRowView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     // Date with time
                     Text(formattedDateWithTime)
-                        .font(.dmSansMedium(size: 14))
+                        .font(.dmSansMedium(size: 12))
                         .foregroundColor(.warmGray400)
                     
                     // Title
                     Text(recording.title)
-                        .font(.dmSansMedium(size: 16))
+                        .font(.dmSansSemiBold(size: 16))
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
@@ -83,11 +83,11 @@ struct RecordingRowView: View {
                                     if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
                                         Text("Transcribing \(Int(progress * 100))% (\(position)/\(totalSize))")
                                             .font(.system(size: 14))
-                                            .foregroundColor(.warmGray600)
+                                            .foregroundColor(.warmGray500)
                                     } else {
                                         Text("Transcribing (\(position)/\(totalSize))")
                                             .font(.system(size: 14))
-                                            .foregroundColor(.warmGray600)
+                                            .foregroundColor(.warmGray500)
                                     }
                                 } else {
                                     // Waiting in queue
@@ -111,12 +111,13 @@ struct RecordingRowView: View {
                     } else if !recording.fullText.isEmpty {
                         Text(recording.fullText)
                             .font(.system(size: 14))
-                            .foregroundColor(.warmGray600)
+                            .foregroundColor(.warmGray700)
                             .lineLimit(3)
+                            .lineSpacing(4)
                     } else {
                         Text("No transcription available")
                             .font(.system(size: 14))
-                            .foregroundColor(.warmGray400)
+                            .foregroundColor(.warmGray500)
                             .italic()
                     }
                 }
@@ -126,14 +127,14 @@ struct RecordingRowView: View {
             
             // Action buttons row (hidden in selection mode)
             if !isSelectionMode {
-                HStack(spacing: 16) {
+                HStack(spacing: 8) {
                     // Copy button
-                    IconButton(icon: "copy") {
+                    IconButton(icon: "copy", iconSize: 24, frameSize: 32) {
                         onCopy()
                     }
                     
                     // Dots three menu button
-                    IconButton(icon: "dots-three-bold") {
+                    IconButton(icon: "dots-three-bold", iconSize: 24, frameSize: 32) {
                         showMenu = true
                     }
                     
@@ -141,7 +142,7 @@ struct RecordingRowView: View {
                 }
             }
         }
-        .padding(.vertical, 12)
+        .padding(.top, 8)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
             RecordingMenuActions.confirmationDialogButtons(
                 recording: recording,
@@ -177,7 +178,7 @@ struct RecordingRowView: View {
         timeFormatter.pmSymbol = "PM"
         let timeString = timeFormatter.string(from: recording.recordedAt)
         
-        return "\(dateString) · \(timeString)"
+        return "\(dateString)  ·  \(timeString)"
     }
 }
 

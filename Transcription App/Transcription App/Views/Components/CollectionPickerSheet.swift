@@ -44,7 +44,7 @@ struct CollectionPickerSheet: View {
             
             // Title
             Text("Choose a collection")
-                .font(.custom("DMSans-Medium", size: 24))
+                .font(.dmSansMedium(size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.bottom, 32)
             

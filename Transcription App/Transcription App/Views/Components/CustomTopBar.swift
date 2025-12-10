@@ -22,32 +22,31 @@ struct CustomTopBar: View {
     }
     
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
             // Left button
             if let leftIcon = leftIcon {
                 Button {
                     onLeftTap?()
                 } label: {
-                    ZStack(alignment: .leading) { // align icon left
-                        Image(leftIcon)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.warmGray400)
-                    }
-                    .frame(width: 40, height: 40) // tappable area
-                    .contentShape(Rectangle())
+                    Image(leftIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.warmGray500)
+                        .frame(width: 40, height: 40)
+                        .contentShape(Rectangle())
                 }
             } else {
                 Spacer()
                     .frame(width: 40, height: 40)
             }
+
             
             Spacer()
             
             // Title
             Text(title)
-                .font(.dmSansMedium(size: 18))
+                .font(.dmSansSemiBold(size: 16))
                 .foregroundColor(.baseBlack)
             
             Spacer()
@@ -71,8 +70,8 @@ struct CustomTopBar: View {
             }
         }
         .padding(.horizontal, AppConstants.UI.Spacing.large)
-        .padding(.vertical, 12)
-        .frame(height: 64)
+        .padding(.vertical, 8)
+        .frame(height: 56)
     }
 }
 

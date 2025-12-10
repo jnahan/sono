@@ -65,6 +65,7 @@ struct CollectionDetailView: View {
                     
                     recordingsList
                 }
+                .padding(.top, 8)
             }
             
             // Mass action buttons (fixed at bottom, 8px above safe area, only in selection mode)
