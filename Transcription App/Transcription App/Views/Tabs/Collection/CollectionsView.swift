@@ -29,10 +29,6 @@ struct CollectionsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Gradient at absolute top of screen (when empty)
-                if collections.isEmpty {
-                    EmptyStateGradientView()
-                }
                 
                 VStack(spacing: 0) {
                     CustomTopBar(

@@ -2,14 +2,12 @@ import SwiftUI
 
 extension Color {
     // MARK: - Accent
-    static let accent = Color(red: 240/255, green: 88/255, blue: 136/255)
-    static let accentLight = Color(red: 250/255, green: 231/255, blue: 237/255)
+    static let accent = Color(red: 80/255, green: 100/255, blue: 248/255)
+    static let accentLight = Color(red: 239/255, green: 245/255, blue: 255/255)
     
     // MARK: - Colors
-    static let orangeLight = Color(red: 255/255, green: 228/255, blue: 213/255)
+    static let pink = Color(red: 247/255, green: 44/255, blue: 139/255)
     static let teal = Color(red: 68/255, green: 172/255, blue: 207/255)
-    static let blue = Color(red: 93/255, green: 112/255, blue: 255/255)
-    
     
     // MARK: - Warning
     static let warning = Color(red: 223/255, green: 0/255, blue: 33/255)

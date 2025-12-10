@@ -21,7 +21,6 @@
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
 		5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */; };
-		5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */; };
 		5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */; };
 		5D0ED1372EE150000003E775 /* LanguageMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1362EE150000003E775 /* LanguageMapper.swift */; };
 		5D12FFF02EE33C7400F1FAE2 /* LLM in Frameworks */ = {isa = PBXBuildFile; productRef = 5D12FFEF2EE33C7400F1FAE2 /* LLM */; };
@@ -107,7 +106,6 @@
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
-		5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateGradientView.swift; sourceTree = "<group>"; };
 		5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		5D0ED1362EE150000003E775 /* LanguageMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageMapper.swift; sourceTree = "<group>"; };
 		5D12FFF72EE3500100F1FAE2 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
@@ -382,7 +380,6 @@
 				5D1570642ED96B0A0094E13E /* CollectionPickerSheet.swift */,
 				5D1570682EDA0F450094E13E /* CustomTopBar.swift */,
 				5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */,
-				5D0ED12C2EE1454A0003E775 /* EmptyStateGradientView.swift */,
 				5D0ED10D2EE004090003E775 /* SelectionListView.swift */,
 				5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */,
 				5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */,
@@ -587,7 +584,6 @@
 				5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */,
 				5D7925AC2ECD8E4A002889A6 /* Transcription_AppApp.swift in Sources */,
 				5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */,
-				5D0ED12D2EE1454A0003E775 /* EmptyStateGradientView.swift in Sources */,
 				5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */,
 				5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */,
 				5D214A372ED8238B0069565D /* Collection.swift in Sources */,

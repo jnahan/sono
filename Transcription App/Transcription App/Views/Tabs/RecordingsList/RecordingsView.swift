@@ -19,10 +19,6 @@ struct RecordingsView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
-                // Gradient at absolute top of screen (when empty)
-                if viewModel.filteredRecordings.isEmpty {
-                    EmptyStateGradientView()
-                }
                 
                 ZStack(alignment: .bottom) {
                     VStack(spacing: 0) {

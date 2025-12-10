@@ -21,18 +21,8 @@ struct RecorderView: View {
         NavigationStack {
             ZStack {
                 // Base color layer
-                Color.warmGray50
+                Color.accentLight
                     .ignoresSafeArea()
-                
-                // Gradient background - fill entire screen
-                GeometryReader { geometry in
-                    Image("gradient")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-                }
-                .ignoresSafeArea()
                 
                 // Content
                 VStack(spacing: 0) {
