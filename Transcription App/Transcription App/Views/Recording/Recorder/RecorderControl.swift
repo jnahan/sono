@@ -253,6 +253,12 @@ struct RecorderControl: View {
     private func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
             elapsedTime += 0.01
+
+            // Check if recording has reached the maximum duration (5 hours)
+            if elapsedTime >= AppConstants.Recording.maxRecordingDuration {
+                Logger.info("RecorderControl", "Recording reached maximum duration of 5 hours - automatically stopping")
+                stopRecording()
+            }
         }
     }
     
