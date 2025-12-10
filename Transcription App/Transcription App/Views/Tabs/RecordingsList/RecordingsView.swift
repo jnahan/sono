@@ -56,7 +56,7 @@ struct RecordingsView: View {
                     }
                     
                     // Mass action buttons (fixed at bottom above tab bar, only in selection mode)
-                    if viewModel.isSelectionMode && !viewModel.selectedRecordings.isEmpty {
+                    if viewModel.isSelectionMode {
                         MassActionButtons(
                             onDelete: { showDeleteConfirm = true },
                             onCopy: { copySelectedRecordings() },
@@ -74,14 +74,18 @@ struct RecordingsView: View {
             .onChange(of: recordings) { oldValue, newValue in
                 viewModel.updateFilteredRecordings(from: recordings)
             }
+            .onChange(of: viewModel.isSelectionMode) { oldValue, newValue in
+                // Hide tab bar in selection mode, show it otherwise
+                showPlusButton.wrappedValue = !newValue
+            }
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 viewModel.updateFilteredRecordings(from: recordings)
                 viewModel.recoverIncompleteRecordings(recordings)
                 // Reset navigation state when returning to this tab
                 selectedRecording = nil
-                // Show tab bar on root view
-                showPlusButton.wrappedValue = true
+                // Show tab bar on root view (unless in selection mode)
+                showPlusButton.wrappedValue = !viewModel.isSelectionMode
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()

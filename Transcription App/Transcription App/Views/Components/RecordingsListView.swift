@@ -69,7 +69,7 @@ struct RecordingsListView: View {
                             // 12px spacing + border after each recording (except last)
                             if index < recordings.count - 1 {
                                 Spacer()
-                                    .frame(height: 12)
+                                    .frame(height: viewModel.isSelectionMode ? 20 : 12)
                                 
                                 Rectangle()
                                     .fill(Color.warmGray200)
@@ -77,6 +77,10 @@ struct RecordingsListView: View {
                                 
                                 Spacer()
                                     .frame(height: 12)
+                            } else if viewModel.isSelectionMode {
+                                // Extra spacing at bottom for last item in selection mode
+                                Spacer()
+                                    .frame(height: 8)
                             }
                         }
                         .listRowBackground(Color.warmGray50)

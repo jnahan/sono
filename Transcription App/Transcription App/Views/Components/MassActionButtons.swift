@@ -22,53 +22,28 @@ struct MassActionButtons: View {
             // Icon buttons
             HStack(spacing: 0) {
                 // Move button
-                Button(action: onMove) {
-                    Image("folder-open")
-                        .resizable()
-                        .renderingMode(.template)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(.baseBlack)
-                }
+                IconButton(icon: "folder-open", action: onMove)
 
                 Spacer()
 
                 // Delete button
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 24))
-                        .foregroundColor(.baseBlack)
-                }
+                IconButton(icon: "trash", action: onDelete)
 
                 Spacer()
 
                 // Copy button
-                Button(action: onCopy) {
-                    Image("copy")
-                        .resizable()
-                        .renderingMode(.template)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(.baseBlack)
-                }
+                IconButton(icon: "copy", action: onCopy)
 
                 Spacer()
 
                 // Export button
-                Button(action: onExport ?? {}) {
-                    Image("export")
-                        .resizable()
-                        .renderingMode(.template)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(.baseBlack)
-                }
-                .disabled(onExport == nil)
-                .opacity(onExport == nil ? 0.3 : 1.0)
+                IconButton(icon: "export", action: onExport ?? {})
+                    .opacity(onExport == nil ? 0.3 : 1.0)
+                    .disabled(onExport == nil)
             }
             .padding(.horizontal, 32)
             .padding(.top, 12)
-            .padding(.bottom, 48)
+            .padding(.bottom, 8)
             .background(Color.warmGray50)
         }
         .padding(.bottom, bottomSafeAreaPadding)

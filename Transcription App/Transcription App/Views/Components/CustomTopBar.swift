@@ -30,6 +30,7 @@ struct CustomTopBar: View {
                 } label: {
                     Image(leftIcon)
                         .resizable()
+                        .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 28, height: 28)
                         .foregroundColor(.warmGray500)
@@ -58,6 +59,7 @@ struct CustomTopBar: View {
                 } label: {
                     Image(rightIcon)
                         .resizable()
+                        .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 28, height: 28)
                         .foregroundColor(.warmGray500)
