@@ -73,7 +73,7 @@ struct RecorderControl: View {
                                 Text("Retry")
                                     .font(.system(size: 17, weight: .medium))
                             }
-                            .foregroundColor(.accent)
+                            .foregroundColor(.warning)
                         }
                     } else {
                         // Invisible placeholder to maintain spacing
@@ -106,12 +106,12 @@ struct RecorderControl: View {
                             if rec.isRecording {
                                 // Recording: red square
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.accent)
+                                    .fill(Color.pink)
                                     .frame(width: 24, height: 24)
                             } else if rec.fileURL == nil {
                                 // Not started: red circle
                                 Circle()
-                                    .fill(Color.accent)
+                                    .fill(Color.pink)
                                     .frame(width: 48, height: 48)
                             } else {
                                 // Recorded: checkmark

@@ -65,7 +65,7 @@ struct RecordingFormView: View {
                     .padding(.top, 12)
                 } else {
                     CustomTopBar(
-                        title: "",
+                        title: "New recording",
                         leftIcon: "x",
                         onLeftTap: {
                             viewModel.showExitConfirmation = true
@@ -73,7 +73,7 @@ struct RecordingFormView: View {
                     )
                     .padding(.top, 12)
                 }
-                
+
                 ScrollView {
                     // Form fields
                     VStack(spacing: 24) {
@@ -114,7 +114,7 @@ struct RecordingFormView: View {
                         }
                     }
                     .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    .padding(.top, viewModel.isEditing ? 24 : 0)
+                    .padding(.top, 16)
                 }
                 .scrollDismissesKeyboard(.interactively)
 

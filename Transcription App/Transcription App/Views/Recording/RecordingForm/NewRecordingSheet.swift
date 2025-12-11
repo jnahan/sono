@@ -53,7 +53,7 @@ struct NewRecordingSheet: View {
             ActionButton(
                 iconName: "microphone",
                 title: "Record audio",
-                tint: .accent,
+                tint: .pink,
                 action: {
                     dismiss()
                     onRecordAudio()

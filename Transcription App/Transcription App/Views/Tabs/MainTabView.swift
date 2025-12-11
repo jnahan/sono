@@ -17,7 +17,7 @@ struct MainTabView: View {
     @Query(sort: \Collection.name) private var collections: [Collection]
 
 
-    @AppStorage("selectedTab") private var selectedTab = 0
+    @State private var selectedTab = 0
     @State private var showPlusButton = true
 
     @State private var showNewRecordingSheet = false
