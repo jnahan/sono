@@ -13,20 +13,20 @@ struct CollectionsRowView: View {
             // Collection Icon
             ZStack {
                 Circle()
-                    .fill(Color.accentLight)
-                    .frame(width: 40, height: 40)
+                    .fill(Color.accent)
+                    .frame(width: 36, height: 36)
                 
                 Image("waveform")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)
-                    .foregroundColor(.accent)
+                    .foregroundColor(.accentLight)
             }
             
             // Collection Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(collection.name)
-                    .font(.dmSansMedium(size: 16))
+                    .font(.dmSansSemiBold(size: 16))
                     .foregroundColor(.baseBlack)
                 
                 Text("\(recordingCount) recordings")

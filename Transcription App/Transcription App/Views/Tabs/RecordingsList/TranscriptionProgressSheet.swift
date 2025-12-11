@@ -1,6 +1,53 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Reusable Status Display Component
+private struct TranscriptionStatusView: View {
+    let topText: String? // Optional percentage or nil
+    let heading: String
+    let description: String
+    let onDone: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if let topText = topText {
+                Text(topText)
+                    .font(.dmSansSemiBold(size: 64))
+                    .foregroundColor(.baseBlack)
+
+                Spacer()
+                    .frame(height: 8)
+            }
+
+            Text(heading)
+                .font(.dmSansSemiBold(size: 24))
+                .foregroundColor(.baseBlack)
+                .multilineTextAlignment(.center)
+
+            Spacer()
+                .frame(height: 8)
+
+            Text(description)
+                .font(.dmSansRegular(size: 16))
+                .foregroundColor(.warmGray700)
+                .multilineTextAlignment(.center)
+
+            Spacer()
+                .frame(height: 32)
+
+            Button {
+                onDone()
+            } label: {
+                Text("Done")
+                    .font(.dmSansRegular(size: 16))
+            }
+            .buttonStyle(AppButtonStyle())
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 40)
+    }
+}
+
 struct TranscriptionProgressSheet: View {
     let recording: Recording
     var onComplete: ((Recording) -> Void)? = nil
@@ -23,82 +70,39 @@ struct TranscriptionProgressSheet: View {
             Color.warmGray50
                 .ignoresSafeArea()
             
-            VStack(spacing: 24) {
-                Spacer()
-                
-                // Check if queued
-                if progressManager.isQueued(recordingId: recording.id) {
-                    // Queued state
-                    Text("Waiting to transcribe")
-                        .font(.dmSansMedium(size: 24))
-                        .foregroundColor(.baseBlack)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("Your recording will be transcribed\nwhen the current transcription finishes")
-                        .font(.system(size: 16))
-                        .foregroundColor(.warmGray500)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 8)
-                } else if transcriptionError == nil {
-                    // Progress percentage (actively transcribing)
-                    Text("\(Int(transcriptionProgress * 100))%")
-                        .font(.dmSansBold(size: 64))
-                        .foregroundColor(.baseBlack)
-
-                    Text("Transcription in progress")
-                        .font(.dmSansMedium(size: 24))
-                        .foregroundColor(.baseBlack)
-                        .multilineTextAlignment(.center)
-                    
-                    Text("Please do not close the app\nuntil transcription is complete")
-                        .font(.system(size: 16))
-                        .foregroundColor(.warmGray500)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 8)
-                } else {
-                    // Error state
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 48))
-                        .foregroundColor(.red)
-                        .padding(.bottom, 16)
-                    
-                    Text("Transcription Failed")
-                        .font(.dmSansMedium(size: 24))
-                        .foregroundColor(.baseBlack)
-
-                    Text(transcriptionError ?? "Unknown error")
-                        .font(.system(size: 16))
-                        .foregroundColor(.warmGray500)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                        .padding(.top, 8)
-
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text("Go Back")
-                            .font(.dmSansRegular(size: 16))
-                    }
-                    .buttonStyle(AppButtonStyle())
-                    .padding(.top, 24)
-                }
-                
-                Spacer()
+            // Check if queued
+            if progressManager.isQueued(recordingId: recording.id) {
+                TranscriptionStatusView(
+                    topText: nil,
+                    heading: "Waiting to transcribe",
+                    description: "Your recording will be transcribed when the current transcription finishes.",
+                    onDone: { dismiss() }
+                )
+            } else if transcriptionError == nil {
+                TranscriptionStatusView(
+                    topText: "\(Int(transcriptionProgress * 100))%",
+                    heading: "Transcribing audio",
+                    description: "Transcription in progress. Please do not close.",
+                    onDone: { dismiss() }
+                )
+            } else {
+                TranscriptionStatusView(
+                    topText: nil,
+                    heading: "Transcription failed",
+                    description: transcriptionError ?? "Unknown error",
+                    onDone: { dismiss() }
+                )
             }
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.height(transcriptionError == nil && progressManager.isQueued(recordingId: recording.id) == false ? 340 : 260)])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color.warmGray50)
         .onAppear {
             // Check if already completed when view appears
             if recording.status == .completed {
                 transcriptionProgress = 1.0
-                // Navigate to details immediately via callback
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-                    onComplete?(recording)
-                }
+                // Just dismiss the sheet, don't auto-navigate
+                dismiss()
             } else if recording.status == .failed || recording.status == .notStarted {
                 // Start transcription if not already in progress
                 startTranscription()
@@ -121,14 +125,13 @@ struct TranscriptionProgressSheet: View {
             // Queue updated - UI will automatically reflect this
         }
         .onChange(of: recording.status) { oldStatus, newStatus in
-            // When transcription completes, navigate to details
+            // When transcription completes, just dismiss
             if oldStatus == .inProgress && newStatus == .completed {
                 transcriptionProgress = 1.0
-                // Small delay to show 100%, then navigate
+                // Small delay to show 100%, then dismiss
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-                    // Use callback to replace this view with RecordingDetailsView
-                    onComplete?(recording)
+                    dismiss()
                 }
             } else if newStatus == .failed {
                 transcriptionError = recording.failureReason ?? "Transcription failed"
