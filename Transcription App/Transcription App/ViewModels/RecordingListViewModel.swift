@@ -154,8 +154,10 @@ class RecordingListViewModel: ObservableObject {
         }
         
         // Auto-start transcriptions for any recordings that need it
+        // Exclude .failed recordings - they cannot be retried
         let pendingRecordings = recordings.filter { recording in
             (recording.status == .inProgress || recording.status == .notStarted) &&
+            recording.status != .failed &&
             recording.resolvedURL != nil
         }
 
@@ -228,6 +230,7 @@ class RecordingListViewModel: ObservableObject {
                 }
 
                 // Update recording with results
+                Logger.info("Auto-Start", "Transcription result - text length: \(result.text.count), segments: \(result.segments.count)")
                 existingRecording.fullText = result.text
                 existingRecording.language = result.language
                 existingRecording.status = .completed
@@ -262,8 +265,8 @@ class RecordingListViewModel: ObservableObject {
 
                 if let errorRecordings = try? modelContext.fetch(errorDescriptor),
                    let errorRecording = errorRecordings.first {
-                    errorRecording.status = .inProgress
-                    errorRecording.failureReason = ErrorMessages.Transcription.interrupted
+                    errorRecording.status = .failed
+                    errorRecording.failureReason = ErrorMessages.Transcription.failed
                     try? modelContext.save()
                 }
 

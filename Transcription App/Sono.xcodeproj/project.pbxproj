@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		52F11FFC6686B1A707651C26 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */; };
+		52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */; };
 		5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1092EDFD1090003E775 /* AppButtonStyle.swift */; };
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionListView.swift */; };
@@ -175,7 +175,7 @@
 		B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TranscriptionProgressManager.swift; path = "Transcription App/Service/TranscriptionProgressManager.swift"; sourceTree = SOURCE_ROOT; };
 		F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlaybackService.swift; sourceTree = "<group>"; };
 		F4DF3D673207A77FC96D4DDB /* AskSonoViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AskSonoViewModel.swift; sourceTree = "<group>"; };
-		FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
+		FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecordingPlayerBar.swift; path = "Transcription App/Views/Recording/RecordingDetails/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -194,6 +194,7 @@
 		5D0ED1072EDFCF760003E775 /* RecordingForm */ = {
 			isa = PBXGroup;
 			children = (
+				5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */,
 				5D4622D32ED83570009A454D /* RecordingFormView.swift */,
 			);
 			path = RecordingForm;
@@ -338,7 +339,6 @@
 				5DDA7CCE2EDD858E00AFB6C0 /* Collection */,
 				5DDA7CCD2EDD858100AFB6C0 /* RecordingsList */,
 				5DB579032ED84651002DC84D /* MainTabView.swift */,
-				5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -349,7 +349,6 @@
 				5D0ED1072EDFCF760003E775 /* RecordingForm */,
 				5DDA7CD22EDD86EC00AFB6C0 /* RecordingDetails */,
 				5DDA7CD12EDD86C100AFB6C0 /* Recorder */,
-				5DDA7CD32EDD86ED00AFB6C0 /* TranscriptionProgress */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -383,7 +382,6 @@
 				5D9271302EE50DC900A34B14 /* TypingCursorView.swift */,
 				5D9271322EE50DC900A34B15 /* SettingsRow.swift */,
 				5D9271382EE50DC900A34B18 /* MassActionButtons.swift */,
-				5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -422,9 +420,11 @@
 		5DDA7CCD2EDD858100AFB6C0 /* RecordingsList */ = {
 			isa = PBXGroup;
 			children = (
+				5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */,
 				5D7925AD2ECD8E4A002889A6 /* RecordingsView.swift */,
 				5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */,
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */,
+				5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */,
 			);
 			path = RecordingsList;
 			sourceTree = "<group>";
@@ -459,25 +459,9 @@
 				5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */,
 				5D12FFFD2EE3B9F000F1FAE2 /* SummaryView.swift */,
 				5D12FFFF2EE3BA0000F1FAE2 /* AskSonoView.swift */,
-				9DA34ED9D8CE5048F6995514 /* Components */,
+				FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */,
 			);
 			path = RecordingDetails;
-			sourceTree = "<group>";
-		};
-		5DDA7CD32EDD86ED00AFB6C0 /* TranscriptionProgress */ = {
-			isa = PBXGroup;
-			children = (
-				5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */,
-			);
-			path = TranscriptionProgress;
-			sourceTree = "<group>";
-		};
-		9DA34ED9D8CE5048F6995514 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				FF905E43954BC600CC2F1B07 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift */,
-			);
-			name = Components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -635,7 +619,7 @@
 				C899B6D0F8BAFC4A29C09615 /* LLMPrompts.swift in Sources */,
 				81767EC7719D89FF5DB97F80 /* AskSonoViewModel.swift in Sources */,
 				E805026C9245257B5A76A46D /* AudioPlaybackService.swift in Sources */,
-				52F11FFC6686B1A707651C26 /* Transcription App/Views/Recording/RecordingDetails/Components/RecordingPlayerBar.swift in Sources */,
+				52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */,
 				8D902EC4EA9C314DA855042A /* TranscriptionProgressManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

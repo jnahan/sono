@@ -152,6 +152,12 @@ class RecordingFormViewModel: ObservableObject {
     private var transcriptionModelContext: ModelContext? = nil
 
     func startTranscription(modelContext: ModelContext? = nil) {
+        // Prevent retrying failed recordings
+        if autoSavedRecording?.status == .failed {
+            showError(ErrorMessages.Transcription.cannotRetranscribe)
+            return
+        }
+
         guard let url = audioURL else {
             showError("Audio file not found")
             return
@@ -352,18 +358,17 @@ class RecordingFormViewModel: ObservableObject {
 
                 if let existingRecordings = try? context.fetch(descriptor),
                    existingRecordings.first != nil {
-                    // Save as .inProgress so user can resume, not .failed
-                    // This allows graceful recovery for all error types
-                    recording.status = .inProgress
-                    recording.failureReason = ErrorMessages.Transcription.interrupted
+                    // Mark as failed for actual errors
+                    recording.status = .failed
+                    recording.failureReason = ErrorMessages.Transcription.failed
 
                     // Save the context to persist the state
                     try? context.save()
 
                     // Show user-friendly error toast
-                    showError(ErrorMessages.Transcription.interruptedWithDetails)
+                    showError(ErrorMessages.Transcription.failedWithDetails)
 
-                    Logger.warning("RecordingForm", "Transcription error handled gracefully: \(error.localizedDescription)")
+                    Logger.warning("RecordingForm", "Transcription failed: \(error.localizedDescription)")
                 } else {
                     Logger.info("RecordingForm", "Recording was deleted, skipping error handling")
                 }

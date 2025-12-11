@@ -603,7 +603,7 @@ class TranscriptionService {
                 if Task.isCancelled {
                     return false // Stop transcription
                 }
-                
+
                 // WhisperKit provides progress through TranscriptionProgress
                 // Calculate overall progress from current and total segments
                 if let callback = progressCallback {
@@ -639,14 +639,14 @@ class TranscriptionService {
             guard segment.start >= 0 && segment.end >= segment.start else {
                 return nil
             }
-            
+
             let cleanedText = cleanTimestampTokens(from: segment.text)
             let trimmed = cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             guard !trimmed.isEmpty && isValidTranscription(trimmed) else {
                 return nil
             }
-            
+
             return TranscriptionSegment(
                 start: Double(segment.start),
                 end: Double(segment.end),
@@ -657,7 +657,7 @@ class TranscriptionService {
         let cleanedFullText = cleanTimestampTokens(from: firstResult.text)
         let trimmedFullText = cleanedFullText.trimmingCharacters(in: .whitespacesAndNewlines)
         let isValidFullText = isValidTranscription(trimmedFullText)
-        
+
         // If we have no valid segments but have valid full text, create a single segment
         var finalSegments = segments
         if finalSegments.isEmpty && isValidFullText {
@@ -669,7 +669,7 @@ class TranscriptionService {
                 )
             ]
         }
-        
+
         // For very short or silent recordings, empty results are valid and expected
         // Return empty result instead of throwing error - user may have been silent
         let finalText = isValidFullText ? trimmedFullText : ""

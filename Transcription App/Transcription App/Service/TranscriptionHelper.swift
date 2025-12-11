@@ -7,30 +7,6 @@
 
 import Foundation
 
-/// Helper utilities for transcription text processing
-enum TranscriptionHelper {
-
-    /// Truncates long transcription text to fit within a maximum length
-    /// Takes the beginning (60%) and end (40%) of the text when truncating
-    /// - Parameters:
-    ///   - text: The full transcription text
-    ///   - maxLength: Maximum allowed length
-    /// - Returns: Truncated text with [...] indicating omitted content
-    static func truncate(_ text: String, maxLength: Int) -> String {
-        guard text.count > maxLength else {
-            return text
-        }
-
-        let beginningLength = Int(Double(maxLength) * 0.6)
-        let endLength = maxLength - beginningLength - 50 // Reserve 50 chars for ellipsis
-
-        let beginning = String(text.prefix(beginningLength))
-        let end = String(text.suffix(endLength))
-
-        return "\(beginning)\n\n[...]\n\n\(end)"
-    }
-}
-
 /// Validates LLM response quality
 enum LLMResponseValidator {
 

@@ -195,11 +195,17 @@ struct TranscriptionProgressSheet: View {
     // MARK: - Transcription
     
     private func startTranscription() {
+        // Prevent retrying failed recordings
+        if recording.status == .failed {
+            transcriptionError = ErrorMessages.Transcription.cannotRetranscribe
+            return
+        }
+
         guard let url = recording.resolvedURL else {
             transcriptionError = "Audio file not found"
             return
         }
-        
+
         let recordingId = recording.id
         
         // Update recording status
@@ -325,11 +331,11 @@ struct TranscriptionProgressSheet: View {
 
                 if let errorRecordings = try? modelContext.fetch(errorDescriptor),
                    let errorRecording = errorRecordings.first {
-                    transcriptionError = ErrorMessages.Transcription.interrupted
-                    errorRecording.status = .inProgress
+                    transcriptionError = ErrorMessages.Transcription.failed
+                    errorRecording.status = .failed
                     errorRecording.failureReason = transcriptionError
                     try? modelContext.save()
-                    Logger.warning("TranscriptionProgressSheet", "Transcription error handled gracefully: \(error.localizedDescription)")
+                    Logger.warning("TranscriptionProgressSheet", "Transcription failed: \(error.localizedDescription)")
                 } else {
                     Logger.info("TranscriptionProgressSheet", "Recording was deleted, skipping error state update")
                 }

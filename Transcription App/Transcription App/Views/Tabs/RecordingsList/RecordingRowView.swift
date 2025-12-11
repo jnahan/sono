@@ -64,11 +64,11 @@ struct RecordingRowView: View {
                         .foregroundColor(.baseBlack)
                         .lineLimit(1)
                     
-                    // Transcript preview, progress indicator, queue status, or interruption message
-                    if recording.status == .inProgress {
+                    // Transcript preview, progress indicator, queue status, or error message
+                    if recording.status == .inProgress || recording.status == .notStarted {
                         // Check if there's a failure reason (interrupted transcription)
                         if let failureReason = recording.failureReason, !failureReason.isEmpty {
-                            // Show interruption message instead of progress
+                            // Show interruption message in gray (can resume)
                             Text(failureReason)
                                 .font(.system(size: 14))
                                 .foregroundColor(.warmGray500)
@@ -106,10 +106,11 @@ struct RecordingRowView: View {
                                 .foregroundColor(.warmGray500)
                                 .italic()
                         }
-                    } else if recording.status == .failed || recording.status == .notStarted {
-                        Text("Transcription interrupted")
+                    } else if recording.status == .failed {
+                        // Show failure reason in red warning color (cannot retry)
+                        Text(recording.failureReason ?? "Failed to transcribe audio. Please delete this recording.")
                             .font(.system(size: 14))
-                            .foregroundColor(.warmGray500)
+                            .foregroundColor(.warning)
                             .italic()
                     } else if !recording.fullText.isEmpty {
                         Text(recording.fullText)
