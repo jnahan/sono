@@ -20,24 +20,21 @@ struct CollectionFormSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Drag handle
-            RoundedRectangle(cornerRadius: 3)
-                .fill(Color.warmGray300)
-                .frame(width: 36, height: 5)
-                .padding(.top, 12)
-                .padding(.bottom, 20)
-            
-            // Title
-            Text(isEditing ? "Rename collection" : "Create collection")
-                .font(.dmSansMedium(size: 24))
-                .foregroundColor(.baseBlack)
-                .padding(.bottom, 32)
-            
+            // Top bar
+            CustomTopBar(
+                title: isEditing ? "Rename collection" : "New collection",
+                leftIcon: "x",
+                onLeftTap: {
+                    isPresented = false
+                }
+            )
+            .padding(.top, 12)
+
             // Text field
             VStack(alignment: .leading, spacing: 8) {
                 InputLabel(text: "Collection name")
                     .padding(.horizontal, 24)
-                
+
                 InputField(
                     text: $collectionName,
                     placeholder: "Collection name",
@@ -55,8 +52,11 @@ struct CollectionFormSheet: View {
                     }
                 }
             }
-            .padding(.bottom, 32)
-            
+            .padding(.top, 16)
+
+            Spacer()
+                .frame(height: 24)
+
             // Save button
             Button {
                 hasAttemptedSubmit = true
@@ -67,11 +67,13 @@ struct CollectionFormSheet: View {
                 }
             } label: {
                 Text(isEditing ? "Save changes" : "Create collection")
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppButtonStyle())
         }
         .background(Color.warmGray50)
-        .presentationDetents([.height(320)])
+        .presentationDetents([.height(280)])
+        .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(24)

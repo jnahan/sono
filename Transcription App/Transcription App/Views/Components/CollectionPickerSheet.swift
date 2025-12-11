@@ -35,19 +35,16 @@ struct CollectionPickerSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Drag handle
-            RoundedRectangle(cornerRadius: 3)
-                .fill(Color.warmGray300)
-                .frame(width: 36, height: 5)
-                .padding(.top, 12)
-                .padding(.bottom, 20)
-            
-            // Title
-            Text("Choose a collection")
-                .font(.dmSansMedium(size: 24))
-                .foregroundColor(.baseBlack)
-                .padding(.bottom, 32)
-            
+            // Top bar
+            CustomTopBar(
+                title: "Add to collection",
+                leftIcon: "x",
+                onLeftTap: {
+                    isPresented = false
+                }
+            )
+            .padding(.top, 12)
+
             // Collections list
             VStack(spacing: 0) {
                 // Create collection button
@@ -57,20 +54,24 @@ struct CollectionPickerSheet: View {
                     HStack(spacing: 16) {
                         ZStack {
                             Circle()
-                                .fill(Color.accentLight)
+                                .fill(Color.white)
                                 .frame(width: 40, height: 40)
-                            
-                            Image("folder-plus")
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.warmGray200, lineWidth: 1)
+                                )
+
+                            Image("folder")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundColor(.accent)
                         }
-                        
+
                         Text("Create collection")
-                            .font(.dmSansMedium(size: 16))
+                            .font(.dmSansSemiBold(size: 16))
                             .foregroundColor(.baseBlack)
-                        
+
                         Spacer()
                     }
                     .padding(.horizontal, 24)
@@ -88,16 +89,16 @@ struct CollectionPickerSheet: View {
                                 Circle()
                                     .fill(Color.warmGray200)
                                     .frame(width: 40, height: 40)
-                                
+
                                 Image(systemName: "folder.badge.minus")
                                     .font(.system(size: 20, weight: .medium))
                                     .foregroundColor(.warmGray600)
                             }
-                            
+
                             Text("Remove from collection")
                                 .font(.dmSansMedium(size: 16))
                                 .foregroundColor(.baseBlack)
-                            
+
                             Spacer()
                         }
                         .padding(.horizontal, 24)
@@ -126,22 +127,22 @@ struct CollectionPickerSheet: View {
                         HStack(spacing: 16) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.accentLight)
+                                    .fill(Color.accent)
                                     .frame(width: 40, height: 40)
-                                
+
                                 Image("waveform")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(.accent)
+                                    .foregroundColor(.accentLight)
                             }
-                            
+
                             Text(collection.name)
-                                .font(.dmSansMedium(size: 16))
+                                .font(.dmSansSemiBold(size: 16))
                                 .foregroundColor(.baseBlack)
-                            
+
                             Spacer()
-                            
+
                             if selectedCollection?.id == collection.id {
                                 Image("check-bold")
                                     .resizable()
@@ -156,21 +157,23 @@ struct CollectionPickerSheet: View {
                     .buttonStyle(.plain)
                 }
             }
-            .frame(maxHeight: 200)
-            
+            .padding(.top, 16)
+
             Spacer()
-            
+                .frame(height: 24)
+
             // Done button
             Button {
                 isPresented = false
             } label: {
                 Text("Done")
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppButtonStyle())
         }
-        .frame(maxHeight: 480)
         .background(Color.warmGray50)
         .presentationDetents([.height(calculateHeight())])
+        .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
         .sheet(isPresented: $showCreateCollection) {
@@ -240,13 +243,15 @@ struct CollectionPickerSheet: View {
     }
     
     private func calculateHeight() -> CGFloat {
-        let baseHeight: CGFloat = 179
+        let baseHeight: CGFloat = 280
         let rowHeight: CGFloat = 64
-        let extraRows = recordings != nil ? 1 : 0 // Add row for "Remove from collection" if mass move
-        let numberOfRows = CGFloat(collections.count + 1 + extraRows)
-        let contentHeight = baseHeight + (rowHeight * numberOfRows)
-        
-        return min(contentHeight, 500)
+
+        var additionalRows = collections.count
+        if recordings != nil && showRemoveFromCollection {
+            additionalRows += 1 // Add row for "Remove from collection"
+        }
+
+        return baseHeight + (CGFloat(additionalRows) * rowHeight)
     }
 }
 
