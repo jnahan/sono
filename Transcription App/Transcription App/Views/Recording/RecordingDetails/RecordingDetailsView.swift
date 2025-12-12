@@ -56,17 +56,18 @@ struct RecordingDetailsView: View {
                 )
                 
                 // Header
-                VStack(spacing: 8) {
-                    Text(TimeFormatter.relativeDate(from: recording.recordedAt))
-                        .font(.system(size: 14))
-                        .foregroundColor(.warmGray500)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
+                        .font(.dmSansMedium(size: 14))
+                        .foregroundColor(.warmGray400)
 
                     Text(recording.title)
                         .font(.dmSansMedium(size: 24))
                         .foregroundColor(.baseBlack)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.top, 8)
 
                 // Tab Selector
                 HStack(spacing: 0) {
@@ -90,16 +91,19 @@ struct RecordingDetailsView: View {
                 }
                 .padding(.horizontal, AppConstants.UI.Spacing.large)
                 .padding(.top, 16)
-                
+
                 // Content Area
-                if selectedTab == .transcript {
-                    transcriptView
-                } else if selectedTab == .summary {
-                    summaryView
-                } else {
-                    askSonoView
+                VStack(spacing: 0) {
+                    if selectedTab == .transcript {
+                        transcriptView
+                    } else if selectedTab == .summary {
+                        summaryView
+                    } else {
+                        askSonoView
+                    }
                 }
-                
+                .padding(.top, 24)
+
                 Spacer()
             }
             
@@ -280,7 +284,6 @@ struct RecordingDetailsView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, AppConstants.UI.Spacing.large)
-                .padding(.top, 24)
                 .padding(.bottom, 180)
             }
             .onChange(of: audioPlayback.currentTime) { _, _ in

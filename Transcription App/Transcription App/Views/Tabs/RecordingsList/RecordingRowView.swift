@@ -54,7 +54,7 @@ struct RecordingRowView: View {
                 // Recording Info
                 VStack(alignment: .leading, spacing: 4) {
                     // Date with time
-                    Text(formattedDateWithTime)
+                    Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
                         .font(.dmSansMedium(size: 12))
                         .foregroundColor(.warmGray400)
                     
@@ -171,19 +171,6 @@ struct RecordingRowView: View {
     }
     
     // MARK: - Computed Properties
-    private var formattedDateWithTime: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE, MMM d"
-        let dateString = formatter.string(from: recording.recordedAt)
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "h:mma"
-        timeFormatter.amSymbol = "AM"
-        timeFormatter.pmSymbol = "PM"
-        let timeString = timeFormatter.string(from: recording.recordedAt)
-        
-        return "\(dateString)  ·  \(timeString)"
-    }
 }
 
 

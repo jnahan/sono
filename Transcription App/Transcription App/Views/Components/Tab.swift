@@ -7,17 +7,16 @@ struct TabButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 Text(title)
-                    .font(.dmSansRegular(size: 16))
-                    .foregroundColor(isSelected ? .baseBlack : .warmGray400)
-                
+                    .font(.dmSansSemiBold(size: 14))
+                    .foregroundColor(isSelected ? .accent : .warmGray400)
+
                 Rectangle()
-                    .fill(isSelected ? Color.baseBlack : Color.clear)
+                    .fill(isSelected ? Color.accent : .clear)
                     .frame(height: 2)
             }
         }
-        .frame(maxWidth: .infinity)
     }
 }
 
