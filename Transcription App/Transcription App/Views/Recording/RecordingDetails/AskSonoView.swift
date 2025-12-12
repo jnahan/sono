@@ -64,7 +64,7 @@ struct AskSonoView: View {
                             }
                         }
                         .padding(.horizontal, AppConstants.UI.Spacing.large)
-                        .padding(.vertical, 16)
+                        .padding(.bottom, 16)
                     }
                     .scrollDismissesKeyboard(.interactively)
                     .onChange(of: viewModel.messages.count) { _, _ in

@@ -101,7 +101,6 @@ struct RecorderControl: View {
                             Circle()
                                 .fill(Color.baseWhite)
                                 .frame(width: 72, height: 72)
-                                .appShadow()
                             
                             if rec.isRecording {
                                 // Recording: red square

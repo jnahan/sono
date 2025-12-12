@@ -31,7 +31,6 @@ struct CollectionsEmptyStateView: View {
                     .padding(.vertical, 10)
                     .background(Color.baseWhite)
                     .clipShape(Capsule())
-                    .appShadow()
                 }
             }
             

@@ -29,11 +29,7 @@ struct RecordingDetailsView: View {
     @State private var showDeleteConfirm = false
     @State private var showMenu = false
     @State private var selectedTab: RecordingDetailTab = .transcript
-    
-    private var showTimestamps: Bool {
-        SettingsManager.shared.showTimestamps
-    }
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -70,7 +66,7 @@ struct RecordingDetailsView: View {
                 .padding(.top, 8)
 
                 // Tab Selector
-                HStack(spacing: 0) {
+                HStack(spacing: 16) {
                     TabButton(
                         title: "Transcript",
                         isSelected: selectedTab == .transcript,
@@ -88,6 +84,8 @@ struct RecordingDetailsView: View {
                         isSelected: selectedTab == .askSono,
                         action: { selectedTab = .askSono }
                     )
+
+                    Spacer()
                 }
                 .padding(.horizontal, AppConstants.UI.Spacing.large)
                 .padding(.top, 16)
@@ -232,80 +230,12 @@ struct RecordingDetailsView: View {
     // MARK: - Transcript View
 
     private var transcriptView: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if showTimestamps && !recording.segments.isEmpty {
-                        // Show segments with timestamps when enabled
-                        ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
-                            let isActive = viewModel.isSegmentActive(
-                                segment: segment,
-                                currentTime: audioPlayback.currentTime,
-                                isPlaying: audioPlayback.isPlaying
-                            )
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(TimeFormatter.formatTimestamp(segment.start))
-                                    .font(.dmSansRegular(size: 14))
-                                    .foregroundColor(.warmGray400)
-                                    .monospacedDigit()
-                                
-                                Text(attributedText(for: segment.text, isActive: isActive))
-                                    .font(.dmSansRegular(size: 16))
-                                    .foregroundColor(.baseBlack)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            .id(segment.id)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                if let url = recording.resolvedURL {
-                                    // If already playing, just seek. Otherwise load, seek, and play.
-                                    if audioPlayback.isPlaying {
-                                        audioPlayback.seek(to: segment.start)
-                                    } else {
-                                        audioPlayback.preload(url: url)
-                                        audioPlayback.seek(to: segment.start)
-                                        audioPlayback.play()
-                                    }
-                                }
-                                // Scroll to tapped segment
-                                viewModel.setActiveSegment(segment.id)
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    proxy.scrollTo(segment.id, anchor: .center)
-                                }
-                            }
-                        }
-                    } else {
-                        // Show full text when timestamps are disabled or no segments
-                        Text(recording.fullText)
-                            .font(.custom("DMSans-Regular", size: 16))
-                            .foregroundColor(.baseBlack)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
-                .padding(.bottom, 180)
-            }
-            .onChange(of: audioPlayback.currentTime) { _, _ in
-                let previousActiveId = viewModel.currentActiveSegmentId
-                if let activeSegmentId = viewModel.updateActiveSegment(
-                    currentTime: audioPlayback.currentTime,
-                    isPlaying: audioPlayback.isPlaying,
-                    showTimestamps: showTimestamps
-                ), previousActiveId != activeSegmentId {
-                    // Only scroll if this is a new active segment
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        proxy.scrollTo(activeSegmentId, anchor: .center)
-                    }
-                }
-            }
-            .onChange(of: audioPlayback.isPlaying) { _, isPlaying in
-                // Reset tracking when playback stops
-                if !isPlaying {
-                    viewModel.resetActiveSegment()
-                }
-            }
-        }
+        TranscriptView(
+            recording: recording,
+            audioPlayback: audioPlayback,
+            viewModel: viewModel
+        ) 
+        .id(recording.id)
     }
     
     // MARK: - Summary View
@@ -322,31 +252,5 @@ struct RecordingDetailsView: View {
         AskSonoView(recording: recording)
             .id(recording.id)  // Force view recreation when recording changes
     }
-    
-
-    // MARK: - Helper Methods
-
-    private func attributedText(for text: String, isActive: Bool) -> AttributedString {
-        var attributedString = AttributedString(text)
-        
-        // Guard against empty strings to avoid range errors
-        guard !text.isEmpty, attributedString.startIndex < attributedString.endIndex else {
-            return attributedString
-        }
-        
-        // Set font and color using attribute container
-        var container = AttributeContainer()
-        container.font = UIFont(name: "DMSans-9ptRegular", size: 16) ?? .systemFont(ofSize: 16)
-        container.foregroundColor = UIColor(Color.baseBlack)
-        
-        if isActive {
-            container.backgroundColor = UIColor(Color.accentLight)
-        }
-        
-        // Apply attributes to entire string
-        let range = attributedString.startIndex..<attributedString.endIndex
-        attributedString[range].mergeAttributes(container)
-        
-        return attributedString
-    }
 }
+
