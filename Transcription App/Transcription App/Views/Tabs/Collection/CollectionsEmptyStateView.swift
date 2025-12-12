@@ -2,14 +2,14 @@ import SwiftUI
 
 struct CollectionsEmptyStateView: View {
     @Binding var showCreateCollection: Bool
-    
+
     var body: some View {
         VStack {
             Spacer()
-            
+
             VStack(spacing: 24) {
                 Text("Organize your\nrecordings")
-                    .font(.dmSansMedium(size: 24))
+                    .font(.dmSansSemiBold(size: 24))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.baseBlack)
 
@@ -24,7 +24,7 @@ struct CollectionsEmptyStateView: View {
                             .foregroundColor(Color.accent)
 
                         Text("New collection")
-                            .font(.system(size: 16))
+                            .font(.dmSansMedium(size: 16))
                             .foregroundColor(Color.warmGray600)
                     }
                     .padding(.horizontal, 16)
@@ -33,14 +33,11 @@ struct CollectionsEmptyStateView: View {
                     .clipShape(Capsule())
                 }
             }
-            
+            .padding(.bottom, 80)
+
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-
-
-
-
 

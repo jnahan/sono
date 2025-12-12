@@ -12,26 +12,44 @@ struct SummaryView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if viewModel.isGeneratingSummary {
-                    // Show streaming text if available, otherwise show loading
-                    if !viewModel.streamingSummary.isEmpty {
+        if viewModel.isGeneratingSummary {
+            // Show streaming text if available, otherwise show loading
+            if !viewModel.streamingSummary.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
                         streamingSummaryView
-                    } else {
-                        loadingView
                     }
-                } else if let error = viewModel.summaryError {
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    .padding(.bottom, 24)
+                }
+            } else {
+                loadingView
+            }
+        } else if let error = viewModel.summaryError {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
                     errorView(error: error)
-                } else if let summary = recording.summary, !summary.isEmpty {
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.bottom, 24)
+            }
+        } else if let summary = recording.summary, !summary.isEmpty {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
                     summaryContentView(summary: summary)
-                } else {
-                    emptyStateView
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.bottom, 24)
+            }
+        } else {
+            SummaryEmptyStateView {
+                Task {
+                    await viewModel.generateSummary(modelContext: modelContext)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
-            .padding(.bottom, 24)
         }
     }
     
@@ -129,33 +147,45 @@ struct SummaryView: View {
         }
     }
     
-    private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 12) {
-                Image(systemName: "doc.text")
-                    .font(.system(size: 32))
-                    .foregroundColor(.warmGray400)
-                Text("No summary available")
-                    .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.warmGray500)
-            }
-            
-            Button(action: {
-                Task {
-                    await viewModel.generateSummary(modelContext: modelContext)
+}
+
+// MARK: - Summary Empty State
+
+struct SummaryEmptyStateView: View {
+    let onSummarize: () -> Void
+
+    var body: some View {
+        VStack {
+            Spacer()
+
+            VStack(spacing: 24) {
+                Text("Summarize your\nrecordings")
+                    .font(.dmSansSemiBold(size: 24))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.baseBlack)
+
+                Button(action: onSummarize) {
+                    HStack(spacing: 8) {
+                        Image("sparkle")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(Color.accent)
+
+                        Text("Summarize")
+                            .font(.dmSansMedium(size: 16))
+                            .foregroundColor(Color.warmGray600)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.baseWhite)
+                    .clipShape(Capsule())
                 }
-            }) {
-                Text("Generate Summary")
-                    .font(.dmSansSemiBold(size: 16))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.accent)
-                    .cornerRadius(8)
             }
+            .padding(.bottom, 120)
+
+            Spacer()
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 40)
-        .padding(.horizontal, AppConstants.UI.Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
