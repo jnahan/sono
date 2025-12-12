@@ -36,17 +36,17 @@ struct CollectionsView: View {
                         rightIcon: "folder-plus",
                         onRightTap: { showCreateCollection = true }
                     )
-                    
-                    if !collections.isEmpty {
-                        SearchBar(text: $searchText, placeholder: "Search collections...")
-                            .padding(.horizontal, AppConstants.UI.Spacing.large)
-                            .padding(.top, 8)
-                    }
-                    
-                    if collections.isEmpty {
-                        CollectionsEmptyStateView(showCreateCollection: $showCreateCollection)
-                    } else {
-                        List {
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !collections.isEmpty {
+                            SearchBar(text: $searchText, placeholder: "Search collections...")
+                                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                        }
+
+                        if collections.isEmpty {
+                            CollectionsEmptyStateView(showCreateCollection: $showCreateCollection)
+                        } else {
+                            List {
                             ForEach(filteredCollections) { collection in
                                 Button {
                                     selectedCollection = collection
@@ -72,7 +72,9 @@ struct CollectionsView: View {
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
                         .contentMargins(.bottom, 80, for: .scrollContent)
+                        }
                     }
+                    .padding(.top, 8)
                 }
             }
             .background(Color.warmGray50.ignoresSafeArea())

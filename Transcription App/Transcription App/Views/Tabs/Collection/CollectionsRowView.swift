@@ -9,7 +9,7 @@ struct CollectionsRowView: View {
     @State private var showMenu = false
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             // Collection Icon
             ZStack {
                 Circle()
@@ -48,7 +48,7 @@ struct CollectionsRowView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 12)
+        .padding(.top, 8)
         .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
             Button("Rename") {
                 onRename()
