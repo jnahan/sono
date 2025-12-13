@@ -156,12 +156,10 @@ struct RecordingDetailsView: View {
                     isPresented: $showNotePopup,
                     noteText: recording.notes
                 )
-                .transition(.opacity)
                 .zIndex(100)
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
-        .animation(.easeInOut(duration: 0.2), value: showNotePopup)
         .navigationBarHidden(true)
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(
