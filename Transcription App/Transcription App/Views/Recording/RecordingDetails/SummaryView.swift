@@ -36,14 +36,12 @@ struct SummaryView: View {
                 .padding(.bottom, 24)
             }
         } else if let error = viewModel.summaryError {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    errorView(error: error)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
-                .padding(.bottom, 24)
+            VStack(alignment: .leading, spacing: 16) {
+                errorContentView()
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.top, 16)
         } else if let summary = recording.summary, !summary.isEmpty {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -63,44 +61,35 @@ struct SummaryView: View {
     }
     
     // MARK: - Subviews
-    
-    private func errorView(error: String) -> some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 12) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 32))
-                    .foregroundColor(.warmGray400)
-                Text(error)
-                    .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.warmGray500)
-                    .multilineTextAlignment(.center)
-            }
-            
-            Button(action: {
-                Task {
-                    await viewModel.generateSummary(modelContext: modelContext)
+
+    private func errorContentView() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Failed to generate summary")
+                .font(.dmSansRegular(size: 16))
+                .foregroundColor(.baseBlack)
+
+            AIResponseButtons(
+                onCopy: {
+                    UIPasteboard.general.string = "Failed to generate summary"
+                },
+                onRegenerate: {
+                    Task {
+                        await viewModel.generateSummary(modelContext: modelContext)
+                    }
+                },
+                onExport: {
+                    ShareHelper.shareText("Failed to generate summary")
                 }
-            }) {
-                Text("Try Again")
-                    .font(.dmSansSemiBold(size: 16))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.accent)
-                    .cornerRadius(8)
-            }
+            )
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 40)
-        .padding(.horizontal, AppConstants.UI.Spacing.large)
     }
-    
+
     private func summaryContentView(summary: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(summary)
                 .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
-            
+
             AIResponseButtons(
                 onCopy: {
                     UIPasteboard.general.string = summary
@@ -184,3 +173,4 @@ struct SummaryEmptyStateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+

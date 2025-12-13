@@ -6,10 +6,6 @@ struct ErrorToastView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .font(.system(size: 16))
-                .foregroundColor(.warning)
-            
             Text(message)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.baseBlack)

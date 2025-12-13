@@ -70,8 +70,11 @@ struct InputField: View {
                     .foregroundColor(text.isEmpty ? .warmGray400 : .baseBlack)
                 Spacer()
                 if showChevron {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 16))
+                    Image("caret-right")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
                         .foregroundColor(.warmGray400)
                 }
             }

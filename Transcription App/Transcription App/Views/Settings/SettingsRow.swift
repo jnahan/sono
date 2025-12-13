@@ -31,8 +31,11 @@ struct SettingsRow: View {
             if let toggleBinding = toggleBinding {
                 CustomSwitch(isOn: toggleBinding)
             } else if showChevron {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16))
+                Image("caret-right")
+                    .resizable()
+                    .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16, height: 16)
                     .foregroundColor(.warmGray400)
             }
         }

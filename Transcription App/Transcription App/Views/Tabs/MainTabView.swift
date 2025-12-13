@@ -66,9 +66,11 @@ struct MainTabView: View {
                                 showNewRecordingSheet = true
                             } label: {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(.baseWhite)
+                                    Image("plus-bold")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.white)
                                 }
                                 .frame(width: 120, height: 48)
                                 .background(Color.baseBlack)

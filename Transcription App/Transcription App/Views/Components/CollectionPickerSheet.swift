@@ -90,8 +90,10 @@ struct CollectionPickerSheet: View {
                                     .fill(Color.warmGray200)
                                     .frame(width: 40, height: 40)
 
-                                Image(systemName: "folder.badge.minus")
-                                    .font(.system(size: 20, weight: .medium))
+                                Image("folder-minus")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
                                     .foregroundColor(.warmGray600)
                             }
 
