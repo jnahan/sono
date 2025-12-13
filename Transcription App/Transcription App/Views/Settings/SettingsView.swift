@@ -54,28 +54,16 @@ struct SettingsView: View {
                                 SettingsRow(title: "Audio language", value: LanguageMapper.localizedName(for: audioLanguage), imageName: "text-aa")
                             }
                             
-                            HStack(spacing: 16) {
-                                Image("clock")
-                                    .renderingMode(.template)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.baseBlack)
-
-                                Text("Timestamps")
-                                    .font(.system(size: 17))
-                                    .foregroundColor(.baseBlack)
-                                
-                                Spacer()
-                                
-                                CustomSwitch(isOn: $showTimestamps)
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 16)
+                            SettingsRow(title: "Timestamps", value: nil, imageName: "clock", showChevron: false, toggleBinding: $showTimestamps)
                         }
-                        .background(Color.white)
+                        .padding(.vertical, 4)
+                        .background(Color.baseWhite)
                         .cornerRadius(12)
-                        .padding(.horizontal, 16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.warmGray200, lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
                         
                         // Bottom Section: Feedback, Rate, Share
                         VStack(spacing: 0) {
@@ -91,9 +79,14 @@ struct SettingsView: View {
                                 SettingsRow(title: "Share app", value: nil, imageName: "export")
                             }
                         }
-                        .background(Color.white)
+                        .padding(.vertical, 4)
+                        .background(Color.baseWhite)
                         .cornerRadius(12)
-                        .padding(.horizontal, 16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.warmGray200, lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
                     }
                     .padding(.top, 8)
                 }
@@ -101,19 +94,10 @@ struct SettingsView: View {
                 Spacer()
                 
                 // Footer
-                VStack(spacing: 8) {
-                    Image("diamond")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                    
+                VStack(spacing: 8) {                 
                     Text("SONO")
                         .font(.dmSansMedium(size: 20))
                         .foregroundColor(.baseBlack)
-                    
-                    Text("Made with love")
-                        .font(.system(size: 16))
-                        .foregroundColor(.warmGray600)
                     
                     Text("Version 1.0.0")
                         .font(.system(size: 14))

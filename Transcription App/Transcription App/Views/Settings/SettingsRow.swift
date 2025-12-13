@@ -5,9 +5,10 @@ struct SettingsRow: View {
     let value: String?
     let imageName: String
     var showChevron: Bool = true
+    var toggleBinding: Binding<Bool>? = nil
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Image(imageName)
                 .renderingMode(.template)
                 .resizable()
@@ -16,24 +17,26 @@ struct SettingsRow: View {
                 .foregroundColor(.baseBlack)
 
             Text(title)
-                .font(.system(size: 17))
+                .font(.dmSansMedium(size: 16))
                 .foregroundColor(.baseBlack)
             
             Spacer()
             
             if let value = value {
                 Text(value)
-                    .font(.system(size: 17))
-                    .foregroundColor(.warmGray500)
+                    .font(.dmSansRegular(size: 14))
+                    .foregroundColor(.warmGray600)
             }
             
-            if showChevron {
+            if let toggleBinding = toggleBinding {
+                CustomSwitch(isOn: toggleBinding)
+            } else if showChevron {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14))
+                    .font(.system(size: 16))
                     .foregroundColor(.warmGray400)
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 16)
         .padding(.vertical, 16)
     }
 }

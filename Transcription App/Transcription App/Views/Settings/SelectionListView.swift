@@ -38,7 +38,6 @@ struct SelectionListView: View {
                 leftIcon: "caret-left",
                 onLeftTap: { dismiss() }
             )
-            .padding(.top, 12)
             .onAppear {
                 // Hide tab bar immediately when top bar appears
                 showPlusButton.wrappedValue = false
@@ -57,8 +56,8 @@ struct SelectionListView: View {
                         selectedItem = item.title
                         dismiss()
                     }) {
-                        HStack(spacing: 12) {
-                            VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 0) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text(item.title)
                                     .font(.system(size: 16))
                                     .foregroundColor(.baseBlack)
@@ -81,7 +80,7 @@ struct SelectionListView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 12)
                         .padding(.horizontal, 20)
                         .contentShape(Rectangle())
                     }
