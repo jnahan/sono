@@ -31,7 +31,7 @@ struct CollectionFormSheet: View {
             .padding(.top, 12)
 
             // Text field
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 InputLabel(text: "Collection name")
                     .padding(.horizontal, 24)
 

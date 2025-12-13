@@ -76,9 +76,9 @@ struct RecordingFormView: View {
 
                 ScrollView {
                     // Form fields
-                    VStack(spacing: 24) {
+                    VStack(spacing: 16) {
                         // Title field
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                             InputLabel(text: "Title")
                             InputField(
                                 text: $viewModel.title,
@@ -86,9 +86,9 @@ struct RecordingFormView: View {
                                 error: viewModel.titleError
                             )
                         }
-                        
+
                         // Collection field
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                             InputLabel(text: "Collection")
                             InputField(
                                 text: Binding(
@@ -100,9 +100,9 @@ struct RecordingFormView: View {
                                 onTap: { viewModel.showCollectionPicker = true }
                             )
                         }
-                        
+
                         // Note field
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                             InputLabel(text: "Note")
                             InputField(
                                 text: $viewModel.note,
