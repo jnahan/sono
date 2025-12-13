@@ -51,11 +51,7 @@ class SummaryViewModel: ObservableObject {
                 return
             }
 
-            let prompt = """
-            Summarize the following transcription in 2-3 concise sentences:
-
-            \(recording.fullText)
-            """
+            let prompt = recording.fullText
 
             // Reset streaming text
             streamingSummary = ""
