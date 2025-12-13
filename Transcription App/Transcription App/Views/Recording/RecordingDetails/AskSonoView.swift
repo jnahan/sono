@@ -198,31 +198,21 @@ struct AskSonoView: View {
                 
                 // Action buttons (only show when not streaming)
                 if viewModel.streamingMessageId == nil || message.id != viewModel.messages.last?.id {
-                    HStack(spacing: 16) {
-                        actionButton(icon: "doc.on.doc", action: {
+                    AIResponseButtons(
+                        onCopy: {
                             UIPasteboard.general.string = message.text
-                        })
-                        
-                        actionButton(icon: "arrow.clockwise", action: {
+                        },
+                        onRegenerate: {
                             viewModel.resendLastMessage()
-                        })
-                        
-                        actionButton(icon: "square.and.arrow.up", action: {
+                        },
+                        onExport: {
                             ShareHelper.shareText(message.text)
-                        })
-                    }
+                        }
+                    )
                     .padding(.leading, 4)
+                    .padding(.top, 8)
                 }
             }
-        }
-    }
-    
-    private func actionButton(icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
-                .foregroundColor(.warmGray500)
-                .frame(width: 24, height: 24)
         }
     }
 }

@@ -52,6 +52,7 @@
 		5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271322EE50DC900A34B15 /* SettingsRow.swift */; };
 		5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */; };
 		5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271382EE50DC900A34B18 /* MassActionButtons.swift */; };
+		5D92713E2EE50DC900A34B23 /* AIResponseButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713F2EE50DC900A34B23 /* AIResponseButtons.swift */; };
 		5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */; };
 		5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713C2EE50DC900A34B20 /* Logger.swift */; };
 		5D92713D2EE50DC900A34B21 /* ErrorMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */; };
@@ -135,6 +136,7 @@
 		5D9271322EE50DC900A34B15 /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryViewModel.swift; sourceTree = "<group>"; };
 		5D9271382EE50DC900A34B18 /* MassActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassActionButtons.swift; sourceTree = "<group>"; };
+		5D92713F2EE50DC900A34B23 /* AIResponseButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIResponseButtons.swift; sourceTree = "<group>"; };
 		5D92713A2EE50DC900A34B19 /* RecordingsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingsListView.swift; sourceTree = "<group>"; };
 		5D92713C2EE50DC900A34B20 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		5D92713E2EE50DC900A34B21 /* ErrorMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessages.swift; sourceTree = "<group>"; };
@@ -380,6 +382,7 @@
 				5D9271302EE50DC900A34B14 /* TypingCursorView.swift */,
 				5D9271322EE50DC900A34B15 /* SettingsRow.swift */,
 				5D9271382EE50DC900A34B18 /* MassActionButtons.swift */,
+				5D92713F2EE50DC900A34B23 /* AIResponseButtons.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -597,6 +600,7 @@
 				5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */,
 				5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */,
 				5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */,
+				5D92713E2EE50DC900A34B23 /* AIResponseButtons.swift in Sources */,
 				5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */,
 				5D0ED10A2EDFD1090003E775 /* AppButtonStyle.swift in Sources */,
 				5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */,

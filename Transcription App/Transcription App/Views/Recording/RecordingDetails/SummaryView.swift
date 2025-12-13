@@ -130,20 +130,19 @@ struct SummaryView: View {
                 .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
             
-            Button(action: {
-                Task {
-                    await viewModel.generateSummary(modelContext: modelContext)
+            AIResponseButtons(
+                onCopy: {
+                    UIPasteboard.general.string = summary
+                },
+                onRegenerate: {
+                    Task {
+                        await viewModel.generateSummary(modelContext: modelContext)
+                    }
+                },
+                onExport: {
+                    ShareHelper.shareText(summary)
                 }
-            }) {
-                Text("Regenerate Summary")
-                    .font(.dmSansSemiBold(size: 14))
-                    .foregroundColor(Color.accent)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.accentLight)
-                    .cornerRadius(8)
-            }
-            .padding(.top, 8)
+            )
         }
     }
     
