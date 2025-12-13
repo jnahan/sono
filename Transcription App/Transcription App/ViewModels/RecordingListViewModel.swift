@@ -83,6 +83,27 @@ class RecordingListViewModel: ObservableObject {
         displayCopyToast()
     }
     
+    /// Export multiple recordings' transcriptions as .txt files
+    /// - Parameter recordings: The recordings to export
+    func exportRecordings(_ recordings: [Recording]) {
+        guard !recordings.isEmpty else { return }
+        
+        if recordings.count == 1 {
+            // Single recording - use the recording title
+            let recording = recordings[0]
+            ShareHelper.shareTranscription(recording.fullText, title: recording.title)
+        } else {
+            // Multiple recordings - create separate .txt file for each
+            let fileURLs = recordings.compactMap { recording -> URL? in
+                ShareHelper.createTranscriptionFile(recording.fullText, title: recording.title)
+            }
+            
+            if !fileURLs.isEmpty {
+                ShareHelper.shareItems(fileURLs)
+            }
+        }
+    }
+    
     // MARK: - Selection Mode
     
     /// Enters selection mode for multi-select operations

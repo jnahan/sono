@@ -53,7 +53,7 @@ struct RecordingDetailsView: View {
                                 UIPasteboard.general.string = recording.fullText
                             }),
                             ActionItem(title: "Share transcription", icon: "export", action: {
-                                ShareHelper.shareText(recording.fullText)
+                                ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }),
                             ActionItem(title: "Export audio", icon: "waveform", action: {
                                 if let url = recording.resolvedURL {
@@ -138,9 +138,14 @@ struct RecordingDetailsView: View {
                         },
                         onSharePressed: {
                             if let url = recording.resolvedURL {
-                                ShareHelper.shareItems([recording.fullText, url])
+                                // Share both transcription .txt file and audio file
+                                if let transcriptionFileURL = ShareHelper.createTranscriptionFile(recording.fullText, title: recording.title) {
+                                    ShareHelper.shareItems([transcriptionFileURL, url])
+                                } else {
+                                    ShareHelper.shareTranscription(recording.fullText, title: recording.title)
+                                }
                             } else {
-                                ShareHelper.shareText(recording.fullText)
+                                ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }
                         },
                         onAIPressed: {

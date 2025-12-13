@@ -74,6 +74,7 @@ struct CollectionDetailView: View {
                     onDelete: { showDeleteConfirm = true },
                     onCopy: { copySelectedRecordings() },
                     onMove: { showMoveToCollection = true },
+                    onExport: { exportSelectedRecordings() },
                     isDisabled: viewModel.selectedRecordings.isEmpty,
                     horizontalPadding: 20,
                     bottomPadding: 8,
@@ -202,6 +203,10 @@ struct CollectionDetailView: View {
     
     private func copySelectedRecordings() {
         viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
+    }
+    
+    private func exportSelectedRecordings() {
+        viewModel.exportRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
     }
     
     private var recordingsList: some View {

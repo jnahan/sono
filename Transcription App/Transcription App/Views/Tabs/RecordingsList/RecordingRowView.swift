@@ -144,7 +144,7 @@ struct RecordingRowView: View {
                         actions: [
                             ActionItem(title: "Copy transcription", icon: "copy", action: onCopy),
                             ActionItem(title: "Share transcription", icon: "export", action: {
-                                ShareHelper.shareText(recording.fullText)
+                                ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }),
                             ActionItem(title: "Export audio", icon: "waveform", action: {
                                 if let url = recording.resolvedURL {

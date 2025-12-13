@@ -16,7 +16,7 @@ struct RecordingMenuActions {
         }
         
         Button("Share transcription") {
-            ShareHelper.shareText(recording.fullText)
+            ShareHelper.shareTranscription(recording.fullText, title: recording.title)
         }
         
         Button("Export audio") {
