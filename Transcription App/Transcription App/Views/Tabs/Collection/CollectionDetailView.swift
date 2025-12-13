@@ -57,13 +57,6 @@ struct CollectionDetailView: View {
                     }
                 )
                 
-                if viewModel.showCopyToast {
-                    CopyToastView()
-                        .zIndex(1)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 10)
-                }
-                
                 VStack(alignment: .leading, spacing: 16) {
                     if !recordings.isEmpty {
                         SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
@@ -86,6 +79,12 @@ struct CollectionDetailView: View {
                     bottomPadding: 8,
                     bottomSafeAreaPadding: 8
                 )
+            }
+        }
+        .overlay(alignment: .top) {
+            if viewModel.showCopyToast {
+                ToastView(message: "Recording copied")
+                    .padding(.top, 8)
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())

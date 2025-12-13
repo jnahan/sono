@@ -7,3 +7,4 @@ struct DragHandle: View {
             .frame(width: 48, height: 4)
     }
 }
+

@@ -3,7 +3,7 @@ import SwiftUI
 extension Color {
     // MARK: - Accent
     static let accent = Color(red: 80/255, green: 100/255, blue: 248/255)
-    static let accentLight = Color(red: 239/255, green: 245/255, blue: 255/255)
+    static let accentLight = Color(red: 232/255, green: 240/255, blue: 253/255)
     
     // MARK: - Colors
     static let pink = Color(red: 247/255, green: 44/255, blue: 139/255)

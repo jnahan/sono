@@ -39,18 +39,6 @@ struct RecordingFormView: View {
         ZStack {
             Color.warmGray50
                 .ignoresSafeArea()
-            
-            // Error Toast
-            VStack {
-                if viewModel.showErrorToast {
-                    ErrorToastView(
-                        message: viewModel.errorMessage,
-                        isPresented: $viewModel.showErrorToast
-                    )
-                }
-                Spacer()
-            }
-            .zIndex(1000)
 
             VStack(spacing: 0) {
                 // Header
@@ -145,6 +133,16 @@ struct RecordingFormView: View {
                 }
                 .buttonStyle(AppButtonStyle())
                 .disabled(!viewModel.isFormValid)
+            }
+        }
+        .overlay(alignment: .top) {
+            if viewModel.showErrorToast {
+                ToastView(
+                    message: viewModel.errorMessage,
+                    isPresented: $viewModel.showErrorToast,
+                    isError: true
+                )
+                .padding(.top, 8)
             }
         }
         .sheet(isPresented: $viewModel.showCollectionPicker) {

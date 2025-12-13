@@ -37,13 +37,6 @@ struct RecordingsView: View {
                             onRightTap: { showSettings = true }
                         )
                         
-                        if viewModel.showCopyToast {
-                            CopyToastView()
-                                .zIndex(1)
-                                .frame(maxWidth: .infinity)
-                                .padding(.top, 10)
-                        }
-                        
                         VStack(alignment: .leading, spacing: 12) {
                             if !recordings.isEmpty {
                                 SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
@@ -68,6 +61,12 @@ struct RecordingsView: View {
                         )
                     }
                 }
+                }
+                .overlay(alignment: .top) {
+                    if viewModel.showCopyToast {
+                        ToastView(message: "Recording copied")
+                            .padding(.top, 8)
+                    }
                 }
                 .onChange(of: viewModel.searchText) { oldValue, newValue in
                 viewModel.updateFilteredRecordings(from: recordings)
