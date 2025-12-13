@@ -11,6 +11,7 @@ struct SelectionListView: View {
     let items: [SelectionItem]
     @Binding var selectedItem: String
     @Environment(\.dismiss) var dismiss
+    @Environment(\.showPlusButton) private var showPlusButton
     @State private var searchText = ""
     
     // Show search bar only for language selection (has many items)
@@ -38,6 +39,10 @@ struct SelectionListView: View {
                 onLeftTap: { dismiss() }
             )
             .padding(.top, 12)
+            .onAppear {
+                // Hide tab bar immediately when top bar appears
+                showPlusButton.wrappedValue = false
+            }
             
             if showSearchBar {
                 SearchBar(text: $searchText, placeholder: "Search languages...")
@@ -91,6 +96,12 @@ struct SelectionListView: View {
         }
         .background(Color.warmGray50.ignoresSafeArea())
         .navigationBarHidden(true)
+        .onAppear {
+            showPlusButton.wrappedValue = false
+        }
+        .task {
+            showPlusButton.wrappedValue = false
+        }
     }
 }
 

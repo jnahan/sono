@@ -171,6 +171,10 @@ struct SummaryEmptyStateView: View {
                     .padding(.vertical, 10)
                     .background(Color.baseWhite)
                     .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.warmGray200, lineWidth: 1)
+                    )
                 }
             }
             .padding(.bottom, 120)

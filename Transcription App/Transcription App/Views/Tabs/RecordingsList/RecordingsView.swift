@@ -87,7 +87,19 @@ struct RecordingsView: View {
                 // Show tab bar on root view (unless in selection mode)
                 showPlusButton.wrappedValue = !viewModel.isSelectionMode
             }
-            .sheet(isPresented: $showSettings) {
+            .navigationDestination(item: Binding(
+                get: { showSettings ? "settings" : nil },
+                set: { 
+                    if $0 == nil { 
+                        showSettings = false
+                        // Show tab bar when returning from settings
+                        showPlusButton.wrappedValue = !viewModel.isSelectionMode
+                    } else {
+                        // Hide tab bar when showing settings
+                        showPlusButton.wrappedValue = false
+                    }
+                }
+            )) { _ in
                 SettingsView()
             }
             .sheet(isPresented: $showMoveToCollection) {

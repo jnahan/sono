@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.showPlusButton) private var showPlusButton
     
     @State private var audioLanguage: String
     @State private var showTimestamps: Bool
@@ -23,109 +24,108 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.warmGray50
-                    .ignoresSafeArea()
+        ZStack {
+            Color.warmGray50
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                CustomTopBar(
+                    title: "Settings",
+                    leftIcon: "caret-left",
+                    onLeftTap: { dismiss() }
+                )
                 
-                VStack(spacing: 0) {
-                    CustomTopBar(
-                        title: "Settings",
-                        leftIcon: "caret-left",
-                        onLeftTap: { dismiss() }
-                    )
-                    
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            // Settings Section: Transcription Model, Audio Language, Timestamps
-                            VStack(spacing: 0) {
-                                SettingsRow(title: "Transcription model", value: "Tiny", imageName: "sparkle", showChevron: false)
-                                
-                                NavigationLink(destination: SelectionListView(
-                                    title: "Audio Language",
-                                    items: audioLanguages,
-                                    selectedItem: Binding(
-                                        get: { LanguageMapper.localizedName(for: audioLanguage) },
-                                        set: { newValue in
-                                            audioLanguage = LanguageMapper.englishName(for: newValue)
-                                        }
-                                    )
-                                )) {
-                                    SettingsRow(title: "Audio language", value: LanguageMapper.localizedName(for: audioLanguage), imageName: "text-aa")
-                                }
-                                
-                                HStack(spacing: 16) {
-                                    Image("clock")
-                                        .renderingMode(.template)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(.baseBlack)
-
-                                    Text("Timestamps")
-                                        .font(.system(size: 17))
-                                        .foregroundColor(.baseBlack)
-                                    
-                                    Spacer()
-                                    
-                                    CustomSwitch(isOn: $showTimestamps)
-                                }
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 16)
-                            }
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal, 16)
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // Settings Section: Transcription Model, Audio Language, Timestamps
+                        VStack(spacing: 0) {
+                            SettingsRow(title: "Transcription model", value: "Tiny", imageName: "sparkle", showChevron: false)
                             
-                            // Bottom Section: Feedback, Rate, Share
-                            VStack(spacing: 0) {
-                                Button(action: sendFeedback) {
-                                    SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
-                                }
-                                
-                                Button(action: rateApp) {
-                                    SettingsRow(title: "Rate app", value: nil, imageName: "star")
-                                }
-                                
-                                Button(action: shareApp) {
-                                    SettingsRow(title: "Share app", value: nil, imageName: "export")
-                                }
+                            NavigationLink(destination: SelectionListView(
+                                title: "Audio Language",
+                                items: audioLanguages,
+                                selectedItem: Binding(
+                                    get: { LanguageMapper.localizedName(for: audioLanguage) },
+                                    set: { newValue in
+                                        audioLanguage = LanguageMapper.englishName(for: newValue)
+                                    }
+                                )
+                            )) {
+                                SettingsRow(title: "Audio language", value: LanguageMapper.localizedName(for: audioLanguage), imageName: "text-aa")
                             }
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal, 16)
+                            
+                            HStack(spacing: 16) {
+                                Image("clock")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.baseBlack)
+
+                                Text("Timestamps")
+                                    .font(.system(size: 17))
+                                    .foregroundColor(.baseBlack)
+                                
+                                Spacer()
+                                
+                                CustomSwitch(isOn: $showTimestamps)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                         }
-                        .padding(.top, 8)
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        .padding(.horizontal, 16)
+                        
+                        // Bottom Section: Feedback, Rate, Share
+                        VStack(spacing: 0) {
+                            Button(action: sendFeedback) {
+                                SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
+                            }
+                            
+                            Button(action: rateApp) {
+                                SettingsRow(title: "Rate app", value: nil, imageName: "star")
+                            }
+                            
+                            Button(action: shareApp) {
+                                SettingsRow(title: "Share app", value: nil, imageName: "export")
+                            }
+                        }
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        .padding(.horizontal, 16)
                     }
-                    
-                    Spacer()
-                    
-                    // Footer
-                    VStack(spacing: 8) {
-                        Image("diamond")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                        
-                        Text("SONO")
-                            .font(.dmSansMedium(size: 20))
-                            .foregroundColor(.baseBlack)
-                        
-                        Text("Made with love")
-                            .font(.system(size: 16))
-                            .foregroundColor(.warmGray600)
-                        
-                        Text("Version 1.0.0")
-                            .font(.system(size: 14))
-                            .foregroundColor(.warmGray400)
-                    }
-                    .padding(.bottom, 40)
+                    .padding(.top, 8)
                 }
+                
+                Spacer()
+                
+                // Footer
+                VStack(spacing: 8) {
+                    Image("diamond")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                    
+                    Text("SONO")
+                        .font(.dmSansMedium(size: 20))
+                        .foregroundColor(.baseBlack)
+                    
+                    Text("Made with love")
+                        .font(.system(size: 16))
+                        .foregroundColor(.warmGray600)
+                    
+                    Text("Version 1.0.0")
+                        .font(.system(size: 14))
+                        .foregroundColor(.warmGray400)
+                }
+                .padding(.bottom, 40)
             }
-            .navigationBarHidden(true)
         }
-        .presentationDragIndicator(.hidden)
-        .presentationBackground(Color.warmGray50)
+        .navigationBarHidden(true)
+        .onAppear {
+            showPlusButton.wrappedValue = false
+        }
         .onChange(of: audioLanguage) { oldValue, newValue in
             SettingsManager.shared.audioLanguage = newValue
         }
