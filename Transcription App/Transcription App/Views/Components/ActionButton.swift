@@ -41,6 +41,7 @@ struct ActionItem: Identifiable {
     let icon: String?
     let action: () -> Void
     var isDestructive: Bool = false
+    var tintColor: Color? = nil
 }
 
 /// Custom action button component that shows a menu with actions
@@ -69,17 +70,14 @@ struct ActionButton: View {
 }
 
 /// Unified action sheet component with overlay style
-/// Can display action items or custom content
 struct ActionSheet: View {
-    let actions: [ActionItem]?
-    var customContent: (() -> AnyView)? = nil
+    let actions: [ActionItem]
     @Binding var isPresented: Bool
     @State private var opacity: Double = 0
     @State private var offset: CGFloat = 300
 
-    init(actions: [ActionItem]? = nil, customContent: (() -> AnyView)? = nil, isPresented: Binding<Bool>) {
+    init(actions: [ActionItem], isPresented: Binding<Bool>) {
         self.actions = actions
-        self.customContent = customContent
         self._isPresented = isPresented
     }
 
@@ -95,12 +93,8 @@ struct ActionSheet: View {
                         Spacer()
 
                         VStack(spacing: 0) {
-                            // Action items or custom content
-                            if let actions = actions {
-                                actionItemsView(actions: actions)
-                            } else if let customContent = customContent {
-                                customContent()
-                            }
+                            // Action items
+                            actionItemsView(actions: actions)
 
                             // Cancel button
                             Button {
@@ -153,14 +147,16 @@ struct ActionSheet: View {
                                 .resizable()
                                 .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
-                                .foregroundColor(action.isDestructive ? .warning : .baseBlack)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(
+                                    action.tintColor ?? (action.isDestructive ? .warning : .baseBlack)
+                                )
                         }
-                        
+
                         Text(action.title)
                             .font(.dmSansMedium(size: 16))
                             .foregroundColor(action.isDestructive ? .warning : .baseBlack)
-                        
+
                         Spacer()
                     }
                     .padding(.horizontal, 20)
