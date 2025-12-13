@@ -20,19 +20,19 @@ struct InputField: View {
     var error: String? = nil
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Group {
                 if let onTap = onTap {
                     // Tappable field (for folder picker)
                     Button(action: onTap) {
                         HStack {
                             Text(text.isEmpty ? placeholder : text)
-                                .font(.system(size: 17))
+                                .font(.system(size: 16))
                                 .foregroundColor(text.isEmpty ? .warmGray400 : .baseBlack)
                             Spacer()
                             if showChevron {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14))
+                                    .font(.system(size: 16))
                                     .foregroundColor(.warmGray400)
                             }
                         }
@@ -48,7 +48,7 @@ struct InputField: View {
                     // TextEditor
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $text)
-                            .font(.system(size: 17))
+                            .font(.system(size: 16))
                             .foregroundColor(.baseBlack)
                             .tint(.baseBlack)
                             .scrollContentBackground(.hidden)
@@ -59,7 +59,7 @@ struct InputField: View {
                         
                         if text.isEmpty {
                             Text(placeholder)
-                                .font(.system(size: 17))
+                                .font(.system(size: 16))
                                 .foregroundColor(.warmGray400)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 16)
@@ -76,7 +76,7 @@ struct InputField: View {
                     // TextField
                     ZStack(alignment: .leading) {
                         TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.warmGray400))
-                            .font(.system(size: 17))
+                            .font(.system(size: 16))
                             .foregroundColor(.baseBlack)
                             .tint(.baseBlack)
                             .padding(16)
