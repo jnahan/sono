@@ -87,35 +87,25 @@ struct AskSonoView: View {
                 
                 // Input Area
                 VStack(spacing: 0) {
-                    Divider()
-                    
-                    HStack(spacing: 12) {
+                    HStack(spacing: 0) {
                         // Text Input
                         ZStack(alignment: .leading) {
                             if viewModel.userPrompt.isEmpty {
                                 Text("Ask me anything...")
                                     .font(.dmSansRegular(size: 16))
-                                    .foregroundColor(.warmGray400)
-                                    .padding(.leading, 16)
-                                    .padding(.vertical, 12)
+                                    .foregroundColor(.warmGray500)
                             }
 
                             TextField("", text: $viewModel.userPrompt, axis: .vertical)
-                                .font(.custom("DMSans-Regular", size: 16))
+                                .font(.dmSansRegular(size: 16))
                                 .foregroundColor(.baseBlack)
                                 .tint(.baseBlack)
                                 .focused($isInputFocused)
                                 .lineLimit(1...5)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 12)
                         }
-                        .background(Color.baseWhite)
-                        .cornerRadius(24)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            isInputFocused = true
-                        }
-
+                        
+                        Spacer()
+                        
                         // Send Button
                         Button(action: {
                             Task {
@@ -124,24 +114,36 @@ struct AskSonoView: View {
                         }) {
                             ZStack {
                                 Circle()
-                                    .fill(viewModel.userPrompt.isEmpty || viewModel.isProcessing ? Color.warmGray400 : Color.accent)
-                                    .frame(width: 44, height: 44)
-
+                                    .fill(Color.accent)
+                                    .frame(width: 32, height: 32)
+                                
                                 if viewModel.isProcessing {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
                                         .scaleEffect(0.7)
                                 } else {
-                                    Image(systemName: "paperplane.fill")
-                                        .font(.system(size: 16))
+                                    Image("I")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 16, height: 16)
                                         .foregroundColor(.baseWhite)
                                 }
                             }
                         }
                         .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
                     }
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    .padding(.vertical, 12)
+                    .padding(.leading, 16)
+                    .padding(.top, 10)
+                    .padding(.trailing, 10)
+                    .padding(.bottom, 10)
+                    .background(Color.baseWhite)
+                    .cornerRadius(32)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 32)
+                            .stroke(Color.warmGray200, lineWidth: 1)
+                    )
+                    .padding(.horizontal, 20)
                 }
             }
         }
@@ -274,3 +276,4 @@ private struct IdeaItem: View {
         }
     }
 }
+
