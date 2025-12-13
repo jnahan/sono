@@ -208,7 +208,7 @@ class RecordingFormViewModel: ObservableObject {
                     if Date().timeIntervalSince(startTime) > maxWaitTime {
                         isModelLoading = false
                         isModelWarming = false
-                        showError("Transcription model failed to load. Please restart the app.")
+                        showError("Transcription model failed to load. Please restart the app")
                         return
                     }
                     try? await Task.sleep(nanoseconds: 500_000_000) // Wait 0.5 seconds

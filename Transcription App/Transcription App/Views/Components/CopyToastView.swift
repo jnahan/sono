@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CopyToastView: View {
     var body: some View {
-        Text("Recording copied")
+        Text("Copied transcription")
             .padding()
             .background(.ultraThinMaterial)
             .cornerRadius(10)

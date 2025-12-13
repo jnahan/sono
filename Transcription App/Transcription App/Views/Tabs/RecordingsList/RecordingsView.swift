@@ -65,7 +65,7 @@ struct RecordingsView: View {
                 }
                 .overlay(alignment: .top) {
                     if viewModel.showCopyToast {
-                        ToastView(message: "Recording copied")
+                        ToastView(message: "Copied transcription")
                             .padding(.top, 8)
                     }
                 }

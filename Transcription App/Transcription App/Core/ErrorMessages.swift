@@ -6,8 +6,8 @@ enum ErrorMessages {
     // MARK: - Summary Generation
     
     enum Summary {
-        static let emptyTranscription = "Cannot generate summary: transcription is empty."
-        static let invalidResponse = "Model returned invalid response. Please try again."
+        static let emptyTranscription = "Cannot generate summary: transcription is empty"
+        static let invalidResponse = "Model returned invalid response. Please try again"
         static let saveFailed = "Failed to save summary: %@"
         static let generationFailed = "Failed to generate summary: %@"
     }
@@ -15,12 +15,12 @@ enum ErrorMessages {
     // MARK: - Transcription
     
     enum Transcription {
-        static let interrupted = "Transcription was interrupted. Tap to resume."
-        static let interruptedWithDetails = "Transcription was interrupted. You can resume from the home page."
-        static let interruptedLowMemory = "Transcription was interrupted due to low memory. Tap to resume."
-        static let failed = "Failed to transcribe audio. Please delete this recording."
-        static let failedWithDetails = "Failed to transcribe audio. Please delete this recording and try again."
-        static let cannotRetranscribe = "This recording failed to transcribe and cannot be retried. Please delete it."
+        static let interrupted = "Transcription was interrupted"
+        static let interruptedWithDetails = "Transcription was interrupted"
+        static let interruptedLowMemory = "Transcription was interrupted due to low memory"
+        static let failed = "Failed to transcribe audio"
+        static let failedWithDetails = "Failed to transcribe audio"
+        static let cannotRetranscribe = "Failed to transcribe audio"
         static let noModelContext = "No model context configured for recovery"
         static let noAudioURL = "No audio URL for recording: %@"
         static let recordingDeleted = "Recording was deleted during transcription"
