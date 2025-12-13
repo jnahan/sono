@@ -212,7 +212,7 @@ struct CollectionDetailView: View {
             emptyStateView: AnyView(
                 VStack(spacing: 16) {
                     Text(collection.name + " is empty")
-                        .font(.dmSansMedium(size: 24))
+                        .font(.dmSansSemiBold(size: 24))
                         .foregroundColor(.baseBlack)
                         .multilineTextAlignment(.center)
                 }

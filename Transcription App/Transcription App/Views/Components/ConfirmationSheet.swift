@@ -19,9 +19,9 @@ struct ConfirmationSheet: View {
             
             // Title
             Text(title)
-                .font(.dmSansMedium(size: 24))
+                .font(.dmSansSemiBold(size: 24))
                 .foregroundColor(.baseBlack)
-                .padding(.bottom, 16)
+                .padding(.bottom, 8)
             
             // Message
             Text(message)
@@ -33,7 +33,7 @@ struct ConfirmationSheet: View {
                 .padding(.bottom, 32)
             
             // Buttons
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Button {
                     onConfirm()
                     isPresented = false
@@ -62,7 +62,7 @@ struct ConfirmationSheet: View {
         let dragHandleHeight: CGFloat = 37
         
         // Title: ~30 (font size 24 with padding)
-        let titleHeight: CGFloat = 30 + 16 // font height + bottom padding
+        let titleHeight: CGFloat = 30 + 8 // font height + bottom padding (8)
         
         // Message: estimate based on text length and width
         // Assuming ~40 characters per line at 16pt font with 24pt horizontal padding
@@ -71,12 +71,12 @@ struct ConfirmationSheet: View {
         let estimatedLineHeight: CGFloat = 22 // 16pt font with line spacing
         let charactersPerLine = max(1, Int(availableWidth / 9)) // rough estimate, ensure > 0
         let lineCount = max(1, (message.count / charactersPerLine) + (message.count % charactersPerLine > 0 ? 1 : 0))
-        let messageHeight = CGFloat(lineCount) * estimatedLineHeight + 32 // + bottom padding
+        let messageHeight = CGFloat(lineCount) * estimatedLineHeight + 32 // + bottom padding (32)
         
         // Buttons: 2 buttons with spacing
         // Each button: 16*2 (vertical padding) + ~22 (text height) + 6 (bottom padding from style) = ~60
-        // Spacing between buttons: 12
-        let buttonsHeight: CGFloat = 60 + 12 + 60 // first button + spacing + second button
+        // Spacing between buttons: 8
+        let buttonsHeight: CGFloat = 60 + 8 + 60 // first button + spacing (8) + second button
         
         let totalHeight = dragHandleHeight + titleHeight + messageHeight + buttonsHeight
         

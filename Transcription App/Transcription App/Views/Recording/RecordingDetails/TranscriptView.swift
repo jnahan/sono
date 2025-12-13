@@ -48,7 +48,7 @@ struct TranscriptView: View {
                 } else {
                     // Show full text when timestamps are disabled or no segments
                     Text(recording.fullText)
-                        .font(.custom("DMSans-Regular", size: 16))
+                        .font(.dmSansRegular(size: 16))
                         .foregroundColor(.baseBlack)
                 }
             }
