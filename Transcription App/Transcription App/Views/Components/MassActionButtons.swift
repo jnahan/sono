@@ -44,8 +44,14 @@ struct MassActionButtons: View {
             .padding(.horizontal, 32)
             .padding(.top, 12)
             .padding(.bottom, 8)
-            .background(Color.warmGray50)
+            
+            // Safe area padding with background
+            if bottomSafeAreaPadding > 0 {
+                Spacer()
+                    .frame(height: bottomSafeAreaPadding)
+            }
         }
-        .padding(.bottom, bottomSafeAreaPadding)
+        .background(Color.warmGray50)
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 }
