@@ -11,11 +11,8 @@ struct ConfirmationSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             // Drag handle
-            RoundedRectangle(cornerRadius: 3)
-                .fill(Color.warmGray300)
-                .frame(width: 36, height: 5)
-                .padding(.top, 12)
-                .padding(.bottom, 20)
+            DragHandle()
+                .padding(.bottom, 24) // No top bar, so 24px spacing
             
             // Title
             Text(title)
@@ -54,12 +51,13 @@ struct ConfirmationSheet: View {
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
-        .presentationCornerRadius(24)
+        .presentationCornerRadius(16)
+        .interactiveDismissDisabled(false)
     }
     
     private func calculateHeight() -> CGFloat {
-        // Drag handle: 5 + 12 top + 20 bottom = 37
-        let dragHandleHeight: CGFloat = 37
+        // Drag handle: 4 + 12 top + 24 bottom = 40
+        let dragHandleHeight: CGFloat = 40
         
         // Title: ~30 (font size 24 with padding)
         let titleHeight: CGFloat = 30 + 8 // font height + bottom padding (8)

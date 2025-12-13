@@ -70,33 +70,41 @@ struct TranscriptionProgressSheet: View {
             Color.warmGray50
                 .ignoresSafeArea()
             
-            // Check if queued
-            if progressManager.isQueued(recordingId: recording.id) {
-                TranscriptionStatusView(
-                    topText: nil,
-                    heading: "Waiting to transcribe",
-                    description: "Your recording will be transcribed when the current transcription finishes.",
-                    onDone: { dismiss() }
-                )
-            } else if transcriptionError == nil {
-                TranscriptionStatusView(
-                    topText: "\(Int(transcriptionProgress * 100))%",
-                    heading: "Transcribing audio",
-                    description: "Transcription in progress. Please do not close.",
-                    onDone: { dismiss() }
-                )
-            } else {
-                TranscriptionStatusView(
-                    topText: nil,
-                    heading: "Transcription failed",
-                    description: transcriptionError ?? "Unknown error",
-                    onDone: { dismiss() }
-                )
+            VStack(spacing: 0) {
+                // Drag handle
+                DragHandle()
+                    .padding(.bottom, 24) // No top bar, so 24px spacing
+                
+                // Check if queued
+                if progressManager.isQueued(recordingId: recording.id) {
+                    TranscriptionStatusView(
+                        topText: nil,
+                        heading: "Waiting to transcribe",
+                        description: "Your recording will be transcribed when the current transcription finishes.",
+                        onDone: { dismiss() }
+                    )
+                } else if transcriptionError == nil {
+                    TranscriptionStatusView(
+                        topText: "\(Int(transcriptionProgress * 100))%",
+                        heading: "Transcribing audio",
+                        description: "Transcription in progress. Please do not close.",
+                        onDone: { dismiss() }
+                    )
+                } else {
+                    TranscriptionStatusView(
+                        topText: nil,
+                        heading: "Transcription failed",
+                        description: transcriptionError ?? "Unknown error",
+                        onDone: { dismiss() }
+                    )
+                }
             }
         }
         .presentationDetents([.height(transcriptionError == nil && progressManager.isQueued(recordingId: recording.id) == false ? 340 : 260)])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color.warmGray50)
+        .presentationCornerRadius(16)
+        .interactiveDismissDisabled(false)
         .onAppear {
             // Check if already completed when view appears
             if recording.status == .completed {

@@ -35,6 +35,10 @@ struct CollectionPickerSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Drag handle
+            DragHandle()
+                .padding(.bottom, 8) // Has top bar, so 8px spacing
+            
             // Top bar
             CustomTopBar(
                 title: "Add to collection",
@@ -43,7 +47,6 @@ struct CollectionPickerSheet: View {
                     isPresented = false
                 }
             )
-            .padding(.top, 12)
 
             // Collections list
             VStack(spacing: 0) {
@@ -178,6 +181,8 @@ struct CollectionPickerSheet: View {
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
+        .presentationCornerRadius(16)
+        .interactiveDismissDisabled(false)
         .sheet(isPresented: $showCreateCollection) {
             CollectionFormSheet(
                 isPresented: $showCreateCollection,

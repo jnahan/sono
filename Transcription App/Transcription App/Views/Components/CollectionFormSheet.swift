@@ -20,6 +20,10 @@ struct CollectionFormSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Drag handle
+            DragHandle()
+                .padding(.bottom, 8) // Has top bar, so 8px spacing
+            
             // Top bar
             CustomTopBar(
                 title: isEditing ? "Rename collection" : "New collection",
@@ -28,7 +32,6 @@ struct CollectionFormSheet: View {
                     isPresented = false
                 }
             )
-            .padding(.top, 12)
 
             // Text field
             VStack(alignment: .leading, spacing: 6) {
@@ -76,7 +79,8 @@ struct CollectionFormSheet: View {
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
-        .presentationCornerRadius(24)
+        .presentationCornerRadius(16)
+        .interactiveDismissDisabled(false)
         .onAppear {
             #if !os(macOS)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
