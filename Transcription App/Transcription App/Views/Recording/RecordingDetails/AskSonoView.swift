@@ -41,20 +41,6 @@ struct AskSonoView: View {
                                     messageBubble(message: message)
                                         .id(message.id)
                                 }
-                                
-                                // Loading indicator
-                                if viewModel.isProcessing {
-                                    HStack {
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                        Text("Thinking...")
-                                            .font(.dmSansRegular(size: 14))
-                                            .foregroundColor(.warmGray500)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading, AppConstants.UI.Spacing.large)
-                                    .padding(.top, 8)
-                                }
                             }
                         }
                         .padding(.horizontal, AppConstants.UI.Spacing.large)
@@ -154,46 +140,45 @@ struct AskSonoView: View {
     @ViewBuilder
     private func messageBubble(message: ChatMessage) -> some View {
         if message.isUser {
-            // User message - right aligned, pink bubble
+            // User message - right aligned, accentLight bubble
             HStack {
                 Spacer(minLength: 60)
                 
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(message.text)
-                        .font(.custom("DMSans-Regular", size: 16))
-                        .foregroundColor(.baseBlack)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.accentLight)
-                        .cornerRadius(20)
-                }
+                Text(message.text)
+                    .font(.dmSansRegular(size: 16))
+                    .foregroundColor(.baseBlack)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color.accentLight)
+                    .cornerRadius(12)
             }
         } else {
-            // AI message - left aligned, white bubble with actions
+            // AI message - left aligned, no background/padding
+            let isStreaming = viewModel.streamingMessageId != nil && message.id == viewModel.messages.last?.id
+            let hasStreamingText = isStreaming && !viewModel.streamingText.isEmpty
+            let showThinking = isStreaming && viewModel.streamingText.isEmpty
+            
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(alignment: .bottom, spacing: 0) {
-                            Text(message.text)
-                                .font(.custom("DMSans-Regular", size: 16))
-                                .foregroundColor(.baseBlack)
-                            
-                            // Show typing cursor if this is the streaming message
-                            if viewModel.streamingMessageId != nil && message.id == viewModel.messages.last?.id && !message.isUser {
-                                TypingCursorView()
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.white)
-                        .cornerRadius(20)
+                // Message text or thinking state
+                if showThinking {
+                    // Show "Thinking..." with blue dot
+                    VStack(alignment: .leading, spacing: 8) {
+                        PulsatingDot()
+                        
+                        Text("Thinking...")
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.baseBlack)
                     }
-                    
-                    Spacer(minLength: 60)
+                } else {
+                    // Show message text (either streaming or complete)
+                    let displayText = hasStreamingText ? viewModel.streamingText : message.text
+                    Text(displayText)
+                        .font(.dmSansRegular(size: 16))
+                        .foregroundColor(.baseBlack)
                 }
                 
-                // Action buttons (only show when not streaming)
-                if viewModel.streamingMessageId == nil || message.id != viewModel.messages.last?.id {
+                // Action buttons (only show when not streaming or when streaming is complete)
+                if !isStreaming {
                     AIResponseButtons(
                         onCopy: {
                             UIPasteboard.general.string = message.text
@@ -209,6 +194,7 @@ struct AskSonoView: View {
                     .padding(.top, 8)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     
@@ -251,6 +237,27 @@ struct AskSonoEmptyStateView: View {
             .padding(.top, 16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Pulsating Dot
+
+private struct PulsatingDot: View {
+    @State private var isPulsating = false
+    
+    var body: some View {
+        Circle()
+            .fill(Color.accent)
+            .frame(width: 12, height: 12)
+            .scaleEffect(isPulsating ? 1.2 : 1.0)
+            .onAppear {
+                withAnimation(
+                    Animation.easeInOut(duration: 0.8)
+                        .repeatForever(autoreverses: true)
+                ) {
+                    isPulsating = true
+                }
+            }
     }
 }
 

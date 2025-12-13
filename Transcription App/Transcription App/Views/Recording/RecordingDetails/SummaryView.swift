@@ -13,18 +13,27 @@ struct SummaryView: View {
     
     var body: some View {
         if viewModel.isGeneratingSummary {
-            // Show streaming text if available, otherwise show loading
-            if !viewModel.streamingSummary.isEmpty {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        streamingSummaryView
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    if viewModel.streamingSummary.isEmpty {
+                        // Show "Summarizing..." with blue dot
+                        VStack(alignment: .leading, spacing: 8) {
+                            PulsatingDot()
+                            
+                            Text("Summarizing...")
+                                .font(.dmSansRegular(size: 16))
+                                .foregroundColor(.baseBlack)
+                        }
+                    } else {
+                        // Show streaming text
+                        Text(viewModel.streamingSummary)
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.baseBlack)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
-                    .padding(.bottom, 24)
                 }
-            } else {
-                loadingView
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.bottom, 24)
             }
         } else if let error = viewModel.summaryError {
             ScrollView {
@@ -54,44 +63,6 @@ struct SummaryView: View {
     }
     
     // MARK: - Subviews
-    
-    private var streamingSummaryView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(viewModel.streamingSummary)
-                .font(.dmSansRegular(size: 16))
-                .foregroundColor(.baseBlack)
-                .transition(.opacity)
-            
-            // Show typing indicator
-            HStack(spacing: 4) {
-                ForEach(0..<3) { index in
-                    Circle()
-                        .fill(Color.warmGray400)
-                        .frame(width: 6, height: 6)
-                        .opacity(0.3)
-                        .animation(
-                            Animation.easeInOut(duration: 0.6)
-                                .repeatForever()
-                                .delay(Double(index) * 0.2),
-                            value: viewModel.streamingSummary
-                        )
-                }
-            }
-            .padding(.top, 4)
-        }
-    }
-    
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.2)
-            Text("Generating summary...")
-                .font(.dmSansRegular(size: 16))
-                .foregroundColor(.warmGray500)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 60)
-    }
     
     private func errorView(error: String) -> some View {
         VStack(spacing: 20) {
@@ -146,6 +117,27 @@ struct SummaryView: View {
         }
     }
     
+}
+
+// MARK: - Pulsating Dot
+
+private struct PulsatingDot: View {
+    @State private var isPulsating = false
+    
+    var body: some View {
+        Circle()
+            .fill(Color.accent)
+            .frame(width: 12, height: 12)
+            .scaleEffect(isPulsating ? 1.2 : 1.0)
+            .onAppear {
+                withAnimation(
+                    Animation.easeInOut(duration: 0.8)
+                        .repeatForever(autoreverses: true)
+                ) {
+                    isPulsating = true
+                }
+            }
+    }
 }
 
 // MARK: - Summary Empty State

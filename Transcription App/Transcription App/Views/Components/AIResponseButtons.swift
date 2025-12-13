@@ -21,7 +21,7 @@ struct AIResponseButtons: View {
             
             // Regenerate button
             Button(action: onRegenerate) {
-                Image("clock-clockwise")
+                Image("arrow-clockwise")
                     .resizable()
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)

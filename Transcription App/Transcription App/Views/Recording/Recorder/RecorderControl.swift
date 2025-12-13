@@ -68,8 +68,11 @@ struct RecorderControl: View {
                             resetRecording()
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 20))
+                                Image("arrow-clockwise")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
                                 Text("Retry")
                                     .font(.system(size: 17, weight: .medium))
                             }
@@ -78,8 +81,11 @@ struct RecorderControl: View {
                     } else {
                         // Invisible placeholder to maintain spacing
                         HStack(spacing: 8) {
-                            Image(systemName: "arrow.counterclockwise")
-                                .font(.system(size: 20))
+                            Image("arrow-clockwise")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 20, height: 20)
                             Text("Retry")
                                 .font(.system(size: 17, weight: .medium))
                         }
@@ -125,8 +131,11 @@ struct RecorderControl: View {
                     
                     // Invisible spacer for balance
                     HStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 20))
+                        Image("arrow-clockwise")
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
                         Text("Retry")
                             .font(.system(size: 17, weight: .medium))
                     }
