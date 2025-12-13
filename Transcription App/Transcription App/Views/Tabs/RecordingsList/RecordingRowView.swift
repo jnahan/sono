@@ -13,7 +13,6 @@ struct RecordingRowView: View {
     var isSelected: Bool = false
     var onSelectionToggle: (() -> Void)? = nil
     
-    @State private var showMenu = false
     @State private var showDeleteConfirm = false
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     
@@ -138,23 +137,30 @@ struct RecordingRowView: View {
                     }
                     
                     // Dots three menu button
-                    IconButton(icon: "dots-three-bold", iconSize: 24, frameSize: 32) {
-                        showMenu = true
-                    }
+                    ActionButton(
+                        icon: "dots-three-bold",
+                        iconSize: 24,
+                        frameSize: 32,
+                        actions: [
+                            ActionItem(title: "Copy transcription", icon: "copy", action: onCopy),
+                            ActionItem(title: "Share transcription", icon: "export", action: {
+                                ShareHelper.shareText(recording.fullText)
+                            }),
+                            ActionItem(title: "Export audio", icon: "waveform", action: {
+                                if let url = recording.resolvedURL {
+                                    ShareHelper.shareFile(at: url)
+                                }
+                            }),
+                            ActionItem(title: "Edit", icon: "pencil-simple", action: onEdit),
+                            ActionItem(title: "Delete", icon: "trash", action: { showDeleteConfirm = true }, isDestructive: true)
+                        ]
+                    )
                     
                     Spacer()
                 }
             }
         }
         .padding(.top, 8)
-        .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            RecordingMenuActions.confirmationDialogButtons(
-                recording: recording,
-                onCopy: onCopy,
-                onEdit: onEdit,
-                onDelete: { showDeleteConfirm = true }
-            )
-        }
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,

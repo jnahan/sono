@@ -17,7 +17,7 @@ struct RecordingDetailsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.showPlusButton) private var showPlusButton
     @Query(sort: \Collection.name) private var collections: [Collection]
-    
+
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
         self.recording = recording
         self.onDismiss = onDismiss
@@ -27,7 +27,6 @@ struct RecordingDetailsView: View {
     @State private var showNotePopup = false
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
-    @State private var showMenu = false
     @State private var selectedTab: RecordingDetailTab = .transcript
 
     var body: some View {
@@ -48,7 +47,27 @@ struct RecordingDetailsView: View {
                             dismiss()
                         }
                     },
-                    onRightTap: { showMenu = true }
+                    onRightTap: {
+                        ActionSheetManager.shared.show(actions: [
+                            ActionItem(title: "Copy transcription", icon: "copy", action: {
+                                UIPasteboard.general.string = recording.fullText
+                            }),
+                            ActionItem(title: "Share transcription", icon: "export", action: {
+                                ShareHelper.shareText(recording.fullText)
+                            }),
+                            ActionItem(title: "Export audio", icon: "waveform", action: {
+                                if let url = recording.resolvedURL {
+                                    ShareHelper.shareFile(at: url)
+                                }
+                            }),
+                            ActionItem(title: "Edit", icon: "pencil-simple", action: {
+                                showEditRecording = true
+                            }),
+                            ActionItem(title: "Delete", icon: "trash", action: {
+                                showDeleteConfirm = true
+                            }, isDestructive: true)
+                        ])
+                    }
                 )
                 
                 // Header
@@ -144,20 +163,6 @@ struct RecordingDetailsView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.2), value: showNotePopup)
         .navigationBarHidden(true)
-        .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            RecordingMenuActions.confirmationDialogButtons(
-                recording: recording,
-                onCopy: {
-                    UIPasteboard.general.string = recording.fullText
-                },
-                onEdit: {
-                    showEditRecording = true
-                },
-                onDelete: {
-                    showDeleteConfirm = true
-                }
-            )
-        }
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(
                 isPresented: $showEditRecording,

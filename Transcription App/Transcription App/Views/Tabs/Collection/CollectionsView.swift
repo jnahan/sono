@@ -28,9 +28,9 @@ struct CollectionsView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                
-                VStack(spacing: 0) {
+                ZStack {
+
+                    VStack(spacing: 0) {
                     CustomTopBar(
                         title: "Collections",
                         rightIcon: "folder-plus",
@@ -77,8 +77,8 @@ struct CollectionsView: View {
                     .padding(.top, 8)
                 }
             }
-            .background(Color.warmGray50.ignoresSafeArea())
-            .navigationBarHidden(true)
+                .background(Color.warmGray50.ignoresSafeArea())
+                .navigationBarHidden(true)
             .onAppear {
                 // Reset navigation state when returning to this tab
                 selectedCollection = nil
@@ -86,8 +86,11 @@ struct CollectionsView: View {
                 showPlusButton.wrappedValue = true
             }
             .navigationDestination(item: $selectedCollection) { collection in
-                CollectionDetailView(collection: collection, showPlusButton: showPlusButton)
-                    .onAppear { showPlusButton.wrappedValue = false }
+                CollectionDetailView(
+                    collection: collection,
+                    showPlusButton: showPlusButton
+                )
+                .onAppear { showPlusButton.wrappedValue = false }
             }
             .sheet(isPresented: $showCreateCollection) {
                 CollectionFormSheet(

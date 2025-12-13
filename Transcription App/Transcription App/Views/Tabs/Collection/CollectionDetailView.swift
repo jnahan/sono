@@ -6,14 +6,13 @@ struct CollectionDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Recording.recordedAt, order: .reverse) private var allRecordings: [Recording]
     @Query(sort: \Collection.name) private var collections: [Collection]
-    
+
     @StateObject private var viewModel = RecordingListViewModel()
-    
+
     let collection: Collection
     var showPlusButton: Binding<Bool>
-    
+
     @State private var selectedRecording: Recording?
-    @State private var showMenu = false
     @State private var editingCollection = false
     @State private var editCollectionName = ""
     @State private var deletingCollection = false
@@ -45,7 +44,15 @@ struct CollectionDetailView: View {
                         } else if !viewModel.filteredRecordings.isEmpty {
                             viewModel.enterSelectionMode()
                         } else {
-                            showMenu = true
+                            ActionSheetManager.shared.show(actions: [
+                                ActionItem(title: "Rename", icon: "pencil-simple", action: {
+                                    editingCollection = true
+                                    editCollectionName = collection.name
+                                }),
+                                ActionItem(title: "Delete", icon: "trash", action: {
+                                    deletingCollection = true
+                                }, isDestructive: true)
+                            ])
                         }
                     }
                 )
@@ -69,11 +76,12 @@ struct CollectionDetailView: View {
             }
             
             // Mass action buttons (fixed at bottom, 8px above safe area, only in selection mode)
-            if viewModel.isSelectionMode && !viewModel.selectedRecordings.isEmpty {
+            if viewModel.isSelectionMode {
                 MassActionButtons(
                     onDelete: { showDeleteConfirm = true },
                     onCopy: { copySelectedRecordings() },
                     onMove: { showMoveToCollection = true },
+                    isDisabled: viewModel.selectedRecordings.isEmpty,
                     horizontalPadding: 20,
                     bottomPadding: 8,
                     bottomSafeAreaPadding: 8
@@ -83,18 +91,6 @@ struct CollectionDetailView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .navigationBarHidden(true)
         .environment(\.showPlusButton, showPlusButton)
-        .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Rename") {
-                editingCollection = true
-                editCollectionName = collection.name
-            }
-            
-            Button("Delete", role: .destructive) {
-                deletingCollection = true
-            }
-            
-            Button("Cancel", role: .cancel) {}
-        }
         .sheet(isPresented: $editingCollection) {
             CollectionFormSheet(
                 isPresented: $editingCollection,

@@ -6,8 +6,6 @@ struct CollectionsRowView: View {
     let onRename: () -> Void
     let onDelete: () -> Void
     
-    @State private var showMenu = false
-    
     var body: some View {
         HStack(spacing: 12) {
             // Collection Icon
@@ -37,29 +35,17 @@ struct CollectionsRowView: View {
             Spacer()
             
             // Three-dot menu
-            Button {
-                showMenu = true
-            } label: {
-                Image("dots-three-bold")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.warmGray500)
-            }
-            .buttonStyle(.plain)
+            ActionButton(
+                icon: "dots-three-bold",
+                iconSize: 24,
+                frameSize: 32,
+                actions: [
+                    ActionItem(title: "Rename", icon: "pencil-simple", action: onRename),
+                    ActionItem(title: "Delete", icon: "trash", action: onDelete, isDestructive: true)
+                ]
+            )
         }
         .padding(.top, 8)
-        .confirmationDialog("", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Rename") {
-                onRename()
-            }
-            
-            Button("Delete", role: .destructive) {
-                onDelete()
-            }
-            
-            Button("Cancel", role: .cancel) {}
-        }
     }
 }
 

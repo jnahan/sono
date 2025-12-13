@@ -7,6 +7,7 @@ struct MassActionButtons: View {
     let onCopy: () -> Void
     let onMove: () -> Void
     var onExport: (() -> Void)? = nil
+    var isDisabled: Bool = false
 
     var horizontalPadding: CGFloat = AppConstants.UI.Spacing.large
     var bottomPadding: CGFloat = 0
@@ -23,23 +24,29 @@ struct MassActionButtons: View {
             HStack(spacing: 0) {
                 // Move button
                 IconButton(icon: "folder-open", action: onMove)
+                    .disabled(isDisabled)
+                    .opacity(isDisabled ? 0.3 : 1.0)
 
                 Spacer()
 
                 // Delete button
                 IconButton(icon: "trash", action: onDelete)
+                    .disabled(isDisabled)
+                    .opacity(isDisabled ? 0.3 : 1.0)
 
                 Spacer()
 
                 // Copy button
                 IconButton(icon: "copy", action: onCopy)
+                    .disabled(isDisabled)
+                    .opacity(isDisabled ? 0.3 : 1.0)
 
                 Spacer()
 
                 // Export button
                 IconButton(icon: "export", action: onExport ?? {})
-                    .opacity(onExport == nil ? 0.3 : 1.0)
-                    .disabled(onExport == nil)
+                    .disabled(isDisabled || onExport == nil)
+                    .opacity((isDisabled || onExport == nil) ? 0.3 : 1.0)
             }
             .padding(.horizontal, 32)
             .padding(.top, 12)

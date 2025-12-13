@@ -18,9 +18,9 @@ struct RecordingsView: View {
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ZStack {
-                
-                ZStack(alignment: .bottom) {
+                ZStack {
+
+                    ZStack(alignment: .bottom) {
                     VStack(spacing: 0) {
                         // Custom Top Bar
                         CustomTopBar(
@@ -61,14 +61,15 @@ struct RecordingsView: View {
                             onDelete: { showDeleteConfirm = true },
                             onCopy: { copySelectedRecordings() },
                             onMove: { showMoveToCollection = true },
+                            isDisabled: viewModel.selectedRecordings.isEmpty,
                             horizontalPadding: AppConstants.UI.Spacing.large,
                             bottomPadding: 12,
                             bottomSafeAreaPadding: 8
                         )
                     }
                 }
-            }
-            .onChange(of: viewModel.searchText) { oldValue, newValue in
+                }
+                .onChange(of: viewModel.searchText) { oldValue, newValue in
                 viewModel.updateFilteredRecordings(from: recordings)
             }
             .onChange(of: recordings) { oldValue, newValue in
@@ -136,19 +137,22 @@ struct RecordingsView: View {
                 })
             }
             .navigationDestination(item: $selectedRecording) { recording in
-                RecordingDetailsView(recording: recording, onDismiss: {
-                    // Explicitly clear selection to pop back to RecordingsView
-                    selectedRecording = nil
-                    if navigationPath.count > 0 {
-                        navigationPath.removeLast(navigationPath.count)
-                    }
-                })
-                    .onAppear { showPlusButton.wrappedValue = false }
-                    .onDisappear {
-                        if selectedRecording?.id == recording.id {
-                            selectedRecording = nil
+                RecordingDetailsView(
+                    recording: recording,
+                    onDismiss: {
+                        // Explicitly clear selection to pop back to RecordingsView
+                        selectedRecording = nil
+                        if navigationPath.count > 0 {
+                            navigationPath.removeLast(navigationPath.count)
                         }
                     }
+                )
+                .onAppear { showPlusButton.wrappedValue = false }
+                .onDisappear {
+                    if selectedRecording?.id == recording.id {
+                        selectedRecording = nil
+                    }
+                }
             }
             .onChange(of: selectedRecording) { oldValue, newValue in
                 // When navigating to a recording, add to path
