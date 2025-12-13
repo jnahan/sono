@@ -75,10 +75,8 @@ class RecordingFormViewModel: ObservableObject {
             note = recording.notes
             transcribedText = recording.fullText
             transcribedLanguage = recording.language
-        } else if let url = audioURL {
-            // New recording
-            title = url.deletingPathExtension().lastPathComponent
         }
+        // For new recordings, leave title empty (will be "Untitled recording" if not filled)
     }
     
     func startTranscriptionIfNeeded() {
@@ -91,7 +89,8 @@ class RecordingFormViewModel: ObservableObject {
     
     func validateTitle() -> Bool {
         let trimmed = title.trimmed
-        return !trimmed.isEmpty && trimmed.count <= AppConstants.Validation.maxTitleLength
+        // Allow empty title (will become "Untitled recording")
+        return trimmed.isEmpty || trimmed.count <= AppConstants.Validation.maxTitleLength
     }
     
     func validateNote() -> Bool {
@@ -102,19 +101,15 @@ class RecordingFormViewModel: ObservableObject {
     func validateTitleWithError() -> Bool {
         if hasAttemptedSubmit {
             let trimmed = title.trimmed
-            
-            // Validate not empty
-            if let error = ValidationHelper.validateNotEmpty(trimmed, fieldName: "Title") {
-                titleError = error
-                return false
+
+            // Only validate length (empty is allowed - will become "Untitled recording")
+            if !trimmed.isEmpty {
+                if let error = ValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
+                    titleError = error
+                    return false
+                }
             }
-            
-            // Validate length
-            if let error = ValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
-                titleError = error
-                return false
-            }
-            
+
             titleError = nil
             return true
         } else {
@@ -462,7 +457,7 @@ class RecordingFormViewModel: ObservableObject {
 
         // Create recording with notStarted status
         let recording = Recording(
-            title: title.trimmed.isEmpty ? url.deletingPathExtension().lastPathComponent : title.trimmed,
+            title: title.trimmed.isEmpty ? "Untitled recording" : title.trimmed,
             fileURL: url,
             fullText: "",
             language: "",
@@ -515,7 +510,7 @@ class RecordingFormViewModel: ObservableObject {
     /// Update the auto-saved recording with transcription results
     @MainActor
     private func updateAutoSavedRecording(_ recording: Recording, withTranscription: Bool, modelContext: ModelContext) {
-        recording.title = title.trimmed
+        recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
         recording.fullText = transcribedText
         recording.language = transcribedLanguage
         recording.notes = note
@@ -543,7 +538,7 @@ class RecordingFormViewModel: ObservableObject {
         // If we have an auto-saved recording, just update metadata
         if let recording = autoSavedRecording {
             // Update metadata only - transcription continues in background
-            recording.title = title.trimmed
+            recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
             recording.notes = note
             recording.collection = selectedCollection
 
@@ -590,7 +585,7 @@ class RecordingFormViewModel: ObservableObject {
 
         // Create recording first (without segments)
         let recording = Recording(
-            title: title.trimmed,
+            title: title.trimmed.isEmpty ? "Untitled recording" : title.trimmed,
             fileURL: url,
             fullText: transcribedText,
             language: transcribedLanguage,
@@ -625,8 +620,8 @@ class RecordingFormViewModel: ObservableObject {
     
     func saveEdit() {
         guard let recording = existingRecording else { return }
-        
-        recording.title = title.trimmed
+
+        recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
         recording.collection = selectedCollection
         recording.notes = note
     }

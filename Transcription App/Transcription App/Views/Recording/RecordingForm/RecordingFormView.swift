@@ -14,6 +14,7 @@ struct RecordingFormView: View {
     @StateObject private var viewModel: RecordingFormViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @FocusState private var isTitleFocused: Bool
     
     init(
         isPresented: Binding<Bool>,
@@ -85,6 +86,7 @@ struct RecordingFormView: View {
                                 placeholder: "Title",
                                 error: viewModel.titleError
                             )
+                            .focused($isTitleFocused)
                         }
 
                         // Collection field
@@ -174,6 +176,13 @@ struct RecordingFormView: View {
                 viewModel.autoSaveRecording(modelContext: modelContext)
                 viewModel.markTranscriptionStarted(modelContext: modelContext)
                 viewModel.setTranscriptionContext(modelContext)
+
+                // Autofocus on title field for new recordings
+                #if !os(macOS)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isTitleFocused = true
+                }
+                #endif
             }
             viewModel.startTranscriptionIfNeeded()
         }
