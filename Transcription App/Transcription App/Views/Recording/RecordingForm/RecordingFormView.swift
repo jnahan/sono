@@ -76,7 +76,7 @@ struct RecordingFormView: View {
 
                 ScrollView {
                     // Form fields
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         // Title field
                         VStack(alignment: .leading, spacing: 6) {
                             InputLabel(text: "Title")

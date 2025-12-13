@@ -83,6 +83,7 @@ struct InputField: View {
         ZStack(alignment: .topLeading) {
             TextEditor(text: $text)
                 .font(.system(size: 16))
+                .foregroundColor(.baseBlack)
                 .tint(.baseBlack)
                 .scrollContentBackground(.hidden)
                 .frame(height: height ?? 200)
