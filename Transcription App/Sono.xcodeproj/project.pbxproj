@@ -76,8 +76,6 @@
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
 		5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */; };
-		5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */; };
-		5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */; };
 		5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */; };
 		5DD378D52EE9123D002BD5B5 /* TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
@@ -161,9 +159,7 @@
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
-		5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "LibreBaskerville-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		5DB5792A2ED8ECE5002DC84D /* Sono-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Sono-Info.plist"; sourceTree = SOURCE_ROOT; };
-		5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
 		5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionHelper.swift; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
@@ -401,8 +397,6 @@
 			children = (
 				5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */,
 				5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */,
-				5DB579292ED8ECA9002DC84D /* LibreBaskerville-VariableFont_wght.ttf */,
-				5DB5792C2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -537,9 +531,7 @@
 				5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */,
 				5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */,
 				5DEC80202EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf in Resources */,
-				5DB5792D2ED8EFA9002DC84D /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */,
-				5DB5792B2ED8EF0E002DC84D /* LibreBaskerville-VariableFont_wght.ttf in Resources */,
 				5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
