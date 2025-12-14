@@ -1,5 +1,6 @@
 import Foundation
 import WhisperKit
+import AVFoundation
 
 /// Service for handling audio transcription using WhisperKit
 class TranscriptionService {
@@ -577,14 +578,24 @@ class TranscriptionService {
         // we might need to verify the model is actually initialized
         // Note: WhisperKit doesn't expose a public "isReady" property, so we rely on our flag
         
-        // Check if file exists
+        // Check if file exists and has content
         guard FileManager.default.fileExists(atPath: audioURL.path) else {
+            Logger.error("TranscriptionService", "Audio file not found at: \(audioURL.path)")
             throw TranscriptionError.fileNotFound
         }
-        
+
+        // Verify file has content
+        let fileSize = (try? FileManager.default.attributesOfItem(atPath: audioURL.path)[.size] as? UInt64) ?? 0
+        guard fileSize > 0 else {
+            Logger.error("TranscriptionService", "Audio file is empty (0 bytes): \(audioURL.lastPathComponent)")
+            throw TranscriptionError.fileNotFound
+        }
+
+        Logger.info("TranscriptionService", "Starting transcription of: \(audioURL.lastPathComponent) (\(fileSize) bytes)")
+
         // Get language code from parameter or settings
         let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
-        
+
         // Perform transcription with segment-level timestamps only
         var options = DecodingOptions(wordTimestamps: false)
 
@@ -592,8 +603,14 @@ class TranscriptionService {
             options.language = langCode
         }
 
-        // Track max loops seen to ensure monotonic progress
-        var maxLoopsSeen: Double = 0
+        // Get audio duration for accurate progress calculation
+        let asset = AVAsset(url: audioURL)
+        let duration = try await asset.load(.duration)
+        let totalSeconds = CMTimeGetSeconds(duration)
+
+        // Track start time for timeout
+        let startTime = Date()
+        let timeoutSeconds: TimeInterval = max(totalSeconds * 5, 120) // 5x audio duration or 2 min minimum
 
         let results = try await whisperKit.transcribe(
             audioPath: audioURL.path,
@@ -604,25 +621,24 @@ class TranscriptionService {
                     return false // Stop transcription
                 }
 
-                // WhisperKit provides progress through TranscriptionProgress
-                // Calculate overall progress from current and total segments
+                // Check for timeout (fail if taking too long)
+                let elapsed = Date().timeIntervalSince(startTime)
+                if elapsed > timeoutSeconds {
+                    Logger.error("TranscriptionService", "Transcription timed out after \(Int(elapsed))s")
+                    return false // Stop transcription
+                }
+
+                // Calculate progress based on actual audio duration
                 if let callback = progressCallback {
-                    // Use totalDecodingLoops but ensure monotonic progress
-                    let currentLoops = Double(progress.timings.totalDecodingLoops)
+                    // Use the current audio position from timings
+                    let currentSeconds = progress.timings.firstTokenTime + progress.timings.decodingLoop
 
-                    // Only update if we've seen more loops (prevent backward progress)
-                    if currentLoops > maxLoopsSeen {
-                        maxLoopsSeen = currentLoops
-                    }
-
-                    // Estimate: typically ~100-300 loops for a transcription
-                    // Cap at 0.95 to show progress, leave 5% for post-processing
-                    let estimatedProgress = min(maxLoopsSeen / 200.0, 0.95)
+                    // Calculate percentage (cap at 95% to leave room for post-processing)
+                    let progressPercentage = min(currentSeconds / totalSeconds, 0.95)
 
                     Task { @MainActor in
-                        // Check again before calling callback
                         if !Task.isCancelled {
-                            callback(estimatedProgress)
+                            callback(progressPercentage)
                         }
                     }
                 }

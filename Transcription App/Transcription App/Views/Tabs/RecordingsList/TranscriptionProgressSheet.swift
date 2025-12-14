@@ -65,6 +65,16 @@ struct TranscriptionProgressSheet: View {
         self.onComplete = onComplete
     }
     
+    private var isVideoFile: Bool {
+        guard let url = recording.resolvedURL else { return false }
+        let ext = url.pathExtension.lowercased()
+        return ["mov", "mp4", "m4v", "avi", "mkv", "wmv", "flv"].contains(ext)
+    }
+    
+    private var isExtracting: Bool {
+        isVideoFile && transcriptionProgress == 0.0 && transcriptionError == nil
+    }
+    
     var body: some View {
         ZStack {
             Color.warmGray50
@@ -84,12 +94,21 @@ struct TranscriptionProgressSheet: View {
                         onDone: { dismiss() }
                     )
                 } else if transcriptionError == nil {
-                    TranscriptionStatusView(
-                        topText: "\(Int(transcriptionProgress * 100))%",
-                        heading: "Transcribing audio",
-                        description: "Transcription in progress. Please do not close.",
-                        onDone: { dismiss() }
-                    )
+                    if isExtracting {
+                        TranscriptionStatusView(
+                            topText: nil,
+                            heading: "Extracting audio from video",
+                            description: "Please do not close.",
+                            onDone: { dismiss() }
+                        )
+                    } else {
+                        TranscriptionStatusView(
+                            topText: "\(Int(transcriptionProgress * 100))%",
+                            heading: "Transcribing audio",
+                            description: "Transcription in progress. Please do not close.",
+                            onDone: { dismiss() }
+                        )
+                    }
                 } else {
                     TranscriptionStatusView(
                         topText: nil,

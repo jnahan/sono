@@ -12,15 +12,13 @@ struct MediaFilePicker: UIViewControllerRepresentable {
     }
     
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        // Only include formats supported by WhisperKit: WAV, MP3, M4A, FLAC
         let audioTypes: [UTType] = [
-            .audio,
             .mp3,
             .mpeg4Audio,
-            UTType(filenameExtension: "m4a") ?? .audio,
+            UTType(filenameExtension: "m4a") ?? .mpeg4Audio,
             UTType(filenameExtension: "wav") ?? .audio,
-            UTType(filenameExtension: "aiff") ?? .audio,
-            UTType(filenameExtension: "aif") ?? .audio,
-            UTType(filenameExtension: "caf") ?? .audio
+            UTType(filenameExtension: "flac") ?? .audio
         ]
         
         let videoTypes: [UTType] = [
@@ -64,35 +62,45 @@ struct MediaFilePicker: UIViewControllerRepresentable {
             defer { url.stopAccessingSecurityScopedResource() }
             
             let mediaType = determineMediaType(for: url)
-            
+
             do {
                 let fileManager = FileManager.default
-                let documentsURL = try fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                ).appendingPathComponent("Recordings", isDirectory: true)
-                
-                try? fileManager.createDirectory(at: documentsURL, withIntermediateDirectories: true)
-                
+
+                // Determine destination based on media type
+                let destinationDir: URL
+                if mediaType == .video {
+                    // Videos: copy to temp directory (will be deleted after audio extraction)
+                    destinationDir = fileManager.temporaryDirectory
+                        .appendingPathComponent("VideoImports", isDirectory: true)
+                } else {
+                    // Audio: copy to Recordings directory (permanent)
+                    destinationDir = try fileManager.url(
+                        for: .applicationSupportDirectory,
+                        in: .userDomainMask,
+                        appropriateFor: nil,
+                        create: true
+                    ).appendingPathComponent("Recordings", isDirectory: true)
+                }
+
+                try? fileManager.createDirectory(at: destinationDir, withIntermediateDirectories: true)
+
                 let filename = url.lastPathComponent
-                let destinationURL = documentsURL.appendingPathComponent(filename)
-                
+                let destinationURL = destinationDir.appendingPathComponent(filename)
+
                 var finalURL = destinationURL
                 if fileManager.fileExists(atPath: destinationURL.path) {
                     let timestamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
                     let name = url.deletingPathExtension().lastPathComponent
                     let ext = url.pathExtension
-                    finalURL = documentsURL.appendingPathComponent("\(name)-\(timestamp).\(ext)")
+                    finalURL = destinationDir.appendingPathComponent("\(name)-\(timestamp).\(ext)")
                 }
-                
+
                 try fileManager.copyItem(at: url, to: finalURL)
-                
+
                 DispatchQueue.main.async {
                     self.parent.onFilePicked(finalURL, mediaType)
                 }
-                
+
             } catch {
                 // Error copying file - handled silently
             }

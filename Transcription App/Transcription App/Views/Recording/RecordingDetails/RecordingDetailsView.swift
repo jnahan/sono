@@ -77,7 +77,7 @@ struct RecordingDetailsView: View {
                         .foregroundColor(.warmGray400)
 
                     Text(recording.title)
-                        .font(.dmSansMedium(size: 24))
+                        .font(.dmSansSemiBold(size: 24))
                         .foregroundColor(.baseBlack)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

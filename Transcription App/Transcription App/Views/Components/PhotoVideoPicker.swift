@@ -56,29 +56,31 @@ struct PhotoVideoPicker: UIViewControllerRepresentable {
         }
         
         private func copyVideoToAppDirectory(from sourceURL: URL) {
+            // Copy to our temp directory (PHPicker temp files get deleted too quickly)
+            // The video will stay in the user's Photos library (this is just a copy for extraction)
             do {
                 let fileManager = FileManager.default
-                
-                let destinationDir = try fileManager.url(
-                    for: .applicationSupportDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true
-                ).appendingPathComponent("Recordings", isDirectory: true)
-                
-                try fileManager.createDirectory(at: destinationDir, withIntermediateDirectories: true)
-                
+
+                // Create temp directory for video imports
+                let tempDir = fileManager.temporaryDirectory
+                    .appendingPathComponent("VideoImports", isDirectory: true)
+
+                try? fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+                // Create unique filename
                 let timestamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
                 let ext = sourceURL.pathExtension
-                let destinationURL = destinationDir.appendingPathComponent("video-\(timestamp).\(ext)")
-                
+                let destinationURL = tempDir.appendingPathComponent("video-\(timestamp).\(ext)")
+
+                // Copy the file to our temp directory
                 try fileManager.copyItem(at: sourceURL, to: destinationURL)
-                
+
                 DispatchQueue.main.async {
                     self.onMediaPicked(destinationURL)
                 }
-                
+
             } catch {
+                Logger.error("PhotoVideoPicker", "Failed to copy video: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.onCancel?()
                 }

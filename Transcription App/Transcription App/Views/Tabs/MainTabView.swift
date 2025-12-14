@@ -28,6 +28,9 @@ struct MainTabView: View {
     @State private var showVideoPicker = false
     // used to pass file url from picker to transcription screen
     @State private var pendingAudioURL: URL?
+    @State private var isExtractingAudio = false
+    @State private var showExtractionError = false
+    @State private var extractionErrorMessage = ""
     
     var body: some View {
         ZStack {
@@ -118,6 +121,16 @@ struct MainTabView: View {
                 )
                 .zIndex(1000)
             }
+
+        }
+        .overlay(alignment: .top) {
+            if showExtractionError {
+                ErrorToastView(
+                    message: extractionErrorMessage,
+                    isPresented: $showExtractionError
+                )
+                .padding(.top, 8)
+            }
         }
         .onAppear {
             // Hide the default tab bar and remove borders
@@ -136,8 +149,37 @@ struct MainTabView: View {
         .sheet(isPresented: $showFilePicker) {
             MediaFilePicker(
                 onFilePicked: { url, mediaType in
-                    pendingAudioURL = url
                     showFilePicker = false
+
+                    // If it's a video file, extract audio first
+                    if mediaType == .video {
+                        Task {
+                            isExtractingAudio = true
+                            do {
+                                let audioURL = try await AudioExtractor.extractAudio(from: url)
+
+                                // Delete the temp video file after extraction
+                                try? FileManager.default.removeItem(at: url)
+
+                                await MainActor.run {
+                                    isExtractingAudio = false
+                                    pendingAudioURL = audioURL
+                                }
+                            } catch {
+                                // Clean up temp video file even on error
+                                try? FileManager.default.removeItem(at: url)
+
+                                await MainActor.run {
+                                    isExtractingAudio = false
+                                    extractionErrorMessage = error.localizedDescription
+                                    showExtractionError = true
+                                }
+                            }
+                        }
+                    } else {
+                        // Audio file - use directly
+                        pendingAudioURL = url
+                    }
                 },
                 onCancel: {
                     showFilePicker = false
@@ -147,8 +189,33 @@ struct MainTabView: View {
         .sheet(isPresented: $showVideoPicker) {
             PhotoVideoPicker(
                 onMediaPicked: { url in
-                    pendingAudioURL = url
                     showVideoPicker = false
+
+                    // PhotoVideoPicker always returns video files - extract audio
+                    Task {
+                        isExtractingAudio = true
+                        do {
+                            let audioURL = try await AudioExtractor.extractAudio(from: url)
+
+                            // The temp video file from Photos will be cleaned up by system,
+                            // but we can explicitly delete it to free space immediately
+                            try? FileManager.default.removeItem(at: url)
+
+                            await MainActor.run {
+                                isExtractingAudio = false
+                                pendingAudioURL = audioURL
+                            }
+                        } catch {
+                            // Clean up temp video file even on error
+                            try? FileManager.default.removeItem(at: url)
+
+                            await MainActor.run {
+                                isExtractingAudio = false
+                                extractionErrorMessage = error.localizedDescription
+                                showExtractionError = true
+                            }
+                        }
+                    }
                 },
                 onCancel: {
                     showVideoPicker = false
