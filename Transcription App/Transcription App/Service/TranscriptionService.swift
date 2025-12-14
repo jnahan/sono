@@ -421,9 +421,9 @@ class TranscriptionService {
             let totalInQueue = transcriptionQueue.count + 1 // +1 for active transcription
             queueLock.unlock()
 
-            // Notify progress manager - it will update shared max total
+            // Notify progress manager
             Task { @MainActor in
-                TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition, totalInQueue: totalInQueue)
+                TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition)
             }
 
             // Wait until this recording's turn with dynamic timeout
@@ -469,9 +469,9 @@ class TranscriptionService {
             let totalInQueue = transcriptionQueue.count + 1 // Current total
             queueLock.unlock()
             
-            // Notify progress manager - it will update shared max total
+            // Notify progress manager
             Task { @MainActor in
-                TranscriptionProgressManager.shared.setActiveTranscription(recordingId: recordingId, totalInQueue: totalInQueue)
+                TranscriptionProgressManager.shared.setActiveTranscription(recordingId: recordingId)
             }
         }
         
@@ -500,19 +500,18 @@ class TranscriptionService {
                 activeTranscriptionId = nil
                 transcriptionQueue.removeAll { $0 == recordingId }
 
+                // Notify progress manager to remove and update positions
+                Task { @MainActor in
+                    TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+                }
+
                 // Process next in queue
                 if let nextId = transcriptionQueue.first {
                     activeTranscriptionId = nextId
                     isTranscribing = true
                     Task { @MainActor in
-                        let currentMax = TranscriptionProgressManager.shared.maxQueueTotal
-                        TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId, totalInQueue: currentMax)
+                        TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId)
                     }
-                }
-
-                // Notify progress manager
-                Task { @MainActor in
-                    TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
                 }
             } else {
                 Logger.warning("TranscriptionService", "Lock timeout in cleanup, scheduling recovery")
