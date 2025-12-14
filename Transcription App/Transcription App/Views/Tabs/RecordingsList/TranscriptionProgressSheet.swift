@@ -10,28 +10,36 @@ private struct TranscriptionStatusView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let topText = topText {
-                Text(topText)
-                    .font(.dmSansSemiBold(size: 64))
+            VStack(spacing: 0) {
+                if let topText = topText {
+                    Text(topText)
+                        .font(.dmSansSemiBold(size: 64))
+                        .foregroundColor(.baseBlack)
+
+                    Spacer()
+                        .frame(height: 8)
+                }
+
+                Text(heading)
+                    .font(.dmSansSemiBold(size: 24))
                     .foregroundColor(.baseBlack)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Spacer()
                     .frame(height: 8)
+
+                Text(description)
+                    .font(.dmSansRegular(size: 16))
+                    .foregroundColor(.warmGray700)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-
-            Text(heading)
-                .font(.dmSansSemiBold(size: 24))
-                .foregroundColor(.baseBlack)
-                .multilineTextAlignment(.center)
-
-            Spacer()
-                .frame(height: 8)
-
-            Text(description)
-                .font(.dmSansRegular(size: 16))
-                .foregroundColor(.warmGray700)
-                .multilineTextAlignment(.center)
-
+            .padding(.horizontal, 20)
+            .padding(.top, 40)
+            
             Spacer()
                 .frame(height: 32)
 
@@ -39,12 +47,13 @@ private struct TranscriptionStatusView: View {
                 onDone()
             } label: {
                 Text("Done")
-                    .font(.dmSansRegular(size: 16))
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppButtonStyle())
+            
+            Spacer()
+                .frame(height: 40)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 40)
     }
 }
 

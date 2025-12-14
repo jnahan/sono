@@ -161,9 +161,14 @@ struct RecordingFormView: View {
                 confirmButtonText: "Discard recording",
                 cancelButtonText: "Continue editing",
                 onConfirm: {
-                    viewModel.cleanupAudioFile()
-                    isPresented = false
-                    onExit?()
+                    // Clean up first, then dismiss
+                    viewModel.cleanupOnExit(modelContext: modelContext)
+                    // Small delay to ensure deletion saves before dismissing
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                        isPresented = false
+                        onExit?()
+                    }
                 }
             )
         }

@@ -75,8 +75,24 @@ class RecordingFormViewModel: ObservableObject {
             note = recording.notes
             transcribedText = recording.fullText
             transcribedLanguage = recording.language
+        } else if let url = audioURL {
+            // For new recordings from file/video upload, use filename (without extension) as default title
+            let filename = url.deletingPathExtension().lastPathComponent
+            
+            // For video extractions, the filename format is: {videoName}-audio-{timestamp}
+            // Extract just the video name part
+            if filename.contains("-audio-") {
+                if let videoName = filename.components(separatedBy: "-audio-").first, !videoName.isEmpty {
+                    title = videoName
+                } else {
+                    title = filename
+                }
+            } else {
+                // For direct audio files, use the filename without extension
+                title = filename
+            }
         }
-        // For new recordings, leave title empty (will be "Untitled recording" if not filled)
+        // If no audioURL, leave title empty (will be "Untitled recording" if not filled)
     }
     
     func startTranscriptionIfNeeded() {
@@ -632,5 +648,56 @@ class RecordingFormViewModel: ObservableObject {
         if let url = audioURL {
             try? FileManager.default.removeItem(at: url)
         }
+    }
+    
+    /// Clean up everything when user exits without saving
+    @MainActor
+    func cleanupOnExit(modelContext: ModelContext) {
+        guard let recording = autoSavedRecording else {
+            // No recording to clean up, just clean audio file
+            cleanupAudioFile()
+            return
+        }
+        
+        let recordingId = recording.id
+        Logger.info("RecordingForm", "Cleaning up recording on exit: \(recordingId.uuidString.prefix(8))")
+        
+        // First, cancel transcription and remove from all queues
+        // This removes from TranscriptionProgressManager and TranscriptionService
+        TranscriptionProgressManager.shared.cancelTranscription(for: recordingId)
+        
+        // Also explicitly ensure it's removed from TranscriptionService queue
+        TranscriptionService.shared.cancelTranscription(recordingId: recordingId)
+        
+        // Mark transcription as complete to clean up any remaining state
+        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+        
+        // Clean up audio file first (before deleting recording)
+        cleanupAudioFile()
+        
+        // Delete the recording from database
+        modelContext.delete(recording)
+        
+        // Save the deletion immediately - this is critical
+        do {
+            try modelContext.save()
+            Logger.success("RecordingForm", "Successfully deleted recording on exit: \(recordingId.uuidString.prefix(8))")
+        } catch {
+            Logger.error("RecordingForm", "Failed to delete recording on exit: \(error.localizedDescription)")
+            // Try to save again - sometimes SwiftData needs a retry
+            do {
+                try modelContext.save()
+                Logger.success("RecordingForm", "Successfully deleted recording on retry")
+            } catch {
+                Logger.error("RecordingForm", "Failed to delete recording on retry: \(error.localizedDescription)")
+            }
+        }
+        
+        // Clear the reference to prevent any further operations
+        autoSavedRecording = nil
+        
+        // Reset transcription state
+        isTranscribing = false
+        transcriptionProgress = 0.0
     }
 }
