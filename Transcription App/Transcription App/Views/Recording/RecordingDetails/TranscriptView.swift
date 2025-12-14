@@ -50,6 +50,7 @@ struct TranscriptView: View {
                     Text(recording.fullText)
                         .font(.dmSansRegular(size: 16))
                         .foregroundColor(.baseBlack)
+                        .lineSpacing(4)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -88,6 +89,11 @@ struct TranscriptView: View {
         if isActive {
             container.backgroundColor = UIColor(Color.accentLight)
         }
+
+        // Set line spacing using paragraph style
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 4
+        container.paragraphStyle = paragraphStyle
 
         // Apply attributes to entire string
         let range = attributedString.startIndex..<attributedString.endIndex

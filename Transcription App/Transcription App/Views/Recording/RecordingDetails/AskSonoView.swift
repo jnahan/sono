@@ -147,6 +147,7 @@ struct AskSonoView: View {
                 Text(message.text)
                     .font(.dmSansRegular(size: 16))
                     .foregroundColor(.baseBlack)
+                    .lineSpacing(4)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(Color.accentLight)
@@ -175,6 +176,7 @@ struct AskSonoView: View {
                     Text(displayText)
                         .font(.dmSansRegular(size: 16))
                         .foregroundColor(.baseBlack)
+                        .lineSpacing(4)
                 }
                 
                 // Action buttons (only show when not streaming or when streaming is complete)
@@ -249,7 +251,7 @@ private struct PulsatingDot: View {
         Circle()
             .fill(Color.accent)
             .frame(width: 12, height: 12)
-            .scaleEffect(isPulsating ? 1.2 : 1.0)
+            .scaleEffect(isPulsating ? 0.8 : 1.0)
             .onAppear {
                 withAnimation(
                     Animation.easeInOut(duration: 0.8)

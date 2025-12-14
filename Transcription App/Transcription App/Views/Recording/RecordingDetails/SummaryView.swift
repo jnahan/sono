@@ -29,6 +29,7 @@ struct SummaryView: View {
                         Text(viewModel.streamingSummary)
                             .font(.dmSansRegular(size: 16))
                             .foregroundColor(.baseBlack)
+                            .lineSpacing(4)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -89,6 +90,7 @@ struct SummaryView: View {
             Text(summary)
                 .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
+                .lineSpacing(4)
 
             AIResponseButtons(
                 onCopy: {
@@ -117,7 +119,7 @@ private struct PulsatingDot: View {
         Circle()
             .fill(Color.accent)
             .frame(width: 12, height: 12)
-            .scaleEffect(isPulsating ? 1.2 : 1.0)
+            .scaleEffect(isPulsating ? 0.8 : 1.0)
             .onAppear {
                 withAnimation(
                     Animation.easeInOut(duration: 0.8)
