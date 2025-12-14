@@ -18,6 +18,7 @@ class TranscriptionService {
     private var activeTranscriptionId: UUID? = nil
     private var transcriptionQueue: [UUID] = []
     private var queuedTasks: [UUID: Task<Void, Never>] = [:]
+    private var activeTranscriptionTask: Task<TranscriptionResult, Error>? = nil // Store active transcription task for cancellation
     private let queueLock = NSLock()
 
     // MARK: - Constants
@@ -74,6 +75,9 @@ class TranscriptionService {
         defer { queueLock.unlock() }
 
         Logger.system("TranscriptionService", "Resetting queue state")
+        // Cancel any active transcription task
+        activeTranscriptionTask?.cancel()
+        activeTranscriptionTask = nil
         isTranscribing = false
         activeTranscriptionId = nil
 
@@ -89,19 +93,24 @@ class TranscriptionService {
     func cancelTranscription(recordingId: UUID) {
         guard acquireLock(operation: "cancelTranscription") else {
             Logger.warning("TranscriptionService", ErrorMessages.Queue.couldNotCancel)
-            // Fire-and-forget notification
             Task { @MainActor in
                 TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
             }
             return
         }
-        defer { queueLock.unlock() }
-
-        // Remove from queue if present
+        
+        // Remove from queue
         transcriptionQueue.removeAll { $0 == recordingId }
-        // If this is the active transcription, it will be cancelled by the task cancellation
+        
+        // Cancel active task if this is the active transcription
+        if activeTranscriptionId == recordingId {
+            Logger.info("TranscriptionService", "Cancelling active transcription for: \(recordingId.uuidString.prefix(8))")
+            activeTranscriptionTask?.cancel()
+        }
+        
+        queueLock.unlock()
 
-        // Notify progress manager (fire-and-forget, non-blocking)
+        // Notify progress manager
         Task { @MainActor in
             TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
         }
@@ -466,65 +475,73 @@ class TranscriptionService {
             }
         }
         
-        // Perform the actual transcription
+        // Wrap transcription in Task so we can cancel it
+        let transcriptionTask = Task {
+            try await performTranscription(audioURL: audioURL, languageCode: languageCode, progressCallback: progressCallback)
+        }
+        
+        // Store task for cancellation
+        if acquireLock(operation: "transcribe-store-task") {
+            activeTranscriptionTask = transcriptionTask
+            queueLock.unlock()
+        }
+        
         defer {
-            // Cleanup queue state - use if/else instead of guard/return since we're in defer
+            // Cleanup and process next in queue
             if acquireLock(operation: "transcribe-cleanup") {
                 defer { queueLock.unlock() }
 
+                // Clear active task
+                if activeTranscriptionTask == transcriptionTask {
+                    activeTranscriptionTask = nil
+                }
+                
                 isTranscribing = false
                 activeTranscriptionId = nil
-
-                // Remove from queue if it was there
                 transcriptionQueue.removeAll { $0 == recordingId }
 
                 // Process next in queue
                 if let nextId = transcriptionQueue.first {
                     activeTranscriptionId = nextId
                     isTranscribing = true
-                    // Don't update positions - they should stay at their original values
-                    // Position stays the same, total stays at maxQueueTotal
-                    // Notify that next item is now active (total stays at max)
                     Task { @MainActor in
                         let currentMax = TranscriptionProgressManager.shared.maxQueueTotal
                         TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId, totalInQueue: currentMax)
                     }
                 }
 
-                // Notify progress manager that this recording is done (fire-and-forget, non-blocking)
+                // Notify progress manager
                 Task { @MainActor in
                     TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
                 }
             } else {
                 Logger.warning("TranscriptionService", "Lock timeout in cleanup, scheduling recovery")
-                // Last resort: try to clean up queue state
                 Task {
-                    try? await Task.sleep(nanoseconds: 100_000_000) // Wait 0.1s
+                    try? await Task.sleep(nanoseconds: 100_000_000)
                     self.validateAndRecoverQueueState()
                 }
             }
         }
         
-        // Continue with existing transcription logic
-        return try await performTranscription(audioURL: audioURL, languageCode: languageCode, progressCallback: progressCallback)
+        // Await transcription (throws CancellationError if cancelled)
+        return try await transcriptionTask.value
     }
     
     /// Internal method that performs the actual transcription
     private func performTranscription(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
         let settings = SettingsManager.shared
 
-        // Wait for preload to complete if it's still running
+        // Wait for preload to complete
         if let task = preloadTask {
             Logger.info("TranscriptionService", "Waiting for preload to complete...")
             await task.value
+            try Task.checkCancellation()
             preloadTask = nil
-            Logger.success("TranscriptionService", "Preload completed. whisperKit=\(whisperKit != nil), isModelReady=\(isModelReady)")
         }
 
-        // Wait for any ongoing model loading to complete before proceeding
-        // This ensures we don't start a new download if one is already in progress
+        // Wait for model loading to complete
         while isLoadingModel {
-            Logger.info("TranscriptionService", "Waiting for model loading to complete...")
+            try Task.checkCancellation()
             try? await Task.sleep(nanoseconds: AppConstants.Transcription.modelWarmupWaitInterval)
         }
 
@@ -579,16 +596,19 @@ class TranscriptionService {
                     throw TranscriptionError.initializationFailed
                 }
             } else if !isModelReady {
-                // Model exists but not ready - wait for warm-up to complete
-                Logger.info("TranscriptionService", "Model exists but not ready, waiting for warm-up...")
+                // Model exists but not ready - wait for warm-up
                 while !isModelReady && whisperKit != nil {
+                    try Task.checkCancellation()
                     try? await Task.sleep(nanoseconds: AppConstants.Transcription.modelWarmupWaitInterval)
                 }
+                try Task.checkCancellation()
                 if !isModelReady {
-                    isModelReady = true // Proceed anyway
+                    isModelReady = true
                 }
             }
         }
+        
+        try Task.checkCancellation()
         
         guard let whisperKit = whisperKit else {
             throw TranscriptionError.initializationFailed
