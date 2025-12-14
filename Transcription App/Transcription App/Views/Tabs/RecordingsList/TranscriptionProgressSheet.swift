@@ -129,7 +129,7 @@ struct TranscriptionProgressSheet: View {
             }
         }
         .presentationDetents([.height(transcriptionError == nil && progressManager.isQueued(recordingId: recording.id) == false ? 340 : 260)])
-        .presentationDragIndicator(.visible)
+        .presentationDragIndicator(.hidden)
         .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
