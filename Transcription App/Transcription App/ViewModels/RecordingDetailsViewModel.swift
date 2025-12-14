@@ -29,20 +29,79 @@ class RecordingDetailsViewModel: ObservableObject {
     /// - Parameter modelContext: The SwiftData model context to save changes
     @MainActor
     func generateSummary(modelContext: ModelContext) async {
+        guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            summaryError = "Cannot generate summary: transcription is empty."
+            return
+        }
+        
         isGeneratingSummary = true
         summaryError = nil
-        streamingSummary = ""
 
-        let result = await SummaryService.shared.generateSummary(
-            for: recording,
-            modelContext: modelContext
-        ) { [weak self] (chunk: String) in
-            guard let self = self else { return }
-            self.streamingSummary += chunk
+        do {
+            // Check if transcription exceeds max context length
+            if recording.fullText.count > AppConstants.LLM.maxContextLength {
+                recording.summary = "Failed to summarize recording"
+                isGeneratingSummary = false
+
+                // Save the failure message
+                await MainActor.run {
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        summaryError = "Failed to save: \(error.localizedDescription)"
+                    }
+                }
+                return
+            }
+
+            let prompt = recording.fullText
+
+            // Reset streaming text
+            streamingSummary = ""
+
+            // Stream the response
+            let summary = try await LLMService.shared.getStreamingCompletion(
+                from: prompt,
+                systemPrompt: LLMPrompts.summarization
+            ) { [weak self] chunk in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    self.streamingSummary += chunk
+                }
+            }
+
+            // Validate response
+            guard LLMResponseValidator.isValid(summary) else {
+                summaryError = "Model returned invalid response. Please try again."
+                isGeneratingSummary = false
+                return
+            }
+
+            // Limit summary length
+            let finalSummary = LLMResponseValidator.limit(
+                summary,
+                to: AppConstants.LLM.maxSummaryLength
+            )
+            
+            recording.summary = finalSummary
+            
+            // Clear streaming text
+            streamingSummary = ""
+            
+            // Save asynchronously to avoid blocking main thread
+            await MainActor.run {
+                do {
+                    try modelContext.save()
+                } catch {
+                    summaryError = "Failed to save summary: \(error.localizedDescription)"
+                }
+            }
+            
+        } catch {
+            summaryError = "Failed to generate summary: \(error.localizedDescription)"
+            streamingSummary = ""
         }
-
-        streamingSummary = result.streamingSummary
-        summaryError = result.error
+        
         isGeneratingSummary = false
     }
     
