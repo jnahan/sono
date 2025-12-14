@@ -158,11 +158,4 @@ class RecordingDetailsViewModel: ObservableObject {
     func resetActiveSegment() {
         currentActiveSegmentId = nil
     }
-    
-    /// Sets the active segment manually (e.g., when user taps a segment)
-    /// - Parameter segmentId: The ID of the segment to set as active
-    @MainActor
-    func setActiveSegment(_ segmentId: UUID) {
-        currentActiveSegmentId = segmentId
-    }
 }

@@ -36,46 +36,6 @@ class LLMService {
         }
     }
     
-    /// Gets a completion from the LLM
-    /// - Parameters:
-    ///   - input: The user's input prompt
-    ///   - systemPrompt: The system prompt defining the assistant's behavior
-    /// - Returns: The LLM's response
-    @MainActor
-    func getCompletion(from input: String, systemPrompt: String = LLMPrompts.defaultAssistant) async throws -> String {
-        // Always reset to ensure clean state and avoid KV cache corruption
-        llm = nil
-        
-        // Load model
-        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "gguf") else {
-            throw LLMError.modelNotLoaded
-        }
-        
-        // Initialize LLM without template (we'll format manually)
-        llm = LLM(from: modelURL)
-        
-        guard let llm = llm else {
-            throw LLMError.modelNotLoaded
-        }
-        
-        // Manually format the prompt for Llama 3.2 chat template
-        // Note: BOS token (<|begin_of_text|>) is added automatically by the LLM library
-        let formattedPrompt = """
-        <|start_header_id|>system<|end_header_id|>
-
-        \(systemPrompt)<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-        \(input)<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-        """
-        
-        // Get response
-        await llm.respond(to: formattedPrompt)
-        
-        // Clean and return output
-        return llm.output.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
     /// Gets a streaming completion from the LLM, yielding text chunks as they're generated
     /// Uses the LLM library's built-in update closure for streaming
     /// - Parameters:

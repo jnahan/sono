@@ -80,14 +80,6 @@ final class Player: ObservableObject {
         currentTime = player.currentTime
     }
     
-    /// Seek to a specific time in seconds
-    func seek(toTime time: TimeInterval) {
-        guard let player else { return }
-        player.currentTime = time
-        currentTime = time
-        progress = player.duration > 0 ? time / player.duration : 0
-    }
-    
     // MARK: - Private Methods
     private func startUpdatingProgress() {
         stopUpdatingProgress()

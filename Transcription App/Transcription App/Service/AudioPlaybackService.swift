@@ -172,20 +172,6 @@ final class AudioPlaybackService: ObservableObject {
         updateProgress()
     }
 
-    /// Skips forward by a specified duration
-    /// - Parameter seconds: Number of seconds to skip forward
-    func skipForward(by seconds: TimeInterval = 15) {
-        guard let player else { return }
-        seek(to: player.currentTime + seconds)
-    }
-
-    /// Skips backward by a specified duration
-    /// - Parameter seconds: Number of seconds to skip backward
-    func skipBackward(by seconds: TimeInterval = 15) {
-        guard let player else { return }
-        seek(to: player.currentTime - seconds)
-    }
-
     // MARK: - Private Methods
 
     private func startProgressTracking() {

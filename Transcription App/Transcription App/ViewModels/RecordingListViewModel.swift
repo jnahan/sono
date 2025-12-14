@@ -141,11 +141,6 @@ class RecordingListViewModel: ObservableObject {
         return recordings.filter { selectedRecordings.contains($0.id) }
     }
     
-    /// Clears all selected recordings without exiting selection mode
-    func clearSelections() {
-        selectedRecordings.removeAll()
-    }
-    
     // MARK: - Filtering
     
     /// Update filtered recordings based on search text and source recordings

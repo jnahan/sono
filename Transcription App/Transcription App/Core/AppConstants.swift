@@ -21,7 +21,6 @@ enum AppConstants {
     enum LLM {
         static let maxContextLength = 80000
         static let maxSummaryLength = 500
-        static let minValidResponseLength = 10
     }
     
     /// Recording constants
@@ -37,9 +36,6 @@ enum AppConstants {
 
         /// Lock retry interval (seconds)
         static let lockRetryInterval: TimeInterval = 0.01
-
-        /// Wait validation interval (number of retries before validating state)
-        static let waitValidationInterval = 150
 
         /// Wait interval between queue checks (seconds)
         static let waitInterval: TimeInterval = 0.2
@@ -57,33 +53,8 @@ enum AppConstants {
     enum UI {
         /// Standard spacing values
         enum Spacing {
-            static let small: CGFloat = 8
             static let medium: CGFloat = 16
             static let large: CGFloat = 20
-            static let extraLarge: CGFloat = 24
-            static let xxLarge: CGFloat = 32
-        }
-        
-        /// Icon and image sizes
-        enum IconSize {
-            static let small: CGFloat = 24
-            static let medium: CGFloat = 28
-            static let large: CGFloat = 32
-        }
-        
-        /// Corner radius values
-        enum CornerRadius {
-            static let small: CGFloat = 10
-            static let medium: CGFloat = 12
-            static let large: CGFloat = 16
-            static let pill: CGFloat = 32
-        }
-        
-        /// Animation duration values
-        enum AnimationDuration {
-            static let short: Double = 0.2
-            static let medium: Double = 0.3
-            static let toast: Double = 2.0
         }
     }
 }

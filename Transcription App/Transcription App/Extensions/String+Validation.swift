@@ -5,9 +5,4 @@ extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    /// Returns true if the string is empty or contains only whitespace
-    var isBlank: Bool {
-        trimmed.isEmpty
-    }
 }

@@ -219,13 +219,6 @@ struct CollectionPickerSheet: View {
         }
     }
     
-    private var titleText: String {
-        if let recordings = recordings, recordings.count > 0 {
-            return "Move \(recordings.count) recording\(recordings.count == 1 ? "" : "s")"
-        }
-        return "Choose a collection"
-    }
-    
     private func handleSelection(_ collection: Collection?) {
         if let recordings = recordings {
             // Mass move operation - perform asynchronously to avoid blocking main thread
