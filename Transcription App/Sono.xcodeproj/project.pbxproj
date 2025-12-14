@@ -51,7 +51,6 @@
 		5D8C14D12EEE5A4B00BFFEFF /* AudioExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8C14D02EEE5A4B00BFFEFF /* AudioExtractor.swift */; };
 		5D92712C2EE50DC900A34B12 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92712B2EE50DC900A34B12 /* IconButton.swift */; };
 		5D92712D2EE50DC900A34B13 /* Tab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D92712E2EE50DC900A34B13 /* Tab.swift */; };
-		5D92712F2EE50DC900A34B14 /* TypingCursorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271302EE50DC900A34B14 /* TypingCursorView.swift */; };
 		5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271322EE50DC900A34B15 /* SettingsRow.swift */; };
 		5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */; };
 		5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9271382EE50DC900A34B18 /* MassActionButtons.swift */; };
@@ -74,12 +73,10 @@
 		5DB579062ED846A6002DC84D /* CollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579052ED846A6002DC84D /* CollectionsView.swift */; };
 		5DB579082ED8475F002DC84D /* NewRecordingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */; };
 		5DB579102ED8BF6E002DC84D /* RecordingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */; };
-		5DB579142ED8C031002DC84D /* CopyToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579132ED8C031002DC84D /* CopyToastView.swift */; };
 		5DB5791D2ED8CAF4002DC84D /* MediaFilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */; };
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
 		5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */; };
-		5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */; };
 		5DD378D52EE9123D002BD5B5 /* TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
 		5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */; };
@@ -137,7 +134,6 @@
 		5D8C14D02EEE5A4B00BFFEFF /* AudioExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioExtractor.swift; sourceTree = "<group>"; };
 		5D92712B2EE50DC900A34B12 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		5D92712E2EE50DC900A34B13 /* Tab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tab.swift; sourceTree = "<group>"; };
-		5D9271302EE50DC900A34B14 /* TypingCursorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingCursorView.swift; sourceTree = "<group>"; };
 		5D9271322EE50DC900A34B15 /* SettingsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRow.swift; sourceTree = "<group>"; };
 		5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryViewModel.swift; sourceTree = "<group>"; };
 		5D9271382EE50DC900A34B18 /* MassActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassActionButtons.swift; sourceTree = "<group>"; };
@@ -160,13 +156,11 @@
 		5DB579052ED846A6002DC84D /* CollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsView.swift; sourceTree = "<group>"; };
 		5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewRecordingSheet.swift; sourceTree = "<group>"; };
 		5DB5790F2ED8BF6E002DC84D /* RecordingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingRowView.swift; sourceTree = "<group>"; };
-		5DB579132ED8C031002DC84D /* CopyToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyToastView.swift; sourceTree = "<group>"; };
 		5DB5791C2ED8CAF4002DC84D /* MediaFilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFilePicker.swift; sourceTree = "<group>"; };
 		5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoVideoPicker.swift; sourceTree = "<group>"; };
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
 		5DB5792A2ED8ECE5002DC84D /* Sono-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Sono-Info.plist"; sourceTree = SOURCE_ROOT; };
-		5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMenuActions.swift; sourceTree = "<group>"; };
 		5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionHelper.swift; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+App.swift"; sourceTree = "<group>"; };
@@ -373,7 +367,6 @@
 			children = (
 				5D0ED10B2EDFD5670003E775 /* Input.swift */,
 				5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */,
-				5DB579132ED8C031002DC84D /* CopyToastView.swift */,
 				5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */,
 				5D1570642ED96B0A0094E13E /* CollectionPickerSheet.swift */,
 				5D1570682EDA0F450094E13E /* CustomTopBar.swift */,
@@ -385,7 +378,6 @@
 				5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */,
 				5D92712B2EE50DC900A34B12 /* IconButton.swift */,
 				5D92712E2EE50DC900A34B13 /* Tab.swift */,
-				5D9271302EE50DC900A34B14 /* TypingCursorView.swift */,
 				5D92713F2EE50DC900A34B23 /* AIResponseButtons.swift */,
 				5D9271412EE50DC900A34B25 /* ActionButton.swift */,
 				5D8C14CE2EEE0C7F00BFFEFF /* ToastView.swift */,
@@ -430,7 +422,6 @@
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */,
 				5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */,
 				5D9271382EE50DC900A34B18 /* MassActionButtons.swift */,
-				5DB579352ED8C824002DC84D /* RecordingMenuActions.swift */,
 			);
 			path = RecordingsList;
 			sourceTree = "<group>";
@@ -554,8 +545,6 @@
 			files = (
 				5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */,
 				5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */,
-				5DB579142ED8C031002DC84D /* CopyToastView.swift in Sources */,
-				5DB579362ED8C824002DC84D /* RecordingMenuActions.swift in Sources */,
 				5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */,
 				5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */,
 				5D962F2E2ECEBBF900049626 /* TranscriptionProgressSheet.swift in Sources */,
@@ -603,7 +592,6 @@
 				5DDA7CCC2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift in Sources */,
 				5D92712C2EE50DC900A34B12 /* IconButton.swift in Sources */,
 				5D92712D2EE50DC900A34B13 /* Tab.swift in Sources */,
-				5D92712F2EE50DC900A34B14 /* TypingCursorView.swift in Sources */,
 				5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */,
 				5D9271332EE50DC900A34B16 /* SummaryViewModel.swift in Sources */,
 				5D9271372EE50DC900A34B18 /* MassActionButtons.swift in Sources */,
