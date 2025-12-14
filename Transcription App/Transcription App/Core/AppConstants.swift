@@ -48,6 +48,11 @@ enum AppConstants {
         static let modelWarmupWaitInterval: UInt64 = 500_000_000 // 0.5 seconds
     }
     
+    /// Notification names
+    enum Notification {
+        static let recordingSaved = Foundation.Notification.Name("recordingSaved")
+    }
+    
     /// UI spacing and layout constants
     enum UI {
         /// Standard spacing values

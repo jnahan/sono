@@ -3,6 +3,7 @@ import SwiftData
 
 struct RecorderView: View {
     let onDismiss: (() -> Void)?
+    let onSaveComplete: ((Recording) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Collection.name) private var collections: [Collection]
     @Environment(\.modelContext) private var modelContext
@@ -13,8 +14,9 @@ struct RecorderView: View {
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
     
-    init(onDismiss: (() -> Void)? = nil) {
+    init(onDismiss: (() -> Void)? = nil, onSaveComplete: ((Recording) -> Void)? = nil) {
         self.onDismiss = onDismiss
+        self.onSaveComplete = onSaveComplete
     }
     
     var body: some View {
@@ -78,6 +80,8 @@ struct RecorderView: View {
                         // Clear state - this will dismiss RecordingFormView's fullScreenCover
                         pendingAudioURL = nil
                         showTranscriptionDetail = false
+                        // Notify parent about saved recording
+                        onSaveComplete?(recording)
                         // Then dismiss RecorderView to go back to home
                         // Use a small delay to ensure RecordingFormView dismisses first
                         Task { @MainActor in

@@ -7,9 +7,17 @@ class RecordingFormViewModel: ObservableObject {
     // MARK: - Published Properties
     
     // Form state
-    @Published var title: String = ""
+    @Published var title: String = "" {
+        didSet {
+            updateFormValidity()
+        }
+    }
     @Published var selectedCollection: Collection? = nil
-    @Published var note: String = ""
+    @Published var note: String = "" {
+        didSet {
+            updateFormValidity()
+        }
+    }
     
     // Transcription state
     @Published var transcribedText: String = ""
@@ -25,6 +33,7 @@ class RecordingFormViewModel: ObservableObject {
     @Published var titleError: String? = nil
     @Published var noteError: String? = nil
     @Published var hasAttemptedSubmit = false
+    @Published var isFormValid: Bool = true // Published property that updates when title/note change
     
     // UI state
     @Published var showCollectionPicker = false
@@ -42,11 +51,6 @@ class RecordingFormViewModel: ObservableObject {
     
     var isEditing: Bool {
         existingRecording != nil
-    }
-    
-    var isFormValid: Bool {
-        // Allow saving even during transcription - just validate title and note
-        return validateTitle() && validateNote()
     }
     
     var saveButtonText: String {
@@ -93,6 +97,8 @@ class RecordingFormViewModel: ObservableObject {
             }
         }
         // If no audioURL, leave title empty (will be "Untitled recording" if not filled)
+        // Update form validity after setting initial values
+        updateFormValidity()
     }
     
     func startTranscriptionIfNeeded() {
@@ -111,6 +117,31 @@ class RecordingFormViewModel: ObservableObject {
     
     func validateNote() -> Bool {
         return note.count <= AppConstants.Validation.maxNoteLength
+    }
+    
+    /// Update the published isFormValid property and show errors in real-time
+    private func updateFormValidity() {
+        // Update title error in real-time
+        let trimmedTitle = title.trimmed
+        if !trimmedTitle.isEmpty {
+            if let error = ValidationHelper.validateLength(trimmedTitle, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
+                titleError = error
+            } else {
+                titleError = nil
+            }
+        } else {
+            titleError = nil // Empty title is allowed
+        }
+        
+        // Update note error in real-time
+        if let error = ValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
+            noteError = error
+        } else {
+            noteError = nil
+        }
+        
+        // Update form validity
+        isFormValid = validateTitle() && validateNote()
     }
     
     @discardableResult

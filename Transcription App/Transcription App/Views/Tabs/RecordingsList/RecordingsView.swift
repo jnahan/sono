@@ -79,6 +79,18 @@ struct RecordingsView: View {
                 // Hide tab bar in selection mode, show it otherwise
                 showPlusButton.wrappedValue = !newValue
             }
+            .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notification.recordingSaved)) { notification in
+                // Handle notification when a recording is saved
+                guard let recordingId = notification.userInfo?["recordingId"] as? UUID else { return }
+                
+                // Find the recording in the list
+                if let recording = recordings.first(where: { $0.id == recordingId }),
+                   recording.status != .completed,
+                   selectedRecordingForProgress == nil {
+                    // Show progress sheet for this recording
+                    selectedRecordingForProgress = recording
+                }
+            }
             .onAppear {
                 viewModel.configure(modelContext: modelContext)
                 viewModel.updateFilteredRecordings(from: recordings)

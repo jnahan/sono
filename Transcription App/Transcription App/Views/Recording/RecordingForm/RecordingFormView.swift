@@ -132,6 +132,7 @@ struct RecordingFormView: View {
                     Text(viewModel.saveButtonText)
                 }
                 .buttonStyle(AppButtonStyle())
+                // Disable button when validation fails - errors show in real-time so user knows why
                 .disabled(!viewModel.isFormValid)
             }
         }

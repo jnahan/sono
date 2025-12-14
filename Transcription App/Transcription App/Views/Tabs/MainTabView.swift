@@ -141,9 +141,27 @@ struct MainTabView: View {
             appearance.backgroundColor = .clear
         }
         .fullScreenCover(isPresented: $showRecorderScreen) {
-            RecorderView(onDismiss: {
-                showRecorderScreen = false
-            })
+            RecorderView(
+                onDismiss: {
+                    showRecorderScreen = false
+                },
+                onSaveComplete: { recording in
+                    // Post notification AFTER form is dismissed
+                    // Use Task to ensure this is async and doesn't interfere with save
+                    Task { @MainActor in
+                        // Small delay to ensure form dismissal is complete
+                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds (longer since RecorderView also dismisses)
+                        // Only post notification if recording needs transcription
+                        if recording.status != .completed {
+                            NotificationCenter.default.post(
+                                name: AppConstants.Notification.recordingSaved,
+                                object: nil,
+                                userInfo: ["recordingId": recording.id]
+                            )
+                        }
+                    }
+                }
+            )
         }
         // handle file picker, video picker logic
         .sheet(isPresented: $showFilePicker) {
@@ -241,6 +259,21 @@ struct MainTabView: View {
                     // fullScreenCover will auto-dismiss when pendingAudioURL becomes nil
                     // Ensure we're on recordings tab
                     selectedTab = 0
+                    
+                    // Post notification AFTER form is dismissed and we're back on recordings tab
+                    // Use Task to ensure this is async and doesn't interfere with save
+                    Task { @MainActor in
+                        // Small delay to ensure form dismissal is complete
+                        try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+                        // Only post notification if recording needs transcription
+                        if recording.status != .completed {
+                            NotificationCenter.default.post(
+                                name: AppConstants.Notification.recordingSaved,
+                                object: nil,
+                                userInfo: ["recordingId": recording.id]
+                            )
+                        }
+                    }
                 }
             )
         }
