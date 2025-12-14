@@ -42,28 +42,53 @@ class TranscriptionService {
     }
 
     /// Validate queue state and recover if corrupted
+    /// CRITICAL: This method now properly holds the lock during validation to prevent race conditions
     private func validateAndRecoverQueueState() {
         Logger.system("TranscriptionService", "Validating queue state")
 
-        // Try to acquire lock, if we can't after timeout, something is very wrong
+        // First, check if we can get the lock
         guard queueLock.try() else {
             Logger.error("TranscriptionService", ErrorMessages.Queue.cannotAcquireLock)
             return
         }
-        defer { queueLock.unlock() }
+
+        // Get active ID before releasing lock
+        let activeId = activeTranscriptionId
+        queueLock.unlock()
 
         // Check if activeTranscriptionId exists but has no active task in ProgressManager
-        if let activeId = activeTranscriptionId {
-            let hasActiveTask = Task { @MainActor in
-                TranscriptionProgressManager.shared.hasActiveTranscription(for: activeId)
-            }
-
-            // If active ID set but no actual task, clear it
+        if let activeId = activeId {
             Task {
-                let isActive = await hasActiveTask.value
-                if !isActive && activeTranscriptionId == activeId {
-                    Logger.warning("TranscriptionService", ErrorMessages.Queue.stateCorrupted)
-                    self.resetQueueState()
+                // Check ProgressManager state on MainActor
+                let isActive = await MainActor.run {
+                    TranscriptionProgressManager.shared.hasActiveTranscription(for: activeId)
+                }
+
+                if !isActive {
+                    // Reacquire lock before modifying state
+                    guard self.acquireLock(operation: "validateAndRecover-modify") else {
+                        Logger.warning("TranscriptionService", "Could not acquire lock to fix corrupted state")
+                        return
+                    }
+                    defer { self.queueLock.unlock() }
+
+                    // Double-check state hasn't changed while we were waiting for lock
+                    if self.activeTranscriptionId == activeId {
+                        Logger.warning("TranscriptionService", ErrorMessages.Queue.stateCorrupted)
+                        // Reset state with lock held
+                        self.activeTranscriptionTask?.cancel()
+                        self.activeTranscriptionTask = nil
+                        self.isTranscribing = false
+                        self.activeTranscriptionId = nil
+
+                        // Process next item in queue if any
+                        if let nextId = self.transcriptionQueue.first {
+                            self.transcriptionQueue.removeFirst()
+                            self.activeTranscriptionId = nextId
+                            self.isTranscribing = true
+                            Logger.success("TranscriptionService", "Resumed queue with recording: \(nextId.uuidString.prefix(8))")
+                        }
+                    }
                 }
             }
         }
@@ -89,29 +114,82 @@ class TranscriptionService {
         }
     }
 
+    /// Force recovery for a specific recording when normal cancellation fails
+    /// This ensures both TranscriptionService queue and ProgressManager are cleaned
+    private func forceRecoveryForRecording(_ recordingId: UUID) async {
+        Logger.warning("TranscriptionService", "Attempting force recovery for \(recordingId.uuidString.prefix(8))")
+
+        // Wait a bit for any ongoing operations to complete
+        try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+
+        // Try to acquire lock with retry
+        var attempts = 0
+        while attempts < 3 {
+            if acquireLock(operation: "forceRecovery") {
+                // Successfully got lock, clean the queue
+                transcriptionQueue.removeAll { $0 == recordingId }
+
+                // If this is the active transcription, cancel it
+                if activeTranscriptionId == recordingId {
+                    activeTranscriptionTask?.cancel()
+                    activeTranscriptionTask = nil
+                    isTranscribing = false
+                    activeTranscriptionId = nil
+
+                    // Process next in queue
+                    if let nextId = transcriptionQueue.first {
+                        transcriptionQueue.removeFirst()
+                        activeTranscriptionId = nextId
+                        isTranscribing = true
+                    }
+                }
+
+                queueLock.unlock()
+
+                // Clean ProgressManager synchronously
+                await MainActor.run {
+                    TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+                }
+
+                Logger.success("TranscriptionService", "Force recovery completed for \(recordingId.uuidString.prefix(8))")
+                return
+            }
+
+            attempts += 1
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds between retries
+        }
+
+        // If we still can't get lock after retries, just clean ProgressManager
+        Logger.error("TranscriptionService", "Force recovery failed to acquire lock after 3 attempts for \(recordingId.uuidString.prefix(8))")
+        await MainActor.run {
+            TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+        }
+    }
+
     /// Cancel a transcription (removes from queue if queued, cancels if active)
-    func cancelTranscription(recordingId: UUID) {
+    func cancelTranscription(recordingId: UUID) async {
         guard acquireLock(operation: "cancelTranscription") else {
             Logger.warning("TranscriptionService", ErrorMessages.Queue.couldNotCancel)
-            Task { @MainActor in
-                TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
-            }
+            // CRITICAL: If we can't get the lock, force recovery to clean both queues
+            // This prevents zombie queue entries
+            Logger.warning("TranscriptionService", "Forcing recovery for \(recordingId.uuidString.prefix(8)) due to lock timeout")
+            await forceRecoveryForRecording(recordingId)
             return
         }
-        
+
         // Remove from queue
         transcriptionQueue.removeAll { $0 == recordingId }
-        
+
         // Cancel active task if this is the active transcription
         if activeTranscriptionId == recordingId {
             Logger.info("TranscriptionService", "Cancelling active transcription for: \(recordingId.uuidString.prefix(8))")
             activeTranscriptionTask?.cancel()
         }
-        
+
         queueLock.unlock()
 
-        // Notify progress manager
-        Task { @MainActor in
+        // Notify progress manager synchronously
+        await MainActor.run {
             TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
         }
     }

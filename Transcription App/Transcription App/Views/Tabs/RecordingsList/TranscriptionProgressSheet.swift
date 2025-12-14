@@ -322,21 +322,42 @@ struct TranscriptionProgressSheet: View {
                     verifyRecording.segments.append(recordingSegment)
                 }
                 
-                // Save to database - this must complete before we mark transcription as complete
-                do {
-                    try modelContext.save()
-                    // Complete transcription immediately after save
-                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                    Logger.success("TranscriptionProgressSheet", "Transcription completed successfully")
-                } catch {
-                    // Save error - keep as .inProgress so user can retry
+                // Save to database with retry logic - this must complete before we mark transcription as complete
+                // CRITICAL: If save fails, we retry instead of orphaning the transcription
+                var saveSucceeded = false
+                var lastError: Error?
+
+                for attempt in 1...3 {
+                    do {
+                        try modelContext.save()
+                        saveSucceeded = true
+                        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                        Logger.success("TranscriptionProgressSheet", "Transcription completed successfully on attempt \(attempt)")
+                        break
+                    } catch {
+                        lastError = error
+                        Logger.warning("TranscriptionProgressSheet", "Save attempt \(attempt) failed: \(error.localizedDescription)")
+
+                        if attempt < 3 {
+                            // Wait before retry (exponential backoff: 0.1s, 0.3s)
+                            try? await Task.sleep(nanoseconds: UInt64(0.1 * Double(attempt * attempt) * 1_000_000_000))
+                        }
+                    }
+                }
+
+                if !saveSucceeded {
+                    // All retries failed - keep as .inProgress with detailed error so user can retry manually
                     transcriptionProgress = 0.0
-                    transcriptionError = ErrorMessages.Transcription.interrupted
+                    transcriptionError = "Database save failed: \(lastError?.localizedDescription ?? "Unknown error")"
                     verifyRecording.status = .inProgress
                     verifyRecording.failureReason = transcriptionError
+
+                    // Try one final save of the error state
                     try? modelContext.save()
+
+                    // Still complete in progress manager to unblock queue
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                    Logger.warning("TranscriptionProgressSheet", "Save error handled gracefully: \(error.localizedDescription)")
+                    Logger.error("TranscriptionProgressSheet", "Failed to save transcription after 3 attempts: \(lastError?.localizedDescription ?? "Unknown")")
                 }
             } catch is CancellationError {
                 // User cancelled or app was backgrounded - save as .inProgress for resume

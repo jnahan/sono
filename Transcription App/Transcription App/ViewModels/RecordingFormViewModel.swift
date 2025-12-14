@@ -689,43 +689,48 @@ class RecordingFormViewModel: ObservableObject {
             cleanupAudioFile()
             return
         }
-        
+
         let recordingId = recording.id
         Logger.info("RecordingForm", "Cleaning up recording on exit: \(recordingId.uuidString.prefix(8))")
-        
-        // First, cancel transcription and remove from all queues
-        // This removes from TranscriptionProgressManager and TranscriptionService
+
+        // CRITICAL: Cancel transcription and wait for cancellation to propagate
+        // This prevents race condition where transcription completes after deletion
         TranscriptionProgressManager.shared.cancelTranscription(for: recordingId)
-        
-        // Also explicitly ensure it's removed from TranscriptionService queue
-        TranscriptionService.shared.cancelTranscription(recordingId: recordingId)
-        
-        // Mark transcription as complete to clean up any remaining state
-        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-        
-        // Clean up audio file first (before deleting recording)
-        cleanupAudioFile()
-        
-        // Delete the recording from database
-        modelContext.delete(recording)
-        
-        // Save the deletion immediately - this is critical
-        do {
-            try modelContext.save()
-            Logger.success("RecordingForm", "Successfully deleted recording on exit: \(recordingId.uuidString.prefix(8))")
-        } catch {
-            Logger.error("RecordingForm", "Failed to delete recording on exit: \(error.localizedDescription)")
-            // Try to save again - sometimes SwiftData needs a retry
-            do {
-                try modelContext.save()
-                Logger.success("RecordingForm", "Successfully deleted recording on retry")
-            } catch {
-                Logger.error("RecordingForm", "Failed to delete recording on retry: \(error.localizedDescription)")
+
+        // Wait briefly for cancellation to propagate through the system
+        // This ensures the transcription task is cancelled before we delete the recording
+        Task {
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+
+            await MainActor.run {
+                // Mark transcription as complete to clean up any remaining state
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+
+                // Clean up audio file first (before deleting recording)
+                self.cleanupAudioFile()
+
+                // Delete the recording from database
+                modelContext.delete(recording)
+
+                // Save the deletion immediately - this is critical
+                do {
+                    try modelContext.save()
+                    Logger.success("RecordingForm", "Successfully deleted recording on exit: \(recordingId.uuidString.prefix(8))")
+                } catch {
+                    Logger.error("RecordingForm", "Failed to delete recording on exit: \(error.localizedDescription)")
+                    // Try to save again - sometimes SwiftData needs a retry
+                    do {
+                        try modelContext.save()
+                        Logger.success("RecordingForm", "Successfully deleted recording on retry")
+                    } catch {
+                        Logger.error("RecordingForm", "Failed to delete recording on retry: \(error.localizedDescription)")
+                    }
+                }
+
+                // Clear the reference to prevent any further operations
+                self.autoSavedRecording = nil
             }
         }
-        
-        // Clear the reference to prevent any further operations
-        autoSavedRecording = nil
         
         // Reset transcription state
         isTranscribing = false

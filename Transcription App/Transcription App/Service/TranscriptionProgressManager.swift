@@ -56,10 +56,10 @@ class TranscriptionProgressManager: ObservableObject {
         activeTasks.removeValue(forKey: recordingId)
         activeTranscriptions.removeValue(forKey: recordingId)
         removeFromQueue(recordingId: recordingId)
-        
-        // Also notify TranscriptionService to remove from its queue
+
+        // Also notify TranscriptionService to remove from its queue - must be async
         Task {
-            TranscriptionService.shared.cancelTranscription(recordingId: recordingId)
+            await TranscriptionService.shared.cancelTranscription(recordingId: recordingId)
         }
     }
     
