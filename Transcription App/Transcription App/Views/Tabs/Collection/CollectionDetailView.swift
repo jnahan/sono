@@ -222,6 +222,7 @@ struct CollectionDetailView: View {
                 }
                 .frame(maxWidth: 280)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .padding(.bottom, 80)
             ),
             onRecordingTap: { recording in
                 selectedRecording = recording
