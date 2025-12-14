@@ -282,20 +282,20 @@ class TranscriptionService {
         }
         
         // Remove leading dashes, whitespace, and other artifacts
-        cleanedText = cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        cleanedText = cleanedText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         while cleanedText.hasPrefix("-") || cleanedText.hasPrefix("•") {
-            cleanedText = String(cleanedText.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
+            cleanedText = String(cleanedText.dropFirst()).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         }
         
         // Remove any remaining special characters that might be tokens
         cleanedText = cleanedText.replacingOccurrences(of: "^[<|].*?[|>]", with: "", options: .regularExpression)
         
-        return cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanedText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
     /// Validates if transcription text appears to be valid (not garbage output)
     private func isValidTranscription(_ text: String) -> Bool {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         
         // Empty or just dashes is invalid
         if trimmed.isEmpty || trimmed == "-" || trimmed == "—" {
@@ -345,25 +345,41 @@ class TranscriptionService {
     /// - Returns: TranscriptionResult with text, language, and segments
     /// - Throws: TranscriptionError if transcription fails
     func transcribe(audioURL: URL, recordingId: UUID, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
-        // Check if this recording is already being transcribed or queued (with timeout)
-        guard acquireLock(operation: "transcribe-check") else {
-            Logger.warning("TranscriptionService", "Lock timeout checking queue state")
+        // Atomically check and enqueue/start to prevent race conditions
+        guard acquireLock(operation: "transcribe-enqueue") else {
+            Logger.warning("TranscriptionService", "Lock timeout trying to enqueue")
             throw TranscriptionError.initializationFailed
         }
+        
+        // Check current state atomically
         let isActive = activeTranscriptionId == recordingId
         let isQueued = transcriptionQueue.contains(recordingId)
-        queueLock.unlock()
-
+        let shouldQueue = isTranscribing && !isActive
+        
         if isActive {
             // Already transcribing this recording - this shouldn't happen, but handle gracefully
+            queueLock.unlock()
             Logger.warning("TranscriptionService", "Recording \(recordingId.uuidString.prefix(8)) is already being transcribed")
             throw TranscriptionError.initializationFailed
         }
-
+        
         if isQueued {
-            // Already in queue - don't add again, just wait
-            Logger.info("TranscriptionService", "Recording \(recordingId.uuidString.prefix(8)) is already queued")
-            // Wait until it becomes active
+            // Already in queue - unlock and wait for our turn
+            queueLock.unlock()
+            Logger.info("TranscriptionService", "Recording \(recordingId.uuidString.prefix(8)) is already queued, waiting...")
+            
+            // Wait until it becomes active with dynamic timeout
+            let audioDuration: TimeInterval
+            do {
+                let asset = AVAsset(url: audioURL)
+                let duration = try await asset.load(.duration)
+                audioDuration = CMTimeGetSeconds(duration)
+            } catch {
+                audioDuration = 60 // Default fallback
+            }
+            let estimatedTranscriptionTime = audioDuration * 0.3
+            let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
+            
             var waitCount = 0
             while true {
                 guard acquireLock(operation: "transcribe-wait-queued") else {
@@ -378,40 +394,41 @@ class TranscriptionService {
                     break // Our turn!
                 }
 
-                // Check if cancelled
                 try Task.checkCancellation()
-
-                // Wait a bit before checking again
                 try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
 
-                // Recovery: if we've been waiting too long, validate queue state
                 waitCount += 1
-                if waitCount > AppConstants.Transcription.waitValidationInterval {
-                    Logger.warning("TranscriptionService", "Waited too long in queue, validating state")
+                if waitCount > maxWaitChecks {
+                    Logger.warning("TranscriptionService", "Waited too long in queue, validating state (waited \(waitCount * Int(AppConstants.Transcription.waitInterval))s)")
                     validateAndRecoverQueueState()
                     waitCount = 0
                 }
             }
-            // Continue to transcription logic below
-        }
-
-        // If transcription is active, add to queue and wait
-        guard acquireLock(operation: "transcribe-enqueue") else {
-            Logger.warning("TranscriptionService", "Lock timeout trying to enqueue")
-            throw TranscriptionError.initializationFailed
-        }
-        let shouldQueue = isTranscribing
-        if shouldQueue {
+            // Continue to transcription logic below - we're now active
+        } else if shouldQueue {
+            // Need to add to queue - do it atomically
             transcriptionQueue.append(recordingId)
             let queuePosition = transcriptionQueue.count
+            let totalInQueue = transcriptionQueue.count + 1 // +1 for active transcription
             queueLock.unlock()
 
-            // Notify progress manager about queue position (fire-and-forget, non-blocking)
+            // Notify progress manager - it will update shared max total
             Task { @MainActor in
-                TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition)
+                TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition, totalInQueue: totalInQueue)
             }
 
-            // Wait until this recording's turn
+            // Wait until this recording's turn with dynamic timeout
+            let audioDuration: TimeInterval
+            do {
+                let asset = AVAsset(url: audioURL)
+                let duration = try await asset.load(.duration)
+                audioDuration = CMTimeGetSeconds(duration)
+            } catch {
+                audioDuration = 60
+            }
+            let estimatedTranscriptionTime = audioDuration * 0.3
+            let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
+            
             var waitCount = 0
             while true {
                 guard acquireLock(operation: "transcribe-wait-active") else {
@@ -423,28 +440,30 @@ class TranscriptionService {
                 queueLock.unlock()
 
                 if isNowActive {
-                    break // Our turn!
+                    break
                 }
 
-                // Check if cancelled
                 try Task.checkCancellation()
-
-                // Wait a bit before checking again
                 try? await Task.sleep(nanoseconds: UInt64(AppConstants.Transcription.waitInterval * 1_000_000_000))
 
-                // Recovery: if we've been waiting too long, validate queue state
                 waitCount += 1
-                if waitCount > AppConstants.Transcription.waitValidationInterval {
-                    Logger.warning("TranscriptionService", "Waited too long for turn, validating state")
+                if waitCount > maxWaitChecks {
+                    Logger.warning("TranscriptionService", "Waited too long for turn, validating state (waited \(waitCount * Int(AppConstants.Transcription.waitInterval))s)")
                     validateAndRecoverQueueState()
                     waitCount = 0
                 }
             }
         } else {
-            // Can start immediately
+            // Can start immediately - atomically set state
             isTranscribing = true
             activeTranscriptionId = recordingId
+            let totalInQueue = transcriptionQueue.count + 1 // Current total
             queueLock.unlock()
+            
+            // Notify progress manager - it will update shared max total
+            Task { @MainActor in
+                TranscriptionProgressManager.shared.setActiveTranscription(recordingId: recordingId, totalInQueue: totalInQueue)
+            }
         }
         
         // Perform the actual transcription
@@ -463,11 +482,12 @@ class TranscriptionService {
                 if let nextId = transcriptionQueue.first {
                     activeTranscriptionId = nextId
                     isTranscribing = true
-                    // Update queue positions for remaining items (fire-and-forget, non-blocking)
-                    for (index, id) in transcriptionQueue.enumerated() {
-                        Task { @MainActor in
-                            TranscriptionProgressManager.shared.updateQueuePosition(recordingId: id, position: index + 1)
-                        }
+                    // Don't update positions - they should stay at their original values
+                    // Position stays the same, total stays at maxQueueTotal
+                    // Notify that next item is now active (total stays at max)
+                    Task { @MainActor in
+                        let currentMax = TranscriptionProgressManager.shared.maxQueueTotal
+                        TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId, totalInQueue: currentMax)
                     }
                 }
 
@@ -608,9 +628,12 @@ class TranscriptionService {
         let duration = try await asset.load(.duration)
         let totalSeconds = CMTimeGetSeconds(duration)
 
-        // Track start time for timeout
+        // Track start time for timeout and progress
         let startTime = Date()
         let timeoutSeconds: TimeInterval = max(totalSeconds * 5, 120) // 5x audio duration or 2 min minimum
+        
+        // Estimate transcription time
+        let estimatedTranscriptionTime = totalSeconds * 0.3
 
         let results = try await whisperKit.transcribe(
             audioPath: audioURL.path,
@@ -628,13 +651,9 @@ class TranscriptionService {
                     return false // Stop transcription
                 }
 
-                // Calculate progress based on actual audio duration
+                // Calculate progress based on elapsed time vs estimated completion time
                 if let callback = progressCallback {
-                    // Use the current audio position from timings
-                    let currentSeconds = progress.timings.firstTokenTime + progress.timings.decodingLoop
-
-                    // Calculate percentage (cap at 95% to leave room for post-processing)
-                    let progressPercentage = min(currentSeconds / totalSeconds, 0.95)
+                    let progressPercentage = min(max(elapsed / estimatedTranscriptionTime, 0.0), 0.99)
 
                     Task { @MainActor in
                         if !Task.isCancelled {
@@ -657,7 +676,7 @@ class TranscriptionService {
             }
 
             let cleanedText = cleanTimestampTokens(from: segment.text)
-            let trimmed = cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmed = cleanedText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
 
             guard !trimmed.isEmpty && isValidTranscription(trimmed) else {
                 return nil
@@ -671,7 +690,7 @@ class TranscriptionService {
         }
         
         let cleanedFullText = cleanTimestampTokens(from: firstResult.text)
-        let trimmedFullText = cleanedFullText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedFullText = cleanedFullText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         let isValidFullText = isValidTranscription(trimmedFullText)
 
         // If we have no valid segments but have valid full text, create a single segment
@@ -695,7 +714,8 @@ class TranscriptionService {
             Logger.info("TranscriptionService", "Transcription returned empty results - recording may have been silent or very short (this is normal)")
         }
 
-        // Report 100% completion
+        // Report 100% completion after all post-processing is done
+        // This ensures progress shows 100% only when transcription is truly complete
         if let callback = progressCallback {
             Task { @MainActor in
                 callback(1.0)

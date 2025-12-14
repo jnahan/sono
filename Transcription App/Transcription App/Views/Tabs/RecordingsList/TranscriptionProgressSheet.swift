@@ -313,10 +313,10 @@ struct TranscriptionProgressSheet: View {
                     verifyRecording.segments.append(recordingSegment)
                 }
                 
-                // Save to database
+                // Save to database - this must complete before we mark transcription as complete
                 do {
                     try modelContext.save()
-                    transcriptionProgress = 1.0
+                    // Complete transcription immediately after save
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     Logger.success("TranscriptionProgressSheet", "Transcription completed successfully")
                 } catch {

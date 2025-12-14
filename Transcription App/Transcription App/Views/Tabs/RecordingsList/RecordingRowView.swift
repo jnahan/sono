@@ -72,28 +72,27 @@ struct RecordingRowView: View {
                                 .font(.system(size: 14))
                                 .foregroundColor(.warmGray500)
                                 .italic()
-                        } else if let position = progressManager.getOverallPosition(for: recording.id),
-                                  let totalSize = progressManager.getTotalQueueSize() > 0 ? progressManager.getTotalQueueSize() : nil {
-                            // Show queue position
+                        } else if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
+                            // Show queue position with original total
                             HStack(spacing: 8) {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
                                     .scaleEffect(0.8)
 
-                                if position == 1 {
+                                if positionInfo.position == 1 {
                                     // Actively transcribing
                                     if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
-                                        Text("Transcribing \(Int(progress * 100))% (\(position)/\(totalSize))")
+                                        Text("Transcribing \(Int(progress * 100))% (\(positionInfo.position)/\(positionInfo.total))")
                                             .font(.system(size: 14))
                                             .foregroundColor(.warmGray500)
                                     } else {
-                                        Text("Transcribing (\(position)/\(totalSize))")
+                                        Text("Transcribing (\(positionInfo.position)/\(positionInfo.total))")
                                             .font(.system(size: 14))
                                             .foregroundColor(.warmGray500)
                                     }
                                 } else {
                                     // Waiting in queue
-                                    Text("Waiting to transcribe (\(position)/\(totalSize))")
+                                    Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                         .font(.system(size: 14))
                                         .foregroundColor(.warmGray500)
                                 }
