@@ -60,38 +60,22 @@ struct RecorderControl: View {
                     Spacer()
                     
                     // Bottom buttons - 64px from bottom including safe area
-                    HStack(spacing: 24) {
+                    HStack(spacing: 0) {
                     // Retry button - only visible when recording is stopped (not during recording)
-                    if !rec.isRecording && rec.fileURL != nil {
-                        Button {
-                            playTapHaptic()
-                            resetRecording()
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image("arrow-clockwise")
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 20, height: 20)
-                                Text("Retry")
-                                    .font(.system(size: 17, weight: .medium))
+                    Group {
+                        if !rec.isRecording && rec.fileURL != nil {
+                            Button {
+                                playTapHaptic()
+                                resetRecording()
+                            } label: {
+                                retryButtonPlaceholder
+                                    .foregroundColor(.warning)
                             }
-                            .foregroundColor(.warning)
                         }
-                    } else {
-                        // Invisible placeholder to maintain spacing
-                        HStack(spacing: 8) {
-                            Image("arrow-clockwise")
-                                .resizable()
-                                .renderingMode(.template)
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
-                            Text("Retry")
-                                .font(.system(size: 17, weight: .medium))
-                        }
-                        .foregroundColor(.clear)
                     }
-                    
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 24)
+
                     // Record/Stop/Done button - changes based on state
                     Button {
                         playTapHaptic()
@@ -107,39 +91,14 @@ struct RecorderControl: View {
                             Circle()
                                 .fill(Color.baseWhite)
                                 .frame(width: 72, height: 72)
-                            
-                            if rec.isRecording {
-                                // Recording: red square
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.pink)
-                                    .frame(width: 24, height: 24)
-                            } else if rec.fileURL == nil {
-                                // Not started: red circle
-                                Circle()
-                                    .fill(Color.pink)
-                                    .frame(width: 48, height: 48)
-                            } else {
-                                // Recorded: checkmark
-                                Image("check-bold")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 32, height: 32)
-                                    .foregroundColor(.baseBlack)
-                            }
+
+                            centerButtonContent
                         }
                     }
-                    
-                    // Invisible spacer for balance
-                    HStack(spacing: 8) {
-                        Image("arrow-clockwise")
-                            .resizable()
-                            .renderingMode(.template)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 20, height: 20)
-                        Text("Retry")
-                            .font(.system(size: 17, weight: .medium))
-                    }
-                    .foregroundColor(.clear)
+
+                    Spacer()
+                        .frame(maxWidth: .infinity)
+                        .padding(.leading, 24)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 64)
@@ -170,39 +129,13 @@ struct RecorderControl: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-            // App is about to go to background - stop recording to save audio
-            if rec.isRecording {
-                Logger.warning("RecorderControl", "App backgrounding - stopping recording")
-                stopRecording()
-                state.shouldAutoSave = true
-            }
+            handleAppWillBackground()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
-            // Backup: ensure recording is stopped when entering background
-            if rec.isRecording {
-                Logger.warning("RecorderControl", "App entered background - stopping recording")
-                stopRecording()
-                state.shouldAutoSave = true
-            }
+            handleAppDidEnterBackground()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            // App returning from background - finalize any interrupted recording
-            if let fileURL = rec.fileURL, !rec.isRecording {
-                Logger.info("RecorderControl", "App returning from background with stopped recording")
-
-                // Verify file exists and is properly saved
-                if FileManager.default.fileExists(atPath: fileURL.path) {
-                    Logger.success("RecorderControl", "Recording file confirmed at: \(fileURL.lastPathComponent)")
-
-                    // Ensure UI shows check icon by keeping fileURL and stopped state
-                    // The check icon appears when: !rec.isRecording && rec.fileURL != nil
-
-                    // Trigger auto-save to ensure recording is in database
-                    state.shouldAutoSave = true
-                } else {
-                    Logger.error("RecorderControl", "Recording file missing after background")
-                }
-            }
+            handleAppWillEnterForeground()
         }
         .alert("Microphone Access Needed", isPresented: $micDenied) {
             Button("OK", role: .cancel) {}
@@ -217,7 +150,43 @@ struct RecorderControl: View {
             Text("Please allow microphone access in Settings to record audio.")
         }
     }
-    
+
+    // MARK: - View Components
+    private var retryButtonPlaceholder: some View {
+        HStack(spacing: 8) {
+            Image("arrow-clockwise")
+                .resizable()
+                .renderingMode(.template)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 20, height: 20)
+            Text("Retry")
+                .font(.system(size: 17, weight: .medium))
+        }
+        .foregroundColor(.clear)
+    }
+
+    @ViewBuilder
+    private var centerButtonContent: some View {
+        if rec.isRecording {
+            // Recording: red square
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.pink)
+                .frame(width: 24, height: 24)
+        } else if rec.fileURL == nil {
+            // Not started: red circle
+            Circle()
+                .fill(Color.pink)
+                .frame(width: 48, height: 48)
+        } else {
+            // Recorded: checkmark
+            Image("check-bold")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 32, height: 32)
+                .foregroundColor(.baseBlack)
+        }
+    }
+
     // MARK: - Actions
     private func startRecording() {
         // Recording is completely independent of model loading
@@ -280,5 +249,44 @@ struct RecorderControl: View {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         #endif
+    }
+
+    // MARK: - Lifecycle Handlers
+    private func handleAppWillBackground() {
+        // App is about to go to background - stop recording to save audio
+        if rec.isRecording {
+            Logger.warning("RecorderControl", "App backgrounding - stopping recording")
+            stopRecording()
+            state.shouldAutoSave = true
+        }
+    }
+
+    private func handleAppDidEnterBackground() {
+        // Backup: ensure recording is stopped when entering background
+        if rec.isRecording {
+            Logger.warning("RecorderControl", "App entered background - stopping recording")
+            stopRecording()
+            state.shouldAutoSave = true
+        }
+    }
+
+    private func handleAppWillEnterForeground() {
+        // App returning from background - finalize any interrupted recording
+        if let fileURL = rec.fileURL, !rec.isRecording {
+            Logger.info("RecorderControl", "App returning from background with stopped recording")
+
+            // Verify file exists and is properly saved
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                Logger.success("RecorderControl", "Recording file confirmed at: \(fileURL.lastPathComponent)")
+
+                // Ensure UI shows check icon by keeping fileURL and stopped state
+                // The check icon appears when: !rec.isRecording && rec.fileURL != nil
+
+                // Trigger auto-save to ensure recording is in database
+                state.shouldAutoSave = true
+            } else {
+                Logger.error("RecorderControl", "Recording file missing after background")
+            }
+        }
     }
 }
