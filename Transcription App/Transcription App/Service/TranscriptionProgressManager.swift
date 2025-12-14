@@ -25,6 +25,11 @@ class TranscriptionProgressManager: ObservableObject {
             Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidProgressValue, progress, String(recordingId.uuidString.prefix(8))))
             return
         }
+        // Only log significant progress updates (every 10%) to avoid log spam
+        let currentProgress = activeTranscriptions[recordingId] ?? 0.0
+        if progress == 1.0 || progress == 0.0 || abs(progress - currentProgress) >= 0.1 {
+            Logger.info("ProgressManager", "Progress update for \(recordingId.uuidString.prefix(8)): \(Int(progress * 100))%")
+        }
         activeTranscriptions[recordingId] = progress
     }
 
@@ -69,6 +74,7 @@ class TranscriptionProgressManager: ObservableObject {
             Logger.warning("ProgressManager", ErrorMessages.format(ErrorMessages.Progress.invalidQueuePosition, position, String(recordingId.uuidString.prefix(8))))
             return
         }
+        Logger.info("ProgressManager", "Adding \(recordingId.uuidString.prefix(8)) to queue at position \(position)")
         queuedRecordings.insert(recordingId)
         queuePositions[recordingId] = position
     }
@@ -100,17 +106,20 @@ class TranscriptionProgressManager: ObservableObject {
         }
         
         // Update positions for all remaining queued items
+        // CRITICAL: Collect updates first, then apply to avoid modifying dictionary during iteration
         if wasActive {
             // Active item removed: all queued items move up by 1 (1→0, 2→1, 3→2, etc.)
-            for (id, position) in queuePositions {
-                queuePositions[id] = position - 1
+            let updates = queuePositions.map { (id: $0.key, newPosition: $0.value - 1) }
+            for update in updates {
+                queuePositions[update.id] = update.newPosition
             }
         } else if let removedPos = removedQueuePosition {
             // Queued item removed: items after it move up by 1
-            for (id, position) in queuePositions {
-                if position > removedPos {
-                    queuePositions[id] = position - 1
-                }
+            let updates = queuePositions.compactMap { (id, position) in
+                position > removedPos ? (id: id, newPosition: position - 1) : nil
+            }
+            for update in updates {
+                queuePositions[update.id] = update.newPosition
             }
         }
     }

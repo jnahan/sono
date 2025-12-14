@@ -419,12 +419,15 @@ class TranscriptionService {
             transcriptionQueue.append(recordingId)
             let queuePosition = transcriptionQueue.count
             let totalInQueue = transcriptionQueue.count + 1 // +1 for active transcription
-            queueLock.unlock()
 
-            // Notify progress manager
-            Task { @MainActor in
+            // CRITICAL: Notify progress manager synchronously BEFORE unlocking
+            // This ensures UI state updates atomically with queue state
+            await MainActor.run {
+                Logger.info("TranscriptionService", "Adding \(recordingId.uuidString.prefix(8)) to queue at position \(queuePosition)")
                 TranscriptionProgressManager.shared.addToQueue(recordingId: recordingId, position: queuePosition)
             }
+
+            queueLock.unlock()
 
             // Wait until this recording's turn with dynamic timeout
             let audioDuration: TimeInterval
@@ -467,65 +470,95 @@ class TranscriptionService {
             isTranscribing = true
             activeTranscriptionId = recordingId
             let totalInQueue = transcriptionQueue.count + 1 // Current total
-            queueLock.unlock()
-            
-            // Notify progress manager
-            Task { @MainActor in
+
+            // CRITICAL: Notify progress manager synchronously BEFORE unlocking
+            // This ensures UI state updates atomically with queue state
+            await MainActor.run {
+                Logger.info("TranscriptionService", "Starting transcription immediately for \(recordingId.uuidString.prefix(8))")
                 TranscriptionProgressManager.shared.setActiveTranscription(recordingId: recordingId)
             }
+
+            queueLock.unlock()
         }
         
         // Wrap transcription in Task so we can cancel it
         let transcriptionTask = Task {
             try await performTranscription(audioURL: audioURL, languageCode: languageCode, progressCallback: progressCallback)
         }
-        
+
         // Store task for cancellation
         if acquireLock(operation: "transcribe-store-task") {
             activeTranscriptionTask = transcriptionTask
             queueLock.unlock()
         }
-        
-        defer {
-            // Cleanup and process next in queue
-            if acquireLock(operation: "transcribe-cleanup") {
-                defer { queueLock.unlock() }
 
-                // Clear active task
-                if activeTranscriptionTask == transcriptionTask {
-                    activeTranscriptionTask = nil
-                }
-                
-                isTranscribing = false
-                activeTranscriptionId = nil
-                transcriptionQueue.removeAll { $0 == recordingId }
+        // Await transcription and handle cleanup
+        let result: TranscriptionResult
+        do {
+            result = try await transcriptionTask.value
+        } catch {
+            // Cleanup on error
+            await cleanupAndProcessNext(recordingId: recordingId, transcriptionTask: transcriptionTask)
+            throw error
+        }
 
-                // Notify progress manager to remove and update positions
-                Task { @MainActor in
-                    TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
-                }
+        // Cleanup on success
+        await cleanupAndProcessNext(recordingId: recordingId, transcriptionTask: transcriptionTask)
+        return result
+    }
 
-                // Process next in queue
-                if let nextId = transcriptionQueue.first {
-                    activeTranscriptionId = nextId
-                    isTranscribing = true
-                    Task { @MainActor in
-                        TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId)
-                    }
-                }
+    /// Cleanup after transcription and process next item in queue
+    /// CRITICAL: This method ensures atomic state updates to prevent race conditions
+    /// All state changes happen synchronously to maintain consistency between TranscriptionService and ProgressManager
+    private func cleanupAndProcessNext(recordingId: UUID, transcriptionTask: Task<TranscriptionResult, Error>) async {
+        guard acquireLock(operation: "transcribe-cleanup") else {
+            Logger.warning("TranscriptionService", "Lock timeout in cleanup, forcing recovery")
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            validateAndRecoverQueueState()
+            return
+        }
+
+        // Clear active task
+        if activeTranscriptionTask == transcriptionTask {
+            activeTranscriptionTask = nil
+        }
+
+        // Remove this recording from queue if it's still there
+        transcriptionQueue.removeAll { $0 == recordingId }
+
+        // Clear active state
+        isTranscribing = false
+        activeTranscriptionId = nil
+
+        // Get next item before unlocking (if any)
+        let nextId = transcriptionQueue.first
+
+        // If there's a next item, remove it from queue and mark as active
+        if nextId != nil {
+            transcriptionQueue.removeFirst()
+            activeTranscriptionId = nextId
+            isTranscribing = true
+        }
+
+        queueLock.unlock()
+
+        // CRITICAL: Update ProgressManager synchronously on MainActor
+        // This ensures the old recording's progress is cleared before the next one starts
+        // This fixes the "Transcribing 99%" bug
+        await MainActor.run {
+            Logger.info("TranscriptionService", "Removing \(recordingId.uuidString.prefix(8)) from queue after completion")
+            TranscriptionProgressManager.shared.removeFromQueue(recordingId: recordingId)
+
+            // If there's a next item, activate it immediately
+            if let nextId = nextId {
+                Logger.info("TranscriptionService", "Next item in queue (\(nextId.uuidString.prefix(8))) is now active")
+                TranscriptionProgressManager.shared.setActiveTranscription(recordingId: nextId)
             } else {
-                Logger.warning("TranscriptionService", "Lock timeout in cleanup, scheduling recovery")
-                Task {
-                    try? await Task.sleep(nanoseconds: 100_000_000)
-                    self.validateAndRecoverQueueState()
-                }
+                Logger.info("TranscriptionService", "Queue is now empty")
             }
         }
-        
-        // Await transcription (throws CancellationError if cancelled)
-        return try await transcriptionTask.value
     }
-    
+
     /// Internal method that performs the actual transcription
     private func performTranscription(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
         let settings = SettingsManager.shared
