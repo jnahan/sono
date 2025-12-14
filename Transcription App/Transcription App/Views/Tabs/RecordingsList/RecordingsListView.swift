@@ -63,6 +63,7 @@ struct RecordingsListView: View {
                                         viewModel.toggleSelection(for: recording.id)
                                     }
                                 )
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             
