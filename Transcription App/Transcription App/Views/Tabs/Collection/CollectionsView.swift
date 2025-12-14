@@ -116,6 +116,13 @@ struct CollectionsView: View {
                     isEditing: true,
                     onSave: {
                         editingCollection?.name = editCollectionName
+
+                        do {
+                            try modelContext.save()
+                        } catch {
+                            Logger.error("CollectionsView", "Failed to save collection rename: \(error.localizedDescription)")
+                        }
+
                         editingCollection = nil
                     },
                     existingCollections: collections,
@@ -140,18 +147,25 @@ struct CollectionsView: View {
                         onConfirm: {
                             // Delete all recordings in this collection
                             let recordingsInCollection = recordings.filter { $0.collection?.id == collection.id }
-                            
+
                             // Cancel any active transcriptions before deleting
                             for recording in recordingsInCollection {
                                 TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                             }
-                            
+
                             for recording in recordingsInCollection {
                                 modelContext.delete(recording)
                             }
 
                             // Now delete the collection
                             modelContext.delete(collection)
+
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                Logger.error("CollectionsView", "Failed to save collection deletion: \(error.localizedDescription)")
+                            }
+
                             deletingCollection = nil
                         }
                     )

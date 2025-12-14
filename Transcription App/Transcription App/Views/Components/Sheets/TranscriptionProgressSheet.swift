@@ -215,7 +215,12 @@ struct TranscriptionProgressSheet: View {
                 // Update recording to allow resume
                 recording.status = .inProgress
                 recording.failureReason = ErrorMessages.Transcription.interruptedLowMemory
-                try? modelContext.save()
+
+                do {
+                    try modelContext.save()
+                } catch {
+                    Logger.error("TranscriptionProgressSheet", "Failed to save low memory state: \(error.localizedDescription)")
+                }
 
                 // Update UI
                 transcriptionError = recording.failureReason
@@ -226,7 +231,12 @@ struct TranscriptionProgressSheet: View {
             if recording.status == .inProgress {
                 Logger.warning("TranscriptionProgressSheet", "App terminating - saving state")
                 recording.failureReason = ErrorMessages.Transcription.interrupted
-                try? modelContext.save()
+
+                do {
+                    try modelContext.save()
+                } catch {
+                    Logger.error("TranscriptionProgressSheet", "Failed to save termination state: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -353,7 +363,11 @@ struct TranscriptionProgressSheet: View {
                     verifyRecording.failureReason = transcriptionError
 
                     // Try one final save of the error state
-                    try? modelContext.save()
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        Logger.error("TranscriptionProgressSheet", "Failed to save database error state: \(error.localizedDescription)")
+                    }
 
                     // Still complete in progress manager to unblock queue
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
@@ -374,7 +388,12 @@ struct TranscriptionProgressSheet: View {
                    let cancelRecording = cancelRecordings.first {
                     cancelRecording.status = .inProgress
                     cancelRecording.failureReason = ErrorMessages.Transcription.interrupted
-                    try? modelContext.save()
+
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        Logger.error("TranscriptionProgressSheet", "Failed to save cancellation state: \(error.localizedDescription)")
+                    }
                 }
 
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
@@ -394,7 +413,13 @@ struct TranscriptionProgressSheet: View {
                     transcriptionError = ErrorMessages.Transcription.failed
                     errorRecording.status = .failed
                     errorRecording.failureReason = transcriptionError
-                    try? modelContext.save()
+
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        Logger.error("TranscriptionProgressSheet", "Failed to save error state: \(error.localizedDescription)")
+                    }
+
                     Logger.warning("TranscriptionProgressSheet", "Transcription failed: \(error.localizedDescription)")
                 } else {
                     Logger.info("TranscriptionProgressSheet", "Recording was deleted, skipping error state update")

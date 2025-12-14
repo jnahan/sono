@@ -8,7 +8,7 @@ import UIKit
 // MARK: - RecorderControl
 struct RecorderControl: View {
     @StateObject private var rec = Recorder()
-    @StateObject private var player = Player()
+    @StateObject private var player = AudioPlaybackService()
     @ObservedObject var state: RecorderControlState
     @State private var micDenied = false
     @State private var elapsedTime: TimeInterval = 0

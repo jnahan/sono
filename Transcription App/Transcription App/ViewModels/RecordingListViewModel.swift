@@ -283,7 +283,12 @@ class RecordingListViewModel: ObservableObject {
                    let errorRecording = errorRecordings.first {
                     errorRecording.status = .failed
                     errorRecording.failureReason = ErrorMessages.Transcription.failed
-                    try? modelContext.save()
+
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        Logger.error("RecordingListViewModel", "Failed to save transcription error state: \(error.localizedDescription)")
+                    }
                 }
 
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)

@@ -60,3 +60,4 @@ private struct IdeaItem: View {
         }
     }
 }
+

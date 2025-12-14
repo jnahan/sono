@@ -42,3 +42,4 @@ struct SummaryEmptyStateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+

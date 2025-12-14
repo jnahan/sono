@@ -16,7 +16,7 @@ class AudioPlayerManager: ObservableObject {
     @Published var currentRecording: Recording?
     
     /// The global audio player instance
-    @Published var player = Player()
+    @Published var player = AudioPlaybackService()
     
     /// The ID of the recording currently displayed in details view (used to hide preview bar)
     @Published var activeRecordingDetailsId: UUID? = nil

@@ -312,14 +312,23 @@ class TranscriptionService {
         let dataSize = numSamples * UInt32(numChannels) * UInt32(bitsPerSample / 8)
         
         var fileData = Data()
-        
+
+        // Create WAV header safely
+        guard let riffData = "RIFF".data(using: .ascii),
+              let waveData = "WAVE".data(using: .ascii),
+              let fmtData = "fmt ".data(using: .ascii),
+              let dataHeader = "data".data(using: .ascii) else {
+            Logger.error("TranscriptionService", "Failed to encode WAV header strings")
+            return tempURL
+        }
+
         // RIFF header
-        fileData.append("RIFF".data(using: .ascii)!)
+        fileData.append(riffData)
         fileData.append(contentsOf: withUnsafeBytes(of: UInt32(36 + dataSize).littleEndian) { Data($0) })
-        fileData.append("WAVE".data(using: .ascii)!)
-        
+        fileData.append(waveData)
+
         // fmt chunk
-        fileData.append("fmt ".data(using: .ascii)!)
+        fileData.append(fmtData)
         fileData.append(contentsOf: withUnsafeBytes(of: UInt32(16).littleEndian) { Data($0) }) // fmt size
         fileData.append(contentsOf: withUnsafeBytes(of: UInt16(1).littleEndian) { Data($0) }) // PCM format
         fileData.append(contentsOf: withUnsafeBytes(of: numChannels.littleEndian) { Data($0) })
@@ -327,9 +336,9 @@ class TranscriptionService {
         fileData.append(contentsOf: withUnsafeBytes(of: UInt32(UInt32(sampleRate) * UInt32(numChannels) * UInt32(bitsPerSample / 8)).littleEndian) { Data($0) }) // byte rate
         fileData.append(contentsOf: withUnsafeBytes(of: UInt16(numChannels * bitsPerSample / 8).littleEndian) { Data($0) }) // block align
         fileData.append(contentsOf: withUnsafeBytes(of: bitsPerSample.littleEndian) { Data($0) })
-        
+
         // data chunk
-        fileData.append("data".data(using: .ascii)!)
+        fileData.append(dataHeader)
         fileData.append(contentsOf: withUnsafeBytes(of: UInt32(dataSize).littleEndian) { Data($0) })
         fileData.append(Data(count: Int(dataSize))) // Silent audio data (zeros)
         

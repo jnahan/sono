@@ -65,7 +65,6 @@
 		5D962F222ECE87ED00049626 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F212ECE87ED00049626 /* Recorder.swift */; };
 		5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */; };
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
-		5D962F282ECE935500049626 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F272ECE935500049626 /* Player.swift */; };
 		5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2A2ECEBAC000049626 /* SettingsView.swift */; };
 		5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */; };
 		5D962F2E2ECEBBF900049626 /* TranscriptionProgressSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */; };
@@ -151,7 +150,6 @@
 		5D962F212ECE87ED00049626 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		5D962F232ECE8DD400049626 /* RecorderVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderVisualizer.swift; sourceTree = "<group>"; };
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
-		5D962F272ECE935500049626 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		5D962F2A2ECEBAC000049626 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsView.swift; sourceTree = "<group>"; };
 		5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionProgressSheet.swift; sourceTree = "<group>"; };
@@ -287,7 +285,6 @@
 				5D8C14D02EEE5A4B00BFFEFF /* AudioExtractor.swift */,
 				F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */,
 				5D1300042EE3BA3000F1FAE2 /* AudioPlayerManager.swift */,
-				5D962F272ECE935500049626 /* Player.swift */,
 				5D962F212ECE87ED00049626 /* Recorder.swift */,
 			);
 			path = Audio;
@@ -693,7 +690,6 @@
 				5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */,
 				5DA3BD362EEF476D005512C4 /* LLMHelper.swift in Sources */,
 				5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */,
-				5D962F282ECE935500049626 /* Player.swift in Sources */,
 				5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */,
 				5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */,
 				5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */,
