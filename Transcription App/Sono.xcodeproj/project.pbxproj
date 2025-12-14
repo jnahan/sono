@@ -8,10 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */; };
-		5D3045433635A2EDFD1090003E775 /* View+ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */; };
-		5D3731384131A2EDFD1090003E775 /* View+ConditionalModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */; };
-		5D3935303133A2EDFD1090003E775 /* SummaryEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */; };
-		5D3044333735A2EDFD1090003E775 /* AskSonoEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3044333735B2EDFD1090003E775 /* AskSonoEmptyStateView.swift */; };
 		5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10B2EDFD5670003E775 /* Input.swift */; };
 		5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED10D2EE004090003E775 /* SelectionListView.swift */; };
 		5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */; };
@@ -41,6 +37,10 @@
 		5D15706E2EDA0F460094E13E /* DragHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D15706F2EDA0F460094E13E /* DragHandle.swift */; };
 		5D214A372ED8238B0069565D /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D214A362ED8238B0069565D /* Collection.swift */; };
 		5D214A3A2ED8263B0069565D /* RecordingSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D214A392ED8263B0069565D /* RecordingSegment.swift */; };
+		5D3044333735A2EDFD1090003E775 /* AskSonoEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3044333735B2EDFD1090003E775 /* AskSonoEmptyStateView.swift */; };
+		5D3045433635A2EDFD1090003E775 /* View+ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */; };
+		5D3731384131A2EDFD1090003E775 /* View+ConditionalModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */; };
+		5D3935303133A2EDFD1090003E775 /* SummaryEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */; };
 		5D4622D42ED83570009A454D /* RecordingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4622D32ED83570009A454D /* RecordingFormView.swift */; };
 		5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */; };
 		5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */; };
@@ -71,6 +71,7 @@
 		5D962F2E2ECEBBF900049626 /* TranscriptionProgressSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */; };
 		5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */; };
 		5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */; };
+		5DA3BD362EEF476D005512C4 /* LLMHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA3BD352EEF476D005512C4 /* LLMHelper.swift */; };
 		5DB579022ED84343002DC84D /* RecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579012ED84343002DC84D /* RecorderView.swift */; };
 		5DB579042ED84651002DC84D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579032ED84651002DC84D /* MainTabView.swift */; };
 		5DB579062ED846A6002DC84D /* CollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579052ED846A6002DC84D /* CollectionsView.swift */; };
@@ -80,7 +81,6 @@
 		5DB5791F2ED8CAFE002DC84D /* PhotoVideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB5791E2ED8CAFE002DC84D /* PhotoVideoPicker.swift */; };
 		5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579242ED8D143002DC84D /* TranscriptionService.swift */; };
 		5DB579272ED8D5D1002DC84D /* RecordingListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */; };
-		5DD378D52EE9123D002BD5B5 /* TranscriptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
 		5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */; };
 		5DDA7CCC2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCB2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift */; };
@@ -95,10 +95,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ButtonStyles.swift"; sourceTree = "<group>"; };
-		5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ConditionalModifiers.swift"; sourceTree = "<group>"; };
-		5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryEmptyStateView.swift; sourceTree = "<group>"; };
-		5D3044333735B2EDFD1090003E775 /* AskSonoEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskSonoEmptyStateView.swift; sourceTree = "<group>"; };
 		5D0ED10B2EDFD5670003E775 /* Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Input.swift; sourceTree = "<group>"; };
 		5D0ED10D2EE004090003E775 /* SelectionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionListView.swift; sourceTree = "<group>"; };
 		5D0ED1132EE0040A0003E775 /* CustomSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwitch.swift; sourceTree = "<group>"; };
@@ -127,6 +123,10 @@
 		5D15706F2EDA0F460094E13E /* DragHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragHandle.swift; sourceTree = "<group>"; };
 		5D214A362ED8238B0069565D /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		5D214A392ED8263B0069565D /* RecordingSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegment.swift; sourceTree = "<group>"; };
+		5D3044333735B2EDFD1090003E775 /* AskSonoEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskSonoEmptyStateView.swift; sourceTree = "<group>"; };
+		5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ButtonStyles.swift"; sourceTree = "<group>"; };
+		5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ConditionalModifiers.swift"; sourceTree = "<group>"; };
+		5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryEmptyStateView.swift; sourceTree = "<group>"; };
 		5D4622D32ED83570009A454D /* RecordingFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormView.swift; sourceTree = "<group>"; };
 		5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-Italic-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
@@ -157,6 +157,7 @@
 		5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionProgressSheet.swift; sourceTree = "<group>"; };
 		5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSlider.swift; sourceTree = "<group>"; };
 		5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		5DA3BD352EEF476D005512C4 /* LLMHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMHelper.swift; sourceTree = "<group>"; };
 		5DB579012ED84343002DC84D /* RecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderView.swift; sourceTree = "<group>"; };
 		5DB579032ED84651002DC84D /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		5DB579052ED846A6002DC84D /* CollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsView.swift; sourceTree = "<group>"; };
@@ -167,7 +168,6 @@
 		5DB579242ED8D143002DC84D /* TranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionService.swift; sourceTree = "<group>"; };
 		5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListViewModel.swift; sourceTree = "<group>"; };
 		5DB5792A2ED8ECE5002DC84D /* Sono-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Sono-Info.plist"; sourceTree = SOURCE_ROOT; };
-		5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionHelper.swift; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+App.swift"; sourceTree = "<group>"; };
 		5DDA7CCB2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsEmptyStateView.swift; sourceTree = "<group>"; };
@@ -296,7 +296,6 @@
 		5D7037802ECD91B400D061E5 /* Transcription */ = {
 			isa = PBXGroup;
 			children = (
-				5DD378D42EE9123D002BD5B5 /* TranscriptionHelper.swift */,
 				B0819A2BB7B0E2A8C7C0BA8A /* TranscriptionProgressManager.swift */,
 				5DB579242ED8D143002DC84D /* TranscriptionService.swift */,
 			);
@@ -307,6 +306,7 @@
 			isa = PBXGroup;
 			children = (
 				5D12FFF72EE3500100F1FAE2 /* LLMService.swift */,
+				5DA3BD352EEF476D005512C4 /* LLMHelper.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -401,7 +401,7 @@
 			isa = PBXGroup;
 			children = (
 				5DDA7CCE2EDD858E00AFB6C0 /* Collection */,
-				5DDA7CCD2EDD858100AFB6C0 /* RecordingsList */,
+				5DDA7CCD2EDD858100AFB6C0 /* Recordings */,
 				5DB579032ED84651002DC84D /* MainTabView.swift */,
 			);
 			path = Tabs;
@@ -664,7 +664,6 @@
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */,
 				5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */,
-				5DD378D52EE9123D002BD5B5 /* TranscriptionHelper.swift in Sources */,
 				5D7925AC2ECD8E4A002889A6 /* App.swift in Sources */,
 				5DDA7CD02EDD864C00AFB6C0 /* CollectionDetailView.swift in Sources */,
 				5D0ED11F2EE1318F0003E775 /* ValidationHelper.swift in Sources */,
@@ -692,6 +691,7 @@
 				5D1300052EE3BA3000F1FAE2 /* AudioPlayerManager.swift in Sources */,
 				5D0ED10E2EE004090003E775 /* SelectionListView.swift in Sources */,
 				5D0ED1142EE0040A0003E775 /* CustomSwitch.swift in Sources */,
+				5DA3BD362EEF476D005512C4 /* LLMHelper.swift in Sources */,
 				5D0ED1172EE0040C0003E775 /* ErrorToastView.swift in Sources */,
 				5D962F282ECE935500049626 /* Player.swift in Sources */,
 				5D0ED10C2EDFD5670003E775 /* Input.swift in Sources */,

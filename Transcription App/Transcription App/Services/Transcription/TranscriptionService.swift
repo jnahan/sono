@@ -42,52 +42,53 @@ class TranscriptionService {
     }
 
     /// Validate queue state and recover if corrupted
-    /// CRITICAL: This method now properly holds the lock during validation to prevent race conditions
+    /// Validates and recovers queue state if corrupted
+    /// CRITICAL: Properly handles lock acquisition/release to prevent race conditions
     private func validateAndRecoverQueueState() {
         Logger.system("TranscriptionService", "Validating queue state")
 
-        // First, check if we can get the lock
         guard queueLock.try() else {
             Logger.error("TranscriptionService", ErrorMessages.Queue.cannotAcquireLock)
             return
         }
 
-        // Get active ID before releasing lock
+        // Capture state atomically while holding lock
         let activeId = activeTranscriptionId
         queueLock.unlock()
 
-        // Check if activeTranscriptionId exists but has no active task in ProgressManager
         if let activeId = activeId {
             Task {
-                // Check ProgressManager state on MainActor
                 let isActive = await MainActor.run {
                     TranscriptionProgressManager.shared.hasActiveTranscription(for: activeId)
                 }
 
                 if !isActive {
-                    // Reacquire lock before modifying state
                     guard self.acquireLock(operation: "validateAndRecover-modify") else {
                         Logger.warning("TranscriptionService", "Could not acquire lock to fix corrupted state")
                         return
                     }
                     defer { self.queueLock.unlock() }
 
-                    // Double-check state hasn't changed while we were waiting for lock
-                    if self.activeTranscriptionId == activeId {
-                        Logger.warning("TranscriptionService", ErrorMessages.Queue.stateCorrupted)
-                        // Reset state with lock held
-                        self.activeTranscriptionTask?.cancel()
-                        self.activeTranscriptionTask = nil
-                        self.isTranscribing = false
-                        self.activeTranscriptionId = nil
+                    // CRITICAL: Double-check state hasn't changed while waiting for lock
+                    guard self.activeTranscriptionId == activeId else {
+                        Logger.info("TranscriptionService", "Queue state changed during validation - already recovered")
+                        return
+                    }
 
-                        // Process next item in queue if any
-                        if let nextId = self.transcriptionQueue.first {
-                            self.transcriptionQueue.removeFirst()
-                            self.activeTranscriptionId = nextId
-                            self.isTranscribing = true
-                            Logger.success("TranscriptionService", "Resumed queue with recording: \(nextId.uuidString.prefix(8))")
-                        }
+                    Logger.warning("TranscriptionService", ErrorMessages.Queue.stateCorrupted)
+
+                    // Reset state
+                    self.activeTranscriptionTask?.cancel()
+                    self.activeTranscriptionTask = nil
+                    self.isTranscribing = false
+                    self.activeTranscriptionId = nil
+
+                    // Process next in queue
+                    if let nextId = self.transcriptionQueue.first {
+                        self.transcriptionQueue.removeFirst()
+                        self.activeTranscriptionId = nextId
+                        self.isTranscribing = true
+                        Logger.success("TranscriptionService", "Resumed queue with recording: \(nextId.uuidString.prefix(8))")
                     }
                 }
             }
@@ -184,6 +185,10 @@ class TranscriptionService {
         if activeTranscriptionId == recordingId {
             Logger.info("TranscriptionService", "Cancelling active transcription for: \(recordingId.uuidString.prefix(8))")
             activeTranscriptionTask?.cancel()
+
+            // Brief wait for cancellation to propagate to WhisperKit
+            // This ensures clean shutdown and prevents undefined state
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
         }
 
         queueLock.unlock()
@@ -196,10 +201,32 @@ class TranscriptionService {
     
     // MARK: - Initialization
     private init() {
+        // Clean up any leftover warm-up files from previous sessions
+        cleanupOldWarmupFiles()
+
         // Preload the default model in the background
         Logger.info("TranscriptionService", "Initializing and starting model preload")
         preloadTask = Task {
             await preloadModel()
+        }
+    }
+
+    /// Cleans up old warm-up audio files from previous sessions
+    private func cleanupOldWarmupFiles() {
+        let tempDir = FileManager.default.temporaryDirectory
+        do {
+            let files = try FileManager.default.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+            let warmupFiles = files.filter { $0.lastPathComponent.hasPrefix("warmup_") }
+
+            for file in warmupFiles {
+                try? FileManager.default.removeItem(at: file)
+            }
+
+            if !warmupFiles.isEmpty {
+                Logger.info("TranscriptionService", "Cleaned up \(warmupFiles.count) old warm-up file(s)")
+            }
+        } catch {
+            Logger.warning("TranscriptionService", "Failed to clean up old warm-up files: \(error.localizedDescription)")
         }
     }
     
@@ -250,39 +277,13 @@ class TranscriptionService {
             // We need to "warm up" the model by doing a minimal transcription to force full initialization.
             // This ensures the model is truly ready and won't cause delays during real transcription.
             if let whisperKit = whisperKit {
-                Logger.info("TranscriptionService", "Warming up model to ensure full initialization...")
-                
-                // Create a minimal silent audio file (1 second of silence) to warm up the model
-                // This forces WhisperKit to fully load the model into memory and Metal buffers
-                let tempAudioURL = createMinimalSilentAudio()
-                defer {
-                    // Clean up temp file
-                    try? FileManager.default.removeItem(at: tempAudioURL)
-                }
-                
-                // SAFETY: Warm-up transcription is safe because:
-                // 1. Uses isolated temp file (UUID-based, cleaned up with defer)
-                // 2. Minimal audio (0.5s silence, ~16KB) - no memory concerns
-                // 3. Sequential execution (no concurrent transcriptions)
-                // 4. Error handling - failures don't break the service
-                // 5. WhisperKit handles sequential transcriptions on same instance safely
-                // 6. Warm-up happens before any real transcriptions (during app init)
-                do {
-                    let startTime = Date()
-                    _ = try await whisperKit.transcribe(
-                        audioPath: tempAudioURL.path,
-                        decodeOptions: DecodingOptions(wordTimestamps: false)
-                    )
-                    let warmupDuration = Date().timeIntervalSince(startTime)
-                    Logger.info("TranscriptionService", "Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
-                    isModelReady = true
+                let warmupSuccess = await warmUpModel(whisperKit)
+                isModelReady = true
+
+                if warmupSuccess {
                     Logger.success("TranscriptionService", "Model '\(modelName)' preloaded and warmed up successfully")
-                } catch {
-                    // If warm-up fails, still mark as ready since the instance exists
-                    // The model will be fully initialized on first real transcription
-                    // This is safe - the warm-up is an optimization, not a requirement
-                    Logger.warning("TranscriptionService", "Warm-up failed but model instance exists: \(error.localizedDescription). Will mark as ready anyway - model will initialize on first real use")
-                    isModelReady = true // Mark as ready anyway to avoid reloading
+                } else {
+                    Logger.warning("TranscriptionService", "Model preloaded but warm-up failed - will initialize on first use")
                 }
             } else {
                 Logger.error("TranscriptionService", "WhisperKit instance is nil after creation")
@@ -304,7 +305,7 @@ class TranscriptionService {
         // Create a minimal WAV file with 0.5 seconds of silence (16kHz, 16-bit, mono)
         // This is the minimum needed to trigger WhisperKit's model initialization
         let sampleRate: UInt32 = 16000
-        let duration: Double = 0.5 // 0.5 seconds (shorter = faster warm-up)
+        let duration = AppConstants.Transcription.warmupAudioDuration // Shorter = faster warm-up
         let numChannels: UInt16 = 1
         let bitsPerSample: UInt16 = 16
         let numSamples = UInt32(Double(sampleRate) * duration)
@@ -341,8 +342,35 @@ class TranscriptionService {
         
         return tempURL
     }
-    
-    
+
+    /// Warms up WhisperKit model by performing minimal silent audio transcription
+    /// This forces full model initialization into Metal buffers
+    /// - Parameter whisperKit: The WhisperKit instance to warm up
+    /// - Returns: true if warm-up succeeded, false if failed (non-fatal)
+    private func warmUpModel(_ whisperKit: WhisperKit) async -> Bool {
+        Logger.info("TranscriptionService", "Warming up model to ensure full initialization...")
+
+        let tempAudioURL = createMinimalSilentAudio()
+        defer {
+            try? FileManager.default.removeItem(at: tempAudioURL)
+        }
+
+        do {
+            let startTime = Date()
+            _ = try await whisperKit.transcribe(
+                audioPath: tempAudioURL.path,
+                decodeOptions: DecodingOptions(wordTimestamps: false)
+            )
+            let warmupDuration = Date().timeIntervalSince(startTime)
+            Logger.info("TranscriptionService", "Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
+            return true
+        } catch {
+            Logger.warning("TranscriptionService", "Warm-up failed: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+
     // MARK: - Private Helpers
     
     /// Cleans WhisperKit timestamp tokens from text (e.g., <|9.84|>, <|en|>, <|transcribe|>)
@@ -421,7 +449,54 @@ class TranscriptionService {
         
         return true
     }
-    
+
+    /// Waits for a recording to become the active transcription
+    /// Uses dynamic timeout based on audio duration
+    /// - Parameters:
+    ///   - recordingId: The recording ID to wait for
+    ///   - audioURL: URL to audio file (for duration calculation)
+    /// - Throws: TranscriptionError if timeout or lock failure
+    private func waitForActiveTranscription(recordingId: UUID, audioURL: URL) async throws {
+        // Calculate dynamic timeout based on audio duration
+        let audioDuration: TimeInterval
+        do {
+            let asset = AVAsset(url: audioURL)
+            let duration = try await asset.load(.duration)
+            audioDuration = CMTimeGetSeconds(duration)
+        } catch {
+            audioDuration = 60 // Default fallback
+        }
+
+        let estimatedTranscriptionTime = audioDuration * 0.3
+        let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
+
+        var waitCount = 0
+        while true {
+            guard acquireLock(operation: "transcribe-wait") else {
+                Logger.warning("TranscriptionService", "Lock timeout while waiting for turn")
+                throw TranscriptionError.initializationFailed
+            }
+
+            let currentActive = activeTranscriptionId
+            let isNowActive = currentActive == recordingId
+            queueLock.unlock()
+
+            if isNowActive {
+                break // Our turn!
+            }
+
+            try Task.checkCancellation()
+            try? await Task.sleep(nanoseconds: UInt64(AppConstants.Transcription.waitInterval * 1_000_000_000))
+
+            waitCount += 1
+            if waitCount > maxWaitChecks {
+                Logger.warning("TranscriptionService", "Waited too long, validating state")
+                validateAndRecoverQueueState()
+                waitCount = 0
+            }
+        }
+    }
+
     /// Transcribes an audio file and returns the result
     /// Uses sequential queue to ensure only one transcription runs at a time (mobile-safe)
     /// - Parameters:
@@ -454,43 +529,8 @@ class TranscriptionService {
             // Already in queue - unlock and wait for our turn
             queueLock.unlock()
             Logger.info("TranscriptionService", "Recording \(recordingId.uuidString.prefix(8)) is already queued, waiting...")
-            
-            // Wait until it becomes active with dynamic timeout
-            let audioDuration: TimeInterval
-            do {
-                let asset = AVAsset(url: audioURL)
-                let duration = try await asset.load(.duration)
-                audioDuration = CMTimeGetSeconds(duration)
-            } catch {
-                audioDuration = 60 // Default fallback
-            }
-            let estimatedTranscriptionTime = audioDuration * 0.3
-            let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
-            
-            var waitCount = 0
-            while true {
-                guard acquireLock(operation: "transcribe-wait-queued") else {
-                    Logger.warning("TranscriptionService", "Lock timeout while waiting in queue")
-                    throw TranscriptionError.initializationFailed
-                }
-                let currentActive = activeTranscriptionId
-                let isNowActive = currentActive == recordingId
-                queueLock.unlock()
 
-                if isNowActive {
-                    break // Our turn!
-                }
-
-                try Task.checkCancellation()
-                try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
-
-                waitCount += 1
-                if waitCount > maxWaitChecks {
-                    Logger.warning("TranscriptionService", "Waited too long in queue, validating state (waited \(waitCount * Int(AppConstants.Transcription.waitInterval))s)")
-                    validateAndRecoverQueueState()
-                    waitCount = 0
-                }
-            }
+            try await waitForActiveTranscription(recordingId: recordingId, audioURL: audioURL)
             // Continue to transcription logic below - we're now active
         } else if shouldQueue {
             // Need to add to queue - do it atomically
@@ -507,42 +547,7 @@ class TranscriptionService {
 
             queueLock.unlock()
 
-            // Wait until this recording's turn with dynamic timeout
-            let audioDuration: TimeInterval
-            do {
-                let asset = AVAsset(url: audioURL)
-                let duration = try await asset.load(.duration)
-                audioDuration = CMTimeGetSeconds(duration)
-            } catch {
-                audioDuration = 60
-            }
-            let estimatedTranscriptionTime = audioDuration * 0.3
-            let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
-            
-            var waitCount = 0
-            while true {
-                guard acquireLock(operation: "transcribe-wait-active") else {
-                    Logger.warning("TranscriptionService", "Lock timeout while waiting for turn")
-                    throw TranscriptionError.initializationFailed
-                }
-                let currentActive = activeTranscriptionId
-                let isNowActive = currentActive == recordingId
-                queueLock.unlock()
-
-                if isNowActive {
-                    break
-                }
-
-                try Task.checkCancellation()
-                try? await Task.sleep(nanoseconds: UInt64(AppConstants.Transcription.waitInterval * 1_000_000_000))
-
-                waitCount += 1
-                if waitCount > maxWaitChecks {
-                    Logger.warning("TranscriptionService", "Waited too long for turn, validating state (waited \(waitCount * Int(AppConstants.Transcription.waitInterval))s)")
-                    validateAndRecoverQueueState()
-                    waitCount = 0
-                }
-            }
+            try await waitForActiveTranscription(recordingId: recordingId, audioURL: audioURL)
         } else {
             // Can start immediately - atomically set state
             isTranscribing = true
@@ -673,26 +678,15 @@ class TranscriptionService {
 
                 do {
                     whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
-                    
+
                     if let whisperKit = whisperKit {
-                        Logger.info("TranscriptionService", "Warming up model for first use...")
-                        let tempAudioURL = createMinimalSilentAudio()
-                        defer {
-                            try? FileManager.default.removeItem(at: tempAudioURL)
-                        }
-                        do {
-                            let startTime = Date()
-                            _ = try await whisperKit.transcribe(
-                                audioPath: tempAudioURL.path,
-                                decodeOptions: DecodingOptions(wordTimestamps: false)
-                            )
-                            let warmupDuration = Date().timeIntervalSince(startTime)
-                            Logger.info("TranscriptionService", "Warm-up transcription completed in \(String(format: "%.2f", warmupDuration))s")
-                            isModelReady = true
+                        let warmupSuccess = await warmUpModel(whisperKit)
+                        isModelReady = true
+
+                        if warmupSuccess {
                             Logger.success("TranscriptionService", "Model warmed up successfully")
-                        } catch {
-                            Logger.warning("TranscriptionService", "Warm-up failed: \(error.localizedDescription), but continuing...")
-                            isModelReady = true
+                        } else {
+                            Logger.warning("TranscriptionService", "Warm-up failed, continuing anyway...")
                         }
                     } else {
                         isModelReady = false
@@ -706,13 +700,22 @@ class TranscriptionService {
                     throw TranscriptionError.initializationFailed
                 }
             } else if !isModelReady {
-                // Model exists but not ready - wait for warm-up
-                while !isModelReady && whisperKit != nil {
+                // Model exists but not ready - wait for warm-up with timeout
+                let maxWaitTime = AppConstants.Transcription.modelLoadTimeout
+                let waitInterval = AppConstants.Transcription.modelWarmupWaitInterval
+                let maxChecks = Int(maxWaitTime * 1_000_000_000 / Double(waitInterval))
+                var checkCount = 0
+
+                while !isModelReady && whisperKit != nil && checkCount < maxChecks {
                     try Task.checkCancellation()
-                    try? await Task.sleep(nanoseconds: AppConstants.Transcription.modelWarmupWaitInterval)
+                    try? await Task.sleep(nanoseconds: waitInterval)
+                    checkCount += 1
                 }
+
                 try Task.checkCancellation()
+
                 if !isModelReady {
+                    Logger.warning("TranscriptionService", "Timeout waiting for model warm-up, marking ready anyway")
                     isModelReady = true
                 }
             }
@@ -734,10 +737,10 @@ class TranscriptionService {
             throw TranscriptionError.fileNotFound
         }
 
-        // Verify file has content
+        // Verify file has valid content (must be at least WAV header size)
         let fileSize = (try? FileManager.default.attributesOfItem(atPath: audioURL.path)[.size] as? UInt64) ?? 0
-        guard fileSize > 0 else {
-            Logger.error("TranscriptionService", "Audio file is empty (0 bytes): \(audioURL.lastPathComponent)")
+        guard fileSize >= AppConstants.Transcription.minValidWAVSize else {
+            Logger.error("TranscriptionService", "Audio file too small or empty (\(fileSize) bytes, min \(AppConstants.Transcription.minValidWAVSize)): \(audioURL.lastPathComponent)")
             throw TranscriptionError.fileNotFound
         }
 
@@ -760,7 +763,10 @@ class TranscriptionService {
 
         // Track start time for timeout and progress
         let startTime = Date()
-        let timeoutSeconds: TimeInterval = max(totalSeconds * 5, 120) // 5x audio duration or 2 min minimum
+        let timeoutSeconds: TimeInterval = max(
+            totalSeconds * AppConstants.Transcription.timeoutMultiplier,
+            AppConstants.Transcription.minTranscriptionTimeout
+        )
         
         // Estimate transcription time
         let estimatedTranscriptionTime = totalSeconds * 0.3

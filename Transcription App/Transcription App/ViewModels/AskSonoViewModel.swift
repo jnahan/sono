@@ -2,8 +2,6 @@
 //  AskSonoViewModel.swift
 //  Transcription App
 //
-//  Created by Claude on 12/8/25.
-//
 
 import Foundation
 import SwiftUI

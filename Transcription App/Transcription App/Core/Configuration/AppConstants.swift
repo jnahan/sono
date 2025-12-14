@@ -42,6 +42,21 @@ enum AppConstants {
 
         /// Model warm-up wait interval (nanoseconds)
         static let modelWarmupWaitInterval: UInt64 = 500_000_000 // 0.5 seconds
+
+        /// Warm-up audio duration (seconds)
+        static let warmupAudioDuration: TimeInterval = 0.5
+
+        /// Model loading timeout (seconds)
+        static let modelLoadTimeout: TimeInterval = 60.0
+
+        /// Transcription timeout multiplier (times audio duration)
+        static let timeoutMultiplier: Double = 5.0
+
+        /// Minimum timeout for short audio (seconds)
+        static let minTranscriptionTimeout: TimeInterval = 120.0
+
+        /// Minimum valid WAV file size (bytes) - 44 byte header minimum
+        static let minValidWAVSize: UInt64 = 44
     }
     
     /// Notification names
