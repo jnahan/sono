@@ -19,35 +19,32 @@ struct RecordingRowView: View {
     // MARK: - Body
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .center, spacing: 16) {
                 // Check circle (only in selection mode)
                 if isSelectionMode {
-                    VStack {
-                        Button {
-                            onSelectionToggle?()
-                        } label: {
-                            ZStack {
+                    Button {
+                        onSelectionToggle?()
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .stroke(isSelected ? Color.accent : Color.warmGray300, lineWidth: 2)
+                                .frame(width: 24, height: 24)
+                            
+                            if isSelected {
                                 Circle()
-                                    .stroke(isSelected ? Color.accent : Color.warmGray300, lineWidth: 2)
+                                    .fill(Color.accent)
                                     .frame(width: 24, height: 24)
                                 
-                                if isSelected {
-                                    Circle()
-                                        .fill(Color.accent)
-                                        .frame(width: 24, height: 24)
-                                    
-                                    Image("check-bold")
-                                        .resizable()
-                                        .renderingMode(.template)
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 16, height: 16)
-                                        .foregroundColor(.baseWhite)
-                                }
+                                Image("check-bold")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 16, height: 16)
+                                    .foregroundColor(.baseWhite)
                             }
                         }
-                        .buttonStyle(.plain)
                     }
-                    .frame(height: 38) // Match typical height of date + title (14px date + 4px spacing + 20px title = ~38px)
+                    .buttonStyle(.plain)
                 }
                 
                 // Recording Info

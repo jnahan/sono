@@ -72,9 +72,17 @@ struct RecordingsListView: View {
                                 Spacer()
                                     .frame(height: viewModel.isSelectionMode ? 20 : 12)
                                 
-                                Rectangle()
-                                    .fill(Color.warmGray200)
-                                    .frame(height: 1)
+                                HStack(spacing: 0) {
+                                    // Add left padding to align divider with recording info (checkbox width 24 + spacing 16 = 40px)
+                                    if viewModel.isSelectionMode {
+                                        Spacer()
+                                            .frame(width: 40)
+                                    }
+                                    
+                                    Rectangle()
+                                        .fill(Color.warmGray200)
+                                        .frame(height: 1)
+                                }
                                 
                                 Spacer()
                                     .frame(height: 12)

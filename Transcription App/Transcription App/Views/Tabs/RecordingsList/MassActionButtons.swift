@@ -25,28 +25,28 @@ struct MassActionButtons: View {
                 // Move button
                 IconButton(icon: "folder-open", action: onMove)
                     .disabled(isDisabled)
-                    .opacity(isDisabled ? 0.3 : 1.0)
+                    .opacity(isDisabled ? 0.5 : 1.0)
 
                 Spacer()
 
                 // Delete button
                 IconButton(icon: "trash", action: onDelete)
                     .disabled(isDisabled)
-                    .opacity(isDisabled ? 0.3 : 1.0)
+                    .opacity(isDisabled ? 0.5 : 1.0)
 
                 Spacer()
 
                 // Copy button
                 IconButton(icon: "copy", action: onCopy)
                     .disabled(isDisabled)
-                    .opacity(isDisabled ? 0.3 : 1.0)
+                    .opacity(isDisabled ? 0.5 : 1.0)
 
                 Spacer()
 
                 // Export button
                 IconButton(icon: "export", action: onExport ?? {})
                     .disabled(isDisabled || onExport == nil)
-                    .opacity((isDisabled || onExport == nil) ? 0.3 : 1.0)
+                    .opacity((isDisabled || onExport == nil) ? 0.5 : 1.0)
             }
             .padding(.horizontal, 32)
             .padding(.top, 12)
