@@ -61,7 +61,29 @@ struct RecordingRowView: View {
                         .lineLimit(1)
                     
                     // Transcript preview, progress indicator, queue status, or error message
-                    if recording.status == .inProgress || recording.status == .notStarted {
+                    // CRITICAL: Check for fullText FIRST, regardless of status - catches completion before status propagates
+                    if !recording.fullText.isEmpty {
+                        if recording.status == .completed {
+                            // Transcription completed and status propagated - show preview
+                            Text(recording.fullText)
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray700)
+                                .lineLimit(3)
+                                .lineSpacing(4)
+                        } else {
+                            // Transcription completed but status not .completed yet - show saving message
+                            // This prevents "Preparing to transcribe..." from showing after transcription completes
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                    .scaleEffect(0.8)
+                                
+                                Text("Saving transcription")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.warmGray500)
+                            }
+                        }
+                    } else if recording.status == .inProgress || recording.status == .notStarted {
                         // Check if there's a failure reason (interrupted transcription)
                         if let failureReason = recording.failureReason, !failureReason.isEmpty {
                             // Show interruption message in gray (can resume)
@@ -69,33 +91,57 @@ struct RecordingRowView: View {
                                 .font(.system(size: 14))
                                 .foregroundColor(.warmGray500)
                                 .italic()
+                        } else if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
+                            // Has progress - show transcribing with percentage
+                            // This ensures we show "Transcribing X%" instead of "Preparing" when transcription is active
+                            if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
+                                // Show with queue position if available
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .scaleEffect(0.8)
+                                    
+                                    if positionInfo.position == 1 {
+                                        Text("Transcribing \(Int(progress * 100))% (\(positionInfo.position)/\(positionInfo.total))")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.warmGray500)
+                                    } else {
+                                        Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.warmGray500)
+                                    }
+                                }
+                            } else {
+                                // Show transcribing without position info
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .scaleEffect(0.8)
+                                    
+                                    Text("Transcribing \(Int(progress * 100))%")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.warmGray500)
+                                }
+                            }
                         } else if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
-                            // Show queue position with original total
+                            // In queue but no progress yet
                             HStack(spacing: 8) {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
                                     .scaleEffect(0.8)
 
                                 if positionInfo.position == 1 {
-                                    // Actively transcribing
-                                    if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
-                                        Text("Transcribing \(Int(progress * 100))% (\(positionInfo.position)/\(positionInfo.total))")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray500)
-                                    } else {
-                                        Text("Transcribing (\(positionInfo.position)/\(positionInfo.total))")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.warmGray500)
-                                    }
+                                    Text("Transcribing (\(positionInfo.position)/\(positionInfo.total))")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.warmGray500)
                                 } else {
-                                    // Waiting in queue
                                     Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                         .font(.system(size: 14))
                                         .foregroundColor(.warmGray500)
                                 }
                             }
                         } else {
-                            // In progress but not in queue - will auto-start soon
+                            // In progress but not in queue and no progress - will auto-start soon
                             Text("Preparing to transcribe...")
                                 .font(.system(size: 14))
                                 .foregroundColor(.warmGray500)
@@ -107,12 +153,6 @@ struct RecordingRowView: View {
                             .font(.system(size: 14))
                             .foregroundColor(.warning)
                             .italic()
-                    } else if !recording.fullText.isEmpty {
-                        Text(recording.fullText)
-                            .font(.system(size: 14))
-                            .foregroundColor(.warmGray700)
-                            .lineLimit(3)
-                            .lineSpacing(4)
                     } else {
                         Text("No transcription available")
                             .font(.system(size: 14))

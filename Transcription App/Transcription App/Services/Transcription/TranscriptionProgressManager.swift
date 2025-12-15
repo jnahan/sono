@@ -34,7 +34,14 @@ class TranscriptionProgressManager: ObservableObject {
     func completeTranscription(for recordingId: UUID) {
         activeTasks.removeValue(forKey: recordingId)?.cancel()
         // Remove and update positions for remaining items
+        // Note: removeFromQueue() now preserves progress at 1.0 for active transcriptions
         removeFromQueue(recordingId: recordingId)
+        // Ensure progress is set to 1.0 (in case removeFromQueue was called elsewhere first)
+        // This ensures UI shows "Transcribing 100%" or "Saving" instead of "Preparing"
+        // Progress will remain visible until status actually becomes .completed
+        if activeTranscriptions[recordingId] == nil {
+            activeTranscriptions[recordingId] = 1.0
+        }
     }
 
     func getProgress(for recordingId: UUID) -> Double? {
@@ -96,11 +103,21 @@ class TranscriptionProgressManager: ObservableObject {
         // Get the queue position before removing (queued items have positions 1, 2, 3...)
         let removedQueuePosition = queuePositions[recordingId]
         
+        // Get current progress before removing (if active)
+        let currentProgress = activeTranscriptions[recordingId]
+        
         // Remove from queue
         queuedRecordings.remove(recordingId)
         queuePositions.removeValue(forKey: recordingId)
         if wasActive {
-            activeTranscriptions.removeValue(forKey: recordingId)
+            // If this was an active transcription, preserve progress at 1.0 instead of removing
+            // This ensures UI shows "Transcribing 100%" or "Saving" instead of "Preparing"
+            // Progress will be cleared when status actually becomes .completed
+            if let progress = currentProgress, progress > 0 {
+                activeTranscriptions[recordingId] = 1.0
+            } else {
+                activeTranscriptions.removeValue(forKey: recordingId)
+            }
         }
         
         // Update positions for all remaining queued items
