@@ -88,6 +88,12 @@ class TranscriptionProgressManager: ObservableObject {
     func setActiveTranscription(recordingId: UUID) {
         // When item becomes active, remove it from queued (it's now active, not queued)
         queuedRecordings.remove(recordingId)
+        queuePositions.removeValue(forKey: recordingId)
+        // Add to activeTranscriptions with 0.0 progress if not already there
+        // This ensures UI shows it as position 1 instead of "Preparing to transcribe..."
+        if activeTranscriptions[recordingId] == nil {
+            activeTranscriptions[recordingId] = 0.0
+        }
     }
 
     /// Remove a recording from the queue and update remaining positions

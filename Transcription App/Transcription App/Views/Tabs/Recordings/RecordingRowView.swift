@@ -124,17 +124,20 @@ struct RecordingRowView: View {
                                 }
                             }
                         } else if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
-                            // In queue but no progress yet
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
-                                    .scaleEffect(0.8)
-
-                                if positionInfo.position == 1 {
-                                    Text("Transcribing (\(positionInfo.position)/\(positionInfo.total))")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.warmGray500)
-                                } else {
+                            // Has position info but no progress yet
+                            if positionInfo.position == 1 {
+                                // Position 1 but no progress - actively preparing to start
+                                Text("Preparing to transcribe...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.warmGray500)
+                                    .italic()
+                            } else {
+                                // Waiting in queue
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .scaleEffect(0.8)
+                                    
                                     Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                         .font(.system(size: 14))
                                         .foregroundColor(.warmGray500)
