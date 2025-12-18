@@ -863,7 +863,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sono-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Sono;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to save and record audio";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to record audio for transcription";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to import videos for transcription";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -897,7 +898,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sono-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Sono;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need your microphone to save and record audio";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to record audio for transcription";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to import videos for transcription";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
