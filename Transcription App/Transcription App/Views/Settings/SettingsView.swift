@@ -95,14 +95,32 @@ struct SettingsView: View {
                 Spacer()
                 
                 // Footer
-                VStack(spacing: 8) {                 
+                VStack(spacing: 8) {
                     Text("SONO")
                         .font(.dmSansMedium(size: 20))
                         .foregroundColor(.baseBlack)
-                    
+
                     Text("Version 1.0.0")
                         .font(.system(size: 14))
-                        .foregroundColor(.warmGray400)
+                        .foregroundColor(.warmGray500)
+
+                    HStack(spacing: 4) {
+                        Button(action: openTerms) {
+                            Text("Terms")
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray500)
+                        }
+
+                        Text("•")
+                            .font(.system(size: 14))
+                            .foregroundColor(.warmGray500)
+
+                        Button(action: openPrivacy) {
+                            Text("Privacy")
+                                .font(.system(size: 14))
+                                .foregroundColor(.warmGray500)
+                        }
+                    }
                 }
                 .padding(.bottom, 40)
             }
@@ -120,6 +138,19 @@ struct SettingsView: View {
     }
 
     // MARK: - Functions
+
+    func openTerms() {
+        if let url = URL(string: "https://piquant-tile-b12.notion.site/Sono-Terms-of-Service-2cd141824eed80d1b250e412bcfa0d0e") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    func openPrivacy() {
+        if let url = URL(string: "https://piquant-tile-b12.notion.site/Sono-Privacy-Policy-2cd141824eed801082bcc5edc1878fd4") {
+            UIApplication.shared.open(url)
+        }
+    }
+
     // TODO: v2 - Uncomment when adding feedback, rate, and share functionality
 //    func rateApp() {
 //        if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID?action=write-review") {
