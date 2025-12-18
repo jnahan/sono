@@ -64,29 +64,30 @@ struct SettingsView: View {
                                 .stroke(Color.warmGray200, lineWidth: 1)
                         )
                         .padding(.horizontal, 20)
-                        
+
+                        // TODO: v2 - Add feedback, rate, and share functionality
                         // Bottom Section: Feedback, Rate, Share
-                        VStack(spacing: 0) {
-                            Button(action: sendFeedback) {
-                                SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
-                            }
-                            
-                            Button(action: rateApp) {
-                                SettingsRow(title: "Rate app", value: nil, imageName: "star")
-                            }
-                            
-                            Button(action: shareApp) {
-                                SettingsRow(title: "Share app", value: nil, imageName: "export")
-                            }
-                        }
-                        .padding(.vertical, 4)
-                        .background(Color.baseWhite)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.warmGray200, lineWidth: 1)
-                        )
-                        .padding(.horizontal, 20)
+//                        VStack(spacing: 0) {
+//                            Button(action: sendFeedback) {
+//                                SettingsRow(title: "Feedback and support", value: nil, imageName: "seal-question")
+//                            }
+//
+//                            Button(action: rateApp) {
+//                                SettingsRow(title: "Rate app", value: nil, imageName: "star")
+//                            }
+//
+//                            Button(action: shareApp) {
+//                                SettingsRow(title: "Share app", value: nil, imageName: "export")
+//                            }
+//                        }
+//                        .padding(.vertical, 4)
+//                        .background(Color.baseWhite)
+//                        .cornerRadius(12)
+//                        .overlay(
+//                            RoundedRectangle(cornerRadius: 12)
+//                                .stroke(Color.warmGray200, lineWidth: 1)
+//                        )
+//                        .padding(.horizontal, 20)
                     }
                     .padding(.top, 8)
                 }
@@ -117,29 +118,30 @@ struct SettingsView: View {
             SettingsManager.shared.showTimestamps = newValue
         }
     }
-    
+
     // MARK: - Functions
-    func rateApp() {
-        if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID?action=write-review") {
-            UIApplication.shared.open(url)
-        }
-    }
-    
-    func shareApp() {
-        let appURL = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
-        let activityVC = UIActivityViewController(
-            activityItems: ["Check out this app!", appURL],
-            applicationActivities: nil
-        )
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
-    }
-    
-    func sendFeedback() {
-        if let url = URL(string: "mailto:support@yourapp.com?subject=Feedback") {
-            UIApplication.shared.open(url)
-        }
-    }
+    // TODO: v2 - Uncomment when adding feedback, rate, and share functionality
+//    func rateApp() {
+//        if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID?action=write-review") {
+//            UIApplication.shared.open(url)
+//        }
+//    }
+//
+//    func shareApp() {
+//        let appURL = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
+//        let activityVC = UIActivityViewController(
+//            activityItems: ["Check out this app!", appURL],
+//            applicationActivities: nil
+//        )
+//        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+//           let rootVC = windowScene.windows.first?.rootViewController {
+//            rootVC.present(activityVC, animated: true)
+//        }
+//    }
+//
+//    func sendFeedback() {
+//        if let url = URL(string: "mailto:support@yourapp.com?subject=Feedback") {
+//            UIApplication.shared.open(url)
+//        }
+//    }
 }

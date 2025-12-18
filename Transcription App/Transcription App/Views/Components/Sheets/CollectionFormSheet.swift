@@ -68,7 +68,7 @@ struct CollectionFormSheet: View {
                 Text(isEditing ? "Save changes" : "Create collection")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(AppButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
         .background(Color.warmGray50)

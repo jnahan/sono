@@ -170,7 +170,7 @@ struct CollectionPickerSheet: View {
                 Text("Done")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(AppButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
         .background(Color.warmGray50)

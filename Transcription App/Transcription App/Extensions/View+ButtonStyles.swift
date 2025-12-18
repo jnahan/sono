@@ -73,7 +73,7 @@ struct BaseButtonStyle: ButtonStyle {
 
 // MARK: - Convenience Button Styles
 
-struct AppButtonStyle: ButtonStyle {
+struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {

@@ -145,7 +145,6 @@ struct CollectionsView: View {
                         confirmButtonText: "Delete collection",
                         cancelButtonText: "Cancel",
                         onConfirm: {
-                            // Delete all recordings in this collection
                             let recordingsInCollection = recordings.filter { $0.collection?.id == collection.id }
 
                             // Cancel any active transcriptions before deleting
@@ -153,11 +152,13 @@ struct CollectionsView: View {
                                 TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                             }
 
+                            // Delete all recordings in this collection
+                            // Note: Despite cascade rule on Collection, manual deletion ensures proper cleanup
                             for recording in recordingsInCollection {
                                 modelContext.delete(recording)
                             }
 
-                            // Now delete the collection
+                            // Delete the collection
                             modelContext.delete(collection)
 
                             do {

@@ -49,7 +49,7 @@ private struct TranscriptionStatusView: View {
                 Text("Done")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(AppButtonStyle())
+            .buttonStyle(PrimaryButtonStyle())
             
             Spacer()
                 .frame(height: 40)
