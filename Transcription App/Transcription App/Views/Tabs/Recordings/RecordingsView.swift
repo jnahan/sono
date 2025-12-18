@@ -40,7 +40,7 @@ struct RecordingsView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             if !recordings.isEmpty {
                                 SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
-                                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                                    .padding(.horizontal, 20)
                             }
                             
                             recordingsList
@@ -56,7 +56,7 @@ struct RecordingsView: View {
                             onMove: { showMoveToCollection = true },
                             onExport: { exportSelectedRecordings() },
                             isDisabled: viewModel.selectedRecordings.isEmpty,
-                            horizontalPadding: AppConstants.UI.Spacing.large,
+                            horizontalPadding: 20,
                             bottomPadding: 12,
                             bottomSafeAreaPadding: 8
                         )
@@ -211,7 +211,7 @@ struct RecordingsView: View {
                 }
             },
             onDelete: nil,
-            horizontalPadding: AppConstants.UI.Spacing.large,
+            horizontalPadding: 20,
             bottomContentMargin: 120
         )
     }

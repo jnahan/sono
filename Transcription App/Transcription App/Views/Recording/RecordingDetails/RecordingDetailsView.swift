@@ -81,7 +81,7 @@ struct RecordingDetailsView: View {
                         .foregroundColor(.baseBlack)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.horizontal, 20)
                 .padding(.top, 8)
 
                 // Tab Selector
@@ -106,7 +106,7 @@ struct RecordingDetailsView: View {
 
                     Spacer()
                 }
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.horizontal, 20)
                 .padding(.top, 16)
 
                 // Content Area

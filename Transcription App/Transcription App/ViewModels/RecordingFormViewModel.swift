@@ -124,7 +124,7 @@ class RecordingFormViewModel: ObservableObject {
         // Update title error in real-time
         let trimmedTitle = title.trimmed
         if !trimmedTitle.isEmpty {
-            if let error = ValidationHelper.validateLength(trimmedTitle, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
+            if let error = FormValidationHelper.validateLength(trimmedTitle, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
                 titleError = error
             } else {
                 titleError = nil
@@ -134,7 +134,7 @@ class RecordingFormViewModel: ObservableObject {
         }
         
         // Update note error in real-time
-        if let error = ValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
+        if let error = FormValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
             noteError = error
         } else {
             noteError = nil
@@ -151,7 +151,7 @@ class RecordingFormViewModel: ObservableObject {
 
             // Only validate length (empty is allowed - will become "Untitled recording")
             if !trimmed.isEmpty {
-                if let error = ValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
+                if let error = FormValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxTitleLength, fieldName: "Title") {
                     titleError = error
                     return false
                 }
@@ -169,7 +169,7 @@ class RecordingFormViewModel: ObservableObject {
     @discardableResult
     func validateNoteWithError() -> Bool {
         if hasAttemptedSubmit {
-            if let error = ValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
+            if let error = FormValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
                 noteError = error
                 return false
             }

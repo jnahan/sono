@@ -71,7 +71,7 @@ struct CustomTopBar: View {
                     .frame(width: 40, height: 40)
             }
         }
-        .padding(.horizontal, AppConstants.UI.Spacing.large)
+        .padding(.horizontal, 20)
         .padding(.vertical, 8)
         .frame(height: 56)
     }

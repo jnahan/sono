@@ -11,34 +11,7 @@ struct Transcription_AppApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            // If ModelContainer creation fails, delete existing store and create new one
-            Logger.error("App", "ModelContainer creation failed: \(error.localizedDescription)")
-            Logger.warning("App", "Attempting to create fresh ModelContainer...")
-
-            let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
-            let shmURL = URL.applicationSupportDirectory.appending(path: "default.store-shm")
-            let walURL = URL.applicationSupportDirectory.appending(path: "default.store-wal")
-
-            for url in [storeURL, shmURL, walURL] {
-                if FileManager.default.fileExists(atPath: url.path) {
-                    try? FileManager.default.removeItem(at: url)
-                    Logger.info("App", "Removed \(url.lastPathComponent)")
-                }
-            }
-
-            do {
-                return try ModelContainer(for: schema, configurations: [config])
-            } catch {
-                Logger.error("App", "Could not create ModelContainer even after cleanup: \(error)")
-                // Try one more time with in-memory storage as fallback
-                let inMemoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                do {
-                    return try ModelContainer(for: schema, configurations: [inMemoryConfig])
-                } catch {
-                    // Last resort: fatal error
-                    fatalError("Could not create ModelContainer: \(error)")
-                }
-            }
+            fatalError("Could not create ModelContainer: \(error)")
         }
     }()
 

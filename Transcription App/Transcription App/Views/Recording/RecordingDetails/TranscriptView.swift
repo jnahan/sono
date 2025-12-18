@@ -54,7 +54,7 @@ struct TranscriptView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 20)
             .padding(.bottom, 180)
         }
         .onChange(of: audioPlayback.currentTime) { _, _ in

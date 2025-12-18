@@ -103,7 +103,7 @@ struct RecordingFormView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    .padding(.horizontal, 20)
                     .padding(.top, 16)
                 }
                 .scrollDismissesKeyboard(.interactively)

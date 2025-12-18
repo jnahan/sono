@@ -27,7 +27,7 @@ struct RecordingPlayerBar: View {
                 progressSlider
                 timeLabels
             }
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 20)
 
             // Action buttons with play button in center
             HStack(spacing: 0) {
@@ -56,7 +56,7 @@ struct RecordingPlayerBar: View {
                 // Share button
                 IconButton(icon: "export", action: onSharePressed)
             }
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 20)
             .padding(.bottom, 28)
         }
         .background(Color.warmGray50)

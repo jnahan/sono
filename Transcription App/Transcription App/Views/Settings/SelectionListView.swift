@@ -45,7 +45,7 @@ struct SelectionListView: View {
             
             if showSearchBar {
                 SearchBar(text: $searchText, placeholder: "Search languages...")
-                    .padding(.horizontal, AppConstants.UI.Spacing.large)
+                    .padding(.horizontal, 20)
                     .padding(.top, 8)
                     .padding(.bottom, 8)
             }

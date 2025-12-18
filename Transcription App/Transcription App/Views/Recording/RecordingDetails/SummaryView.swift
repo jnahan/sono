@@ -33,7 +33,7 @@ struct SummaryView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         } else if let error = viewModel.summaryError {
@@ -41,7 +41,7 @@ struct SummaryView: View {
                 errorContentView()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppConstants.UI.Spacing.large)
+            .padding(.horizontal, 20)
             .padding(.top, 16)
         } else if let summary = recording.summary, !summary.isEmpty {
             ScrollView {
@@ -49,7 +49,7 @@ struct SummaryView: View {
                     summaryContentView(summary: summary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
         } else {

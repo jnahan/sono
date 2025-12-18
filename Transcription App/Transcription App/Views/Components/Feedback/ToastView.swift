@@ -23,7 +23,7 @@ struct ToastView: View {
         .padding(12)
         .background(isError ? Color.warning : Color.baseBlack)
         .cornerRadius(12)
-        .padding(.horizontal, AppConstants.UI.Spacing.large)
+        .padding(.horizontal, 20)
         .transition(.move(edge: .top).combined(with: .opacity))
         .onAppear {
             // Auto-dismiss after 4 seconds if isPresented binding is provided

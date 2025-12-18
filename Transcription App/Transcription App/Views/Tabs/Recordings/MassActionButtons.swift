@@ -9,7 +9,7 @@ struct MassActionButtons: View {
     var onExport: (() -> Void)? = nil
     var isDisabled: Bool = false
 
-    var horizontalPadding: CGFloat = AppConstants.UI.Spacing.large
+    var horizontalPadding: CGFloat = 20
     var bottomPadding: CGFloat = 0
     var bottomSafeAreaPadding: CGFloat = 0
 

@@ -63,13 +63,4 @@ enum AppConstants {
     enum Notification {
         static let recordingSaved = Foundation.Notification.Name("recordingSaved")
     }
-    
-    /// UI spacing and layout constants
-    enum UI {
-        /// Standard spacing values
-        enum Spacing {
-            static let medium: CGFloat = 16
-            static let large: CGFloat = 20
-        }
-    }
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Utility for form validation
-struct ValidationHelper {
+struct FormValidationHelper {
     
     /// Validate that a text field is not empty
     /// - Parameters:

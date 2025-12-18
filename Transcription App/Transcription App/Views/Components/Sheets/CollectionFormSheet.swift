@@ -108,7 +108,7 @@ struct CollectionFormSheet: View {
             return collection.name
         }
         
-        return ValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") == nil
+        return FormValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") == nil
     }
     
     @discardableResult
@@ -117,13 +117,13 @@ struct CollectionFormSheet: View {
             let trimmed = collectionName.trimmed
             
             // Validate not empty
-            if let error = ValidationHelper.validateNotEmpty(trimmed, fieldName: "Collection name") {
+            if let error = FormValidationHelper.validateNotEmpty(trimmed, fieldName: "Collection name") {
                 collectionNameError = error
                 return false
             }
             
             // Validate length
-            if let error = ValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxCollectionNameLength, fieldName: "Collection name") {
+            if let error = FormValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxCollectionNameLength, fieldName: "Collection name") {
                 collectionNameError = error
                 return false
             }
@@ -137,7 +137,7 @@ struct CollectionFormSheet: View {
             }
             
             // Validate uniqueness
-            if let error = ValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") {
+            if let error = FormValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") {
                 collectionNameError = error
                 return false
             }

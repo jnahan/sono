@@ -40,7 +40,7 @@ struct CollectionsView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         if !collections.isEmpty {
                             SearchBar(text: $searchText, placeholder: "Search collections...")
-                                .padding(.horizontal, AppConstants.UI.Spacing.large)
+                                .padding(.horizontal, 20)
                         }
 
                         if collections.isEmpty {
@@ -65,7 +65,7 @@ struct CollectionsView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.warmGray50)
-                                .listRowInsets(EdgeInsets(top: 10, leading: AppConstants.UI.Spacing.large, bottom: 10, trailing: AppConstants.UI.Spacing.large))
+                                .listRowInsets(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20))
                                 .listRowSeparator(.hidden)
                             }
                         }

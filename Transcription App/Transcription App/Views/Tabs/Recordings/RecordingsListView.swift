@@ -18,7 +18,7 @@ struct RecordingsListView: View {
         emptyStateView: AnyView,
         onRecordingTap: @escaping (Recording) -> Void,
         onDelete: ((IndexSet) -> Void)? = nil,
-        horizontalPadding: CGFloat = AppConstants.UI.Spacing.large,
+        horizontalPadding: CGFloat = 20,
         bottomContentMargin: CGFloat? = nil
     ) {
         self.recordings = recordings
