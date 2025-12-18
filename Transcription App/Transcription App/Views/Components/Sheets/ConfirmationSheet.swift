@@ -10,10 +10,6 @@ struct ConfirmationSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Drag handle
-            DragHandle()
-                .padding(.bottom, 24) // No top bar, so 24px spacing
-            
             // Title
             Text(title)
                 .font(.dmSansSemiBold(size: 24))
@@ -47,40 +43,42 @@ struct ConfirmationSheet: View {
                 .buttonStyle(GhostButtonStyle())
             }
         }
+        .padding(.top, 24)
         .background(Color.warmGray50)
         .presentationDetents([.height(calculateHeight())])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
     }
     
     private func calculateHeight() -> CGFloat {
-        // Drag handle: 4 + 12 top + 24 bottom = 40
-        let dragHandleHeight: CGFloat = 40
-        
-        // Title: ~30 (font size 24 with padding)
-        let titleHeight: CGFloat = 30 + 8 // font height + bottom padding (8)
-        
+        // Top padding: 24px spacing from drag handle
+        let topPadding: CGFloat = 24
+
+        // Title: ~30 (font size 24 with line height) + 8 bottom padding
+        let titleHeight: CGFloat = 30 + 8
+
         // Message: estimate based on text length and width
-        // Assuming ~40 characters per line at 16pt font with 24pt horizontal padding
         let screenWidth: CGFloat = UIScreen.main.bounds.width
-        let availableWidth = max(1, screenWidth - 48) // 24pt padding on each side, ensure > 0
+        let availableWidth = max(1, screenWidth - 48) // 24pt horizontal padding on each side
         let estimatedLineHeight: CGFloat = 22 // 16pt font with line spacing
-        let charactersPerLine = max(1, Int(availableWidth / 9)) // rough estimate, ensure > 0
+        let charactersPerLine = max(1, Int(availableWidth / 9)) // rough estimate
         let lineCount = max(1, (message.count / charactersPerLine) + (message.count % charactersPerLine > 0 ? 1 : 0))
-        let messageHeight = CGFloat(lineCount) * estimatedLineHeight + 32 // + bottom padding (32)
-        
+        let messageHeight = CGFloat(lineCount) * estimatedLineHeight + 32 // + 32 bottom padding
+
         // Buttons: 2 buttons with spacing
-        // Each button: 16*2 (vertical padding) + ~22 (text height) + 6 (bottom padding from style) = ~60
-        // Spacing between buttons: 8
-        let buttonsHeight: CGFloat = 60 + 8 + 60 // first button + spacing (8) + second button
-        
-        let totalHeight = dragHandleHeight + titleHeight + messageHeight + buttonsHeight
-        
-        // Add some safe area padding at bottom, ensure result is finite
-        let finalHeight = totalHeight + 20
-        return finalHeight.isFinite ? finalHeight : 300 // fallback to reasonable default
+        // Each button has ~56px height (including padding)
+        // Spacing between buttons: 8px
+        let buttonsHeight: CGFloat = 56 + 8 + 56
+
+        // Bottom padding: 24px
+        let bottomPadding: CGFloat = 24
+
+        let totalHeight = topPadding + titleHeight + messageHeight + buttonsHeight + bottomPadding
+
+        // Ensure result is finite and reasonable
+        return totalHeight.isFinite ? totalHeight : 300
     }
 }
 

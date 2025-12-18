@@ -35,10 +35,6 @@ struct CollectionPickerSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Drag handle
-            DragHandle()
-                .padding(.bottom, 8) // Has top bar, so 8px spacing
-            
             // Top bar
             CustomTopBar(
                 title: "Add to collection",
@@ -176,10 +172,11 @@ struct CollectionPickerSheet: View {
             }
             .buttonStyle(AppButtonStyle())
         }
+        .padding(.top, 8)
         .background(Color.warmGray50)
         .presentationDetents([.height(calculateHeight())])
         .presentationCompactAdaptation(.none)
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)

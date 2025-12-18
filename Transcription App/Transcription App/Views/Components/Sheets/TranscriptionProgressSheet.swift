@@ -90,10 +90,6 @@ struct TranscriptionProgressSheet: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Drag handle
-                DragHandle()
-                    .padding(.bottom, 24) // No top bar, so 24px spacing
-                
                 // Check if queued
                 if progressManager.isQueued(recordingId: recording.id) {
                     TranscriptionStatusView(
@@ -127,9 +123,10 @@ struct TranscriptionProgressSheet: View {
                     )
                 }
             }
+            .padding(.top, 24)
         }
         .presentationDetents([.height(transcriptionError == nil && progressManager.isQueued(recordingId: recording.id) == false ? 340 : 260)])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .presentationBackground(Color.warmGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
