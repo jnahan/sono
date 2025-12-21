@@ -14,28 +14,12 @@ class LLMService {
     
     // MARK: - Initialization
     private init() {
-        // Preload the model in the background
-        Task {
-            await preloadModel()
-        }
+        // LLM is created fresh for each request to avoid KV cache corruption
+        // No preload needed
     }
 
     // MARK: - Public Methods
 
-    /// Preloads the LLM model to reduce first-use latency
-    @MainActor
-    func preloadModel() async {
-        // Check if model exists in bundle
-        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "gguf") else {
-            return
-        }
-
-        // Initialize LLM to ensure it's ready
-        if llm == nil {
-            llm = LLM(from: modelURL)
-        }
-    }
-    
     /// Gets a streaming completion from the LLM, yielding text chunks as they're generated
     /// Uses the LLM library's built-in update closure for streaming
     /// - Parameters:

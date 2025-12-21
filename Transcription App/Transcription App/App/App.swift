@@ -16,9 +16,8 @@ struct Transcription_AppApp: App {
     }()
 
     init() {
-        // Trigger service initializations to preload models
+        // Trigger TranscriptionService initialization to preload Whisper model
         _ = TranscriptionService.shared
-        _ = LLMService.shared
     }
 
     var body: some Scene {
