@@ -35,24 +35,64 @@ final class AudioPlaybackService: ObservableObject {
     /// Preloads an audio file without playing it
     /// - Parameter url: URL of the audio file to preload
     func preload(url: URL) {
+        // Validate URL
+        guard !url.path.isEmpty else {
+            Logger.error("AudioPlayback", "Invalid URL: path is empty")
+            return
+        }
+        
         guard FileManager.default.fileExists(atPath: url.path) else {
             Logger.warning("AudioPlayback", "File not found: \(url.path)")
             return
         }
+        
+        // Check file size to ensure it's not empty
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let fileSize = attributes[.size] as? Int64,
+           fileSize == 0 {
+            Logger.error("AudioPlayback", "File is empty: \(url.path)")
+            return
+        }
 
         do {
-            // Configure audio session for playback
+            // Ensure we have a proper file URL first
+            let fileURL: URL
+            if url.isFileURL {
+                fileURL = url
+            } else {
+                // Convert to file URL if needed
+                fileURL = URL(fileURLWithPath: url.path)
+            }
+            
+            // Verify the file URL is valid
+            guard fileURL.isFileURL else {
+                Logger.error("AudioPlayback", "Invalid file URL: \(fileURL)")
+                return
+            }
+            
+            // Create the player first (this doesn't require audio session)
+            player = try AVAudioPlayer(contentsOf: fileURL)
+            currentURL = fileURL
+            
+            // Configure audio session for playback - do this AFTER creating the player
             let session = AVAudioSession.sharedInstance()
             
-            // Deactivate first to ensure clean state
-            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            // Only change category if it's different
+            if session.category != .playback {
+                // Deactivate first
+                try? session.setActive(false, options: .notifyOthersOnDeactivation)
+                
+                // Set category
+                try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
+            }
             
-            // Use .playback category for pure playback (not .playAndRecord)
-            try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
-            try session.setActive(true)
-            
-            player = try AVAudioPlayer(contentsOf: url)
-            currentURL = url
+            // Try to activate - if it fails, that's okay, player might still work
+            do {
+                try session.setActive(true)
+            } catch {
+                // Log but don't fail - player might still work
+                Logger.warning("AudioPlayback", "Could not activate audio session: \(error.localizedDescription)")
+            }
             
             // Enable rate and enable metering if needed
             player?.enableRate = false
@@ -70,6 +110,11 @@ final class AudioPlaybackService: ObservableObject {
             }
         } catch {
             Logger.error("AudioPlayback", "Failed to load: \(error.localizedDescription)")
+            Logger.error("AudioPlayback", "URL: \(url.path)")
+            Logger.error("AudioPlayback", "Error details: \(error)")
+            if let nsError = error as NSError? {
+                Logger.error("AudioPlayback", "Error code: \(nsError.code), domain: \(nsError.domain)")
+            }
             player = nil
             currentURL = nil
         }
@@ -103,14 +148,24 @@ final class AudioPlaybackService: ObservableObject {
         }
 
         do {
-            // Deactivate session first to ensure clean state
             let session = AVAudioSession.sharedInstance()
-            try session.setActive(false, options: .notifyOthersOnDeactivation)
             
-            // Configure audio session for playback
-            // Use .playback category for pure playback
-            try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
-            try session.setActive(true)
+            // Only change category if it's different
+            if session.category != .playback {
+                // Deactivate session first
+                try? session.setActive(false, options: .notifyOthersOnDeactivation)
+                
+                // Configure audio session for playback
+                try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
+            }
+            
+            // Try to activate - if it fails, that's okay
+            do {
+                try session.setActive(true)
+            } catch {
+                Logger.warning("AudioPlayback", "Could not activate audio session in play(): \(error.localizedDescription)")
+                // Continue anyway - player might still work
+            }
             
             Logger.success("AudioPlayback", "Audio session configured and activated")
         } catch {

@@ -24,7 +24,7 @@ struct SettingsRow: View {
             
             if let value = value {
                 Text(value)
-                    .font(.dmSansRegular(size: 14))
+                    .font(.dmSansRegular(size: 16))
                     .foregroundColor(.warmGray600)
             }
             

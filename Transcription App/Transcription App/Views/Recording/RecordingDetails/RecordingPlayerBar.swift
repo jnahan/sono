@@ -38,6 +38,7 @@ struct RecordingPlayerBar: View {
 
                 // Rewind 15 seconds button
                 IconButton(icon: "clock-counter-clockwise") {
+                    guard audioService.duration > 0 else { return }
                     let newTime = max(0, audioService.currentTime - 15)
                     audioService.seek(to: newTime)
                 }
@@ -51,6 +52,7 @@ struct RecordingPlayerBar: View {
 
                 // Forward 15 seconds button
                 IconButton(icon: "clock-clockwise") {
+                    guard audioService.duration > 0 else { return }
                     let newTime = min(audioService.duration, audioService.currentTime + 15)
                     audioService.seek(to: newTime)
                 }
@@ -96,6 +98,10 @@ struct RecordingPlayerBar: View {
 
     private var playPauseButton: some View {
         Button {
+            guard let audioURL = audioURL else {
+                Logger.warning("RecordingPlayerBar", "Cannot play - audioURL is nil")
+                return
+            }
             audioService.togglePlayback(url: audioURL)
         } label: {
             Image(audioService.isPlaying ? "pause-fill" : "play-fill")
