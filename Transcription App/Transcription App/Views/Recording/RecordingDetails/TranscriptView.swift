@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TranscriptView: View {
     let recording: Recording
-    @ObservedObject var audioPlayback: AudioPlaybackService
+    let audioPlayback: AudioPlaybackService
     @ObservedObject var viewModel: RecordingDetailsViewModel
 
     private var showTimestamps: Bool {
@@ -15,20 +15,16 @@ struct TranscriptView: View {
                 if showTimestamps && !recording.segments.isEmpty {
                     // Show segments with timestamps when enabled
                     ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
-                        let isActive = viewModel.isSegmentActive(
-                            segment: segment,
-                            currentTime: audioPlayback.currentTime,
-                            isPlaying: audioPlayback.isPlaying
-                        )
-
                         VStack(alignment: .leading, spacing: 4) {
                             Text(TimeFormatter.formatTimestamp(segment.start))
                                 .font(.dmSansMedium(size: 14))
                                 .foregroundColor(.warmGray400)
                                 .monospacedDigit()
 
-                            Text(attributedText(for: segment.text, isActive: isActive))
+                            Text(segment.text)
+                                .font(.dmSansRegular(size: 16))
                                 .foregroundColor(.baseBlack)
+                                .lineSpacing(4)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .contentShape(Rectangle())
@@ -57,48 +53,5 @@ struct TranscriptView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 180)
         }
-        .onChange(of: audioPlayback.currentTime) { _, _ in
-            viewModel.updateActiveSegment(
-                currentTime: audioPlayback.currentTime,
-                isPlaying: audioPlayback.isPlaying,
-                showTimestamps: showTimestamps
-            )
-        }
-        .onChange(of: audioPlayback.isPlaying) { _, isPlaying in
-            if !isPlaying {
-                viewModel.resetActiveSegment()
-            }
-        }
-    }
-
-    // MARK: - Helper Methods
-
-    private func attributedText(for text: String, isActive: Bool) -> AttributedString {
-        var attributedString = AttributedString(text)
-
-        // Guard against empty strings to avoid range errors
-        guard !text.isEmpty, attributedString.startIndex < attributedString.endIndex else {
-            return attributedString
-        }
-
-        // Set font and color using attribute container
-        var container = AttributeContainer()
-        container.font = UIFont(name: "DMSans-9ptRegular", size: 16)!
-        container.foregroundColor = UIColor(Color.baseBlack)
-
-        if isActive {
-            container.backgroundColor = UIColor(Color.accentLight)
-        }
-
-        // Set line spacing using paragraph style
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 4
-        container.paragraphStyle = paragraphStyle
-
-        // Apply attributes to entire string
-        let range = attributedString.startIndex..<attributedString.endIndex
-        attributedString[range].mergeAttributes(container)
-
-        return attributedString
     }
 }
