@@ -74,26 +74,114 @@ struct BaseButtonStyle: ButtonStyle {
 // MARK: - Convenience Button Styles
 
 struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
-        BaseButtonStyle(variant: .primary).makeBody(configuration: configuration)
+        let variant = ButtonVariant.primary
+        configuration.label
+            .font(.dmSansSemiBold(size: 16))
+            .foregroundColor(isEnabled ? variant.foregroundColor : variant.disabledForegroundColor)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 64)
+            .background(
+                (isEnabled ? variant.backgroundColor : variant.disabledBackgroundColor)
+                   .opacity(configuration.isPressed ? 0.7 : 1)
+            )
+            .cornerRadius(.infinity)
+            .if(variant.hasBorder) { view in
+                view.overlay(
+                    RoundedRectangle(cornerRadius: .infinity)
+                        .stroke(Color.warmGray200, lineWidth: 1)
+                )
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 6)
     }
 }
 
 struct WarningButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
-        BaseButtonStyle(variant: .warning).makeBody(configuration: configuration)
+        let variant = ButtonVariant.warning
+        configuration.label
+            .font(.dmSansSemiBold(size: 16))
+            .foregroundColor(isEnabled ? variant.foregroundColor : variant.disabledForegroundColor)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 64)
+            .background(
+                (isEnabled ? variant.backgroundColor : variant.disabledBackgroundColor)
+                   .opacity(configuration.isPressed ? 0.7 : 1)
+            )
+            .cornerRadius(.infinity)
+            .if(variant.hasBorder) { view in
+                view.overlay(
+                    RoundedRectangle(cornerRadius: .infinity)
+                        .stroke(Color.warmGray200, lineWidth: 1)
+                )
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 6)
     }
 }
 
 struct GhostButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
-        BaseButtonStyle(variant: .ghost).makeBody(configuration: configuration)
+        let variant = ButtonVariant.ghost
+        configuration.label
+            .font(.dmSansSemiBold(size: 16))
+            .foregroundColor(isEnabled ? variant.foregroundColor : variant.disabledForegroundColor)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 64)
+            .background(
+                (isEnabled ? variant.backgroundColor : variant.disabledBackgroundColor)
+                   .opacity(configuration.isPressed ? 0.7 : 1)
+            )
+            .cornerRadius(.infinity)
+            .if(variant.hasBorder) { view in
+                view.overlay(
+                    RoundedRectangle(cornerRadius: .infinity)
+                        .stroke(Color.warmGray200, lineWidth: 1)
+                )
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 6)
     }
 }
 
 struct WhiteButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
-        BaseButtonStyle(variant: .white).makeBody(configuration: configuration)
+        let variant = ButtonVariant.white
+        configuration.label
+            .font(.dmSansSemiBold(size: 16))
+            .foregroundColor(isEnabled ? variant.foregroundColor : variant.disabledForegroundColor)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 64)
+            .background(
+                (isEnabled ? variant.backgroundColor : variant.disabledBackgroundColor)
+                   .opacity(configuration.isPressed ? 0.7 : 1)
+            )
+            .cornerRadius(.infinity)
+            .if(variant.hasBorder) { view in
+                view.overlay(
+                    RoundedRectangle(cornerRadius: .infinity)
+                        .stroke(Color.warmGray200, lineWidth: 1)
+                )
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 6)
     }
 }
 

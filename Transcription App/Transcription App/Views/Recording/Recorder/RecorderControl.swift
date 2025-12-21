@@ -62,18 +62,23 @@ struct RecorderControl: View {
                     // Bottom buttons - 64px from bottom including safe area
                     HStack(spacing: 0) {
                     // Retry button - only visible when recording is stopped (not during recording)
-                    Group {
+                    // Left spacer to balance the layout
+                    HStack {
                         if !rec.isRecording && rec.fileURL != nil {
+                            Spacer()
                             Button {
                                 playTapHaptic()
                                 resetRecording()
                             } label: {
-                                retryButtonPlaceholder
+                                retryButton
                                     .foregroundColor(.warning)
                             }
+                            .padding(.trailing, 8)
+                        } else {
+                            Spacer()
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(maxWidth: .infinity)
                     .padding(.trailing, 24)
 
                     // Record/Stop/Done button - changes based on state
@@ -96,6 +101,7 @@ struct RecorderControl: View {
                         }
                     }
 
+                    // Right spacer to balance the layout
                     Spacer()
                         .frame(maxWidth: .infinity)
                         .padding(.leading, 24)
@@ -166,7 +172,7 @@ struct RecorderControl: View {
     }
 
     // MARK: - View Components
-    private var retryButtonPlaceholder: some View {
+    private var retryButton: some View {
         HStack(spacing: 8) {
             Image("arrow-clockwise")
                 .resizable()
@@ -176,7 +182,6 @@ struct RecorderControl: View {
             Text("Retry")
                 .font(.system(size: 17, weight: .medium))
         }
-        .foregroundColor(.clear)
     }
 
     @ViewBuilder
