@@ -144,9 +144,6 @@ struct RecordingDetailsView: View {
                             } else {
                                 ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }
-                        },
-                        onAIPressed: {
-                            selectedTab = .askSono
                         }
                     )
                 }

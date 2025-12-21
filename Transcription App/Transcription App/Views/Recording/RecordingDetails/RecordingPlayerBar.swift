@@ -15,7 +15,6 @@ struct RecordingPlayerBar: View {
     let audioURL: URL?
     let fullText: String
     var onSharePressed: () -> Void
-    var onAIPressed: () -> Void
 
     // MARK: - Body
 
@@ -30,8 +29,18 @@ struct RecordingPlayerBar: View {
 
             // Action buttons with play button in center
             HStack(spacing: 0) {
-                // AI Assistant button
-                IconButton(icon: "sparkle", action: onAIPressed)
+                // Copy button
+                IconButton(icon: "copy") {
+                    UIPasteboard.general.string = fullText
+                }
+
+                Spacer()
+
+                // Rewind 15 seconds button
+                IconButton(icon: "clock-counter-clockwise") {
+                    let newTime = max(0, audioService.currentTime - 15)
+                    audioService.seek(to: newTime)
+                }
 
                 Spacer()
 
@@ -40,9 +49,10 @@ struct RecordingPlayerBar: View {
 
                 Spacer()
 
-                // Copy button
-                IconButton(icon: "copy") {
-                    UIPasteboard.general.string = fullText
+                // Forward 15 seconds button
+                IconButton(icon: "clock-clockwise") {
+                    let newTime = min(audioService.duration, audioService.currentTime + 15)
+                    audioService.seek(to: newTime)
                 }
 
                 Spacer()
