@@ -13,6 +13,7 @@ struct RecorderView: View {
     @State private var pendingAudioURL: URL? = nil
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
+    @State private var userCanceledRecording = false
     
     init(onDismiss: (() -> Void)? = nil, onSaveComplete: ((Recording) -> Void)? = nil) {
         self.onDismiss = onDismiss
@@ -52,6 +53,15 @@ struct RecorderView: View {
                     confirmButtonText: "Exit",
                     cancelButtonText: "Continue recording",
                     onConfirm: {
+                        // Mark that user explicitly canceled
+                        userCanceledRecording = true
+
+                        // Delete the recording file if it exists
+                        if let fileURL = recorderControl.currentFileURL {
+                            try? FileManager.default.removeItem(at: fileURL)
+                            Logger.info("RecorderView", "Deleted recording file after user cancellation")
+                        }
+
                         dismiss()
                     }
                 )
@@ -102,20 +112,26 @@ struct RecorderView: View {
                 }
             }
             .onChange(of: recorderControl.shouldAutoSave) { _, shouldSave in
-                if shouldSave {
+                if shouldSave && !userCanceledRecording {
                     autoSaveRecordingIfNeeded()
                     recorderControl.shouldAutoSave = false
                 }
             }
             .onDisappear {
-                // Final safety check - save if user navigates away
-                autoSaveRecordingIfNeeded()
+                // Only auto-save if user didn't explicitly cancel
+                if !userCanceledRecording {
+                    // Final safety check - save if user navigates away
+                    autoSaveRecordingIfNeeded()
+                }
             }
         }
     }
 
     /// Handle app returning from background
     private func handleReturnFromBackground() {
+        // Don't auto-save if user explicitly canceled
+        guard !userCanceledRecording else { return }
+
         guard let fileURL = recorderControl.currentFileURL else { return }
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             Logger.warning("RecorderView", "No recording file found on return from background")
