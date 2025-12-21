@@ -476,7 +476,7 @@ class TranscriptionService {
             audioDuration = 60 // Default fallback
         }
 
-        let estimatedTranscriptionTime = audioDuration * 0.3
+        let estimatedTranscriptionTime = audioDuration * 0.1
         let maxWaitChecks = max(Int(estimatedTranscriptionTime * 3 / AppConstants.Transcription.waitInterval), 1000)
 
         var waitCount = 0
@@ -776,9 +776,9 @@ class TranscriptionService {
             totalSeconds * AppConstants.Transcription.timeoutMultiplier,
             AppConstants.Transcription.minTranscriptionTimeout
         )
-        
+
         // Estimate transcription time
-        let estimatedTranscriptionTime = totalSeconds * 0.3
+        let estimatedTranscriptionTime = totalSeconds * 0.1
 
         let results = try await whisperKit.transcribe(
             audioPath: audioURL.path,
