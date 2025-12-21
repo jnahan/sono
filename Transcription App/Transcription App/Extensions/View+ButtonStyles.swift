@@ -74,32 +74,24 @@ struct BaseButtonStyle: ButtonStyle {
 // MARK: - Convenience Button Styles
 
 struct PrimaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) var isEnabled
-
     func makeBody(configuration: Configuration) -> some View {
         BaseButtonStyle(variant: .primary).makeBody(configuration: configuration)
     }
 }
 
 struct WarningButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) var isEnabled
-
     func makeBody(configuration: Configuration) -> some View {
         BaseButtonStyle(variant: .warning).makeBody(configuration: configuration)
     }
 }
 
 struct GhostButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) var isEnabled
-
     func makeBody(configuration: Configuration) -> some View {
         BaseButtonStyle(variant: .ghost).makeBody(configuration: configuration)
     }
 }
 
 struct WhiteButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) var isEnabled
-
     func makeBody(configuration: Configuration) -> some View {
         BaseButtonStyle(variant: .white).makeBody(configuration: configuration)
     }
