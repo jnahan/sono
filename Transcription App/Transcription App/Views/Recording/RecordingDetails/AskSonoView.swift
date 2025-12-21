@@ -80,6 +80,7 @@ struct AskSonoView: View {
                                 Text("Ask me anything...")
                                     .font(.dmSansRegular(size: 16))
                                     .foregroundColor(.warmGray500)
+                                    .allowsHitTesting(false)
                             }
 
                             TextField("", text: $viewModel.userPrompt, axis: .vertical)
@@ -88,12 +89,16 @@ struct AskSonoView: View {
                                 .tint(.baseBlack)
                                 .focused($isInputFocused)
                                 .lineLimit(1...5)
+                                .id("askSonoInput-\(viewModel.inputFieldId)")
                         }
                         
                         Spacer()
                         
                         // Send Button
                         Button(action: {
+                            // Unfocus the text field immediately to force state commit
+                            isInputFocused = false
+
                             Task {
                                 await viewModel.sendPrompt()
                             }

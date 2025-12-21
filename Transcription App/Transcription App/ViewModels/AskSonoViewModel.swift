@@ -17,6 +17,7 @@ class AskSonoViewModel: ObservableObject {
     @Published var error: String?
     @Published var streamingMessageId: UUID? = nil
     @Published var streamingText: String = ""
+    @Published private(set) var inputFieldId: Int = 0
 
     // MARK: - Private Properties
 
@@ -35,17 +36,41 @@ class AskSonoViewModel: ObservableObject {
         let promptText = userPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !promptText.isEmpty else { return }
 
+        // Clear input immediately and force TextField to rebuild
+        userPrompt = ""
+        inputFieldId += 1
+
+        await sendPromptWithText(promptText)
+    }
+
+    /// Resends the last user message
+    func resendLastMessage() {
+        // Find last user message
+        guard let lastUserMessage = messages.last(where: { $0.isUser }) else {
+            return
+        }
+
+        // Send the message directly without setting userPrompt
+        Task {
+            await sendPromptWithText(lastUserMessage.text)
+        }
+    }
+
+    // MARK: - Private Methods
+
+    /// Internal method to send a prompt with specific text
+    private func sendPromptWithText(_ promptText: String) async {
+        let trimmedText = promptText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else { return }
+
         guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             error = "Cannot answer questions: transcription is empty."
             return
         }
 
         // Add user message to chat
-        let userMessage = ChatMessage(text: promptText, isUser: true)
+        let userMessage = ChatMessage(text: trimmedText, isUser: true)
         messages.append(userMessage)
-
-        // Clear input
-        userPrompt = ""
 
         isProcessing = true
         error = nil
@@ -64,7 +89,7 @@ class AskSonoViewModel: ObservableObject {
             Transcription:
             \(recording.fullText)
 
-            Question: \(promptText)
+            Question: \(trimmedText)
             """
 
             // Create placeholder message for streaming
@@ -113,22 +138,6 @@ class AskSonoViewModel: ObservableObject {
 
         isProcessing = false
     }
-
-    /// Resends the last user message
-    func resendLastMessage() {
-        // Find last user message
-        guard let lastUserMessage = messages.last(where: { $0.isUser }) else {
-            return
-        }
-
-        // Set it as current prompt and send
-        userPrompt = lastUserMessage.text
-        Task {
-            await sendPrompt()
-        }
-    }
-
-    // MARK: - Private Methods
 
     private func updateStreamingMessage() {
         if let lastIndex = messages.indices.last, !messages[lastIndex].isUser {
