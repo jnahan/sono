@@ -90,6 +90,7 @@ struct CollectionDetailView: View {
         }
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .environment(\.showPlusButton, showPlusButton)
         .sheet(isPresented: $editingCollection) {
             CollectionFormSheet(

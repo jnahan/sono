@@ -95,6 +95,7 @@ struct SelectionListView: View {
         }
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onAppear {
             showPlusButton.wrappedValue = false
         }

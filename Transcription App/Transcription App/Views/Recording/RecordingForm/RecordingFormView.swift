@@ -212,6 +212,7 @@ struct RecordingFormView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
     }
 }
 

@@ -126,6 +126,7 @@ struct SettingsView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .onAppear {
             showPlusButton.wrappedValue = false
         }
