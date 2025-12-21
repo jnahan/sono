@@ -223,7 +223,7 @@ struct RecordingFormView: View {
                 _ = viewModel.saveRecording(modelContext: modelContext)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

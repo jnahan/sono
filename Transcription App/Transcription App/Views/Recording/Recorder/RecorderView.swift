@@ -43,7 +43,7 @@ struct RecorderView: View {
                     )
                 }
             }
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showExitConfirmation) {
                 ConfirmationSheet(
                     isPresented: $showExitConfirmation,

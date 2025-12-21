@@ -149,32 +149,15 @@ struct RecordingsView: View {
                 })
             }
             .navigationDestination(item: $selectedRecording) { recording in
-                RecordingDetailsView(
-                    recording: recording,
-                    onDismiss: {
-                        // Explicitly clear selection to pop back to RecordingsView
-                        selectedRecording = nil
-                        if navigationPath.count > 0 {
-                            navigationPath.removeLast(navigationPath.count)
+                RecordingDetailsView(recording: recording)
+                    .onAppear { showPlusButton.wrappedValue = false }
+                    .onDisappear {
+                        // Clean up when view disappears (works for both swipe and button tap)
+                        if selectedRecording?.id == recording.id {
+                            selectedRecording = nil
                         }
+                        showPlusButton.wrappedValue = true
                     }
-                )
-                .onAppear { showPlusButton.wrappedValue = false }
-                .onDisappear {
-                    if selectedRecording?.id == recording.id {
-                        selectedRecording = nil
-                    }
-                }
-            }
-            .onChange(of: selectedRecording) { oldValue, newValue in
-                // When navigating to a recording, add to path
-                if newValue != nil {
-                    navigationPath.append("recording-\(newValue!.id)")
-                } else if oldValue != nil {
-                    // When clearing, ensure path is cleared
-                    navigationPath.removeLast(navigationPath.count)
-                    showPlusButton.wrappedValue = true
-                }
             }
             .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(
@@ -191,7 +174,7 @@ struct RecordingsView: View {
                 .onAppear { showPlusButton.wrappedValue = false }
             }
             .background(Color.warmGray50.ignoresSafeArea())
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
     

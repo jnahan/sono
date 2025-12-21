@@ -89,7 +89,7 @@ struct CollectionDetailView: View {
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .environment(\.showPlusButton, showPlusButton)
         .sheet(isPresented: $editingCollection) {
             CollectionFormSheet(
@@ -130,10 +130,13 @@ struct CollectionDetailView: View {
             )
         }
         .navigationDestination(item: $selectedRecording) { recording in
-            RecordingDetailsView(recording: recording, onDismiss: {
-                // Explicitly clear selection to navigate back to CollectionDetailView
-                selectedRecording = nil
-            })
+            RecordingDetailsView(recording: recording)
+                .onDisappear {
+                    // Clean up when view disappears (works for both swipe and button tap)
+                    if selectedRecording?.id == recording.id {
+                        selectedRecording = nil
+                    }
+                }
         }
         .navigationDestination(item: $viewModel.editingRecording) { recording in
                 RecordingFormView(

@@ -78,7 +78,7 @@ struct CollectionsView: View {
                 }
             }
                 .background(Color.warmGray50.ignoresSafeArea())
-                .navigationBarHidden(true)
+                .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 // Reset navigation state when returning to this tab
                 selectedCollection = nil

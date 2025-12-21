@@ -125,7 +125,7 @@ struct SettingsView: View {
                 .padding(.bottom, 40)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             showPlusButton.wrappedValue = false
         }

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AVFoundation
+import UIKit
 
 enum RecordingDetailTab {
     case transcript
@@ -165,7 +166,7 @@ struct RecordingDetailsView: View {
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(
                 isPresented: $showEditRecording,
@@ -224,7 +225,9 @@ struct RecordingDetailsView: View {
 
             // Set active recording details ID to hide preview bar
             audioManager.activeRecordingDetailsId = recording.id
-
+            
+            // Enable navigation swipe gesture
+            enableNavigationSwipeGesture()
         }
         .onDisappear {
             audioPlayback.stop()
@@ -248,7 +251,6 @@ struct RecordingDetailsView: View {
     
     // MARK: - Summary View
 
-    // Remove the old summaryView computed property and replace with:
     private var summaryView: some View {
         SummaryView(recording: recording)
             .id(recording.id)  // Force view recreation when recording changes
@@ -259,6 +261,35 @@ struct RecordingDetailsView: View {
     private var askSonoView: some View {
         AskSonoView(recording: recording)
             .id(recording.id)  // Force view recreation when recording changes
+    }
+    
+    // MARK: - Navigation Gesture Configuration
+    
+    private func enableNavigationSwipeGesture() {
+        // Wait a bit for view hierarchy to be ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first,
+                  let rootViewController = window.rootViewController else {
+                return
+            }
+            
+            // Find navigation controller
+            func findNavigationController(from vc: UIViewController?) -> UINavigationController? {
+                guard let vc = vc else { return nil }
+                if let nav = vc as? UINavigationController { return nav }
+                if let nav = vc.navigationController { return nav }
+                return findNavigationController(from: vc.presentedViewController) ?? 
+                       findNavigationController(from: vc.children.first)
+            }
+            
+            if let navController = findNavigationController(from: rootViewController) {
+                // Standard: Set delegate to nil and enable
+                let popGesture = navController.interactivePopGestureRecognizer
+                popGesture?.delegate = nil
+                popGesture?.isEnabled = true
+            }
+        }
     }
 }
 
