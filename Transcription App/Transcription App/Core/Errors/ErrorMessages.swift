@@ -32,7 +32,6 @@ enum ErrorMessages {
     enum Validation {
         static let titleRequired = "Title is required"
         static let titleTooLong = "Title must be less than %d characters"
-        static let noteTooLong = "Note must be less than %d characters"
         static let collectionNameRequired = "Collection name is required"
         static let collectionNameTooLong = "Collection name must be less than %d characters"
         static let duplicateCollectionName = "A collection with this name already exists"

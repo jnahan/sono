@@ -14,7 +14,6 @@ struct RecordingPlayerBar: View {
     @ObservedObject var audioService: AudioPlaybackService
     let audioURL: URL?
     let fullText: String
-    var onNotePressed: () -> Void
     var onSharePressed: () -> Void
     var onAIPressed: () -> Void
 
@@ -33,11 +32,6 @@ struct RecordingPlayerBar: View {
             HStack(spacing: 0) {
                 // AI Assistant button
                 IconButton(icon: "sparkle", action: onAIPressed)
-
-                Spacer()
-
-                // Note button
-                IconButton(icon: "note", action: onNotePressed)
 
                 Spacer()
 

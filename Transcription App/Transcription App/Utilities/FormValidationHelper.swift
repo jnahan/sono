@@ -29,8 +29,6 @@ struct FormValidationHelper {
         // Use centralized error messages when possible
         if fieldName == "Title" && max == AppConstants.Validation.maxTitleLength {
             return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.titleTooLong, max) : nil
-        } else if fieldName == "Note" && max == AppConstants.Validation.maxNoteLength {
-            return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.noteTooLong, max) : nil
         } else if fieldName == "Collection name" && max == AppConstants.Validation.maxCollectionNameLength {
             return text.count > max ? ErrorMessages.format(ErrorMessages.Validation.collectionNameTooLong, max) : nil
         }

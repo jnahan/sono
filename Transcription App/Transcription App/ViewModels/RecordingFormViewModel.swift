@@ -13,11 +13,6 @@ class RecordingFormViewModel: ObservableObject {
         }
     }
     @Published var selectedCollection: Collection? = nil
-    @Published var note: String = "" {
-        didSet {
-            updateFormValidity()
-        }
-    }
     
     // Transcription state
     @Published var transcribedText: String = ""
@@ -31,9 +26,8 @@ class RecordingFormViewModel: ObservableObject {
     
     // Validation state
     @Published var titleError: String? = nil
-    @Published var noteError: String? = nil
     @Published var hasAttemptedSubmit = false
-    @Published var isFormValid: Bool = true // Published property that updates when title/note change
+    @Published var isFormValid: Bool = true // Published property that updates when title changes
     
     // UI state
     @Published var showCollectionPicker = false
@@ -76,7 +70,6 @@ class RecordingFormViewModel: ObservableObject {
             // Pre-populate for editing
             title = recording.title
             selectedCollection = recording.collection
-            note = recording.notes
             transcribedText = recording.fullText
             transcribedLanguage = recording.language
         } else if let url = audioURL {
@@ -115,10 +108,6 @@ class RecordingFormViewModel: ObservableObject {
         return trimmed.isEmpty || trimmed.count <= AppConstants.Validation.maxTitleLength
     }
     
-    func validateNote() -> Bool {
-        return note.count <= AppConstants.Validation.maxNoteLength
-    }
-    
     /// Update the published isFormValid property and show errors in real-time
     private func updateFormValidity() {
         // Update title error in real-time
@@ -133,15 +122,8 @@ class RecordingFormViewModel: ObservableObject {
             titleError = nil // Empty title is allowed
         }
         
-        // Update note error in real-time
-        if let error = FormValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
-            noteError = error
-        } else {
-            noteError = nil
-        }
-        
         // Update form validity
-        isFormValid = validateTitle() && validateNote()
+        isFormValid = validateTitle()
     }
     
     @discardableResult
@@ -166,27 +148,9 @@ class RecordingFormViewModel: ObservableObject {
         }
     }
     
-    @discardableResult
-    func validateNoteWithError() -> Bool {
-        if hasAttemptedSubmit {
-            if let error = FormValidationHelper.validateLength(note, max: AppConstants.Validation.maxNoteLength, fieldName: "Note") {
-                noteError = error
-                return false
-            }
-            
-            noteError = nil
-            return true
-        } else {
-            // Don't show errors until submit is attempted
-            noteError = nil
-            return validateNote()
-        }
-    }
-    
     func validateForm() {
         hasAttemptedSubmit = true
         validateTitleWithError()
-        validateNoteWithError()
     }
     
     // MARK: - Transcription
@@ -508,7 +472,6 @@ class RecordingFormViewModel: ObservableObject {
             fileURL: url,
             fullText: "",
             language: "",
-            notes: "",
             summary: nil,
             segments: [],
             collection: nil,
@@ -560,7 +523,6 @@ class RecordingFormViewModel: ObservableObject {
         recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
         recording.fullText = transcribedText
         recording.language = transcribedLanguage
-        recording.notes = note
         recording.collection = selectedCollection
         recording.status = .completed
         recording.failureReason = nil
@@ -586,7 +548,6 @@ class RecordingFormViewModel: ObservableObject {
         if let recording = autoSavedRecording {
             // Update metadata only - transcription continues in background
             recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
-            recording.notes = note
             recording.collection = selectedCollection
 
             // Update transcription data if already completed
@@ -636,7 +597,6 @@ class RecordingFormViewModel: ObservableObject {
             fileURL: url,
             fullText: transcribedText,
             language: transcribedLanguage,
-            notes: note,
             summary: nil,  // Summary will be generated when user clicks Summary tab
             segments: [],  // Start with empty array
             collection: selectedCollection,
@@ -670,7 +630,6 @@ class RecordingFormViewModel: ObservableObject {
 
         recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
         recording.collection = selectedCollection
-        recording.notes = note
     }
     
     // MARK: - Cleanup

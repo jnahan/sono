@@ -25,7 +25,6 @@ struct RecordingDetailsView: View {
         _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
     }
 
-    @State private var showNotePopup = false
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var selectedTab: RecordingDetailTab = .transcript
@@ -134,9 +133,6 @@ struct RecordingDetailsView: View {
                         audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
                         fullText: recording.fullText,
-                        onNotePressed: {
-                            showNotePopup = true
-                        },
                         onSharePressed: {
                             if let url = recording.resolvedURL {
                                 // Share both transcription .txt file and audio file
@@ -154,15 +150,6 @@ struct RecordingDetailsView: View {
                         }
                     )
                 }
-            }
-            
-            // Note Overlay
-            if showNotePopup {
-                NoteOverlay(
-                    isPresented: $showNotePopup,
-                    noteText: recording.notes
-                )
-                .zIndex(100)
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())

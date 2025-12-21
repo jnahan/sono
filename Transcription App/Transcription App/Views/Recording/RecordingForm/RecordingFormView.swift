@@ -90,18 +90,6 @@ struct RecordingFormView: View {
                                 onTap: { viewModel.showCollectionPicker = true }
                             )
                         }
-
-                        // Note field
-                        VStack(alignment: .leading, spacing: 6) {
-                            InputLabel(text: "Note")
-                            InputField(
-                                text: $viewModel.note,
-                                placeholder: "Add a note",
-                                isMultiline: true,
-                                height: 200,
-                                error: viewModel.noteError
-                            )
-                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)

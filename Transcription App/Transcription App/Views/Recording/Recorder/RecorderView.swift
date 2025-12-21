@@ -176,7 +176,6 @@ struct RecorderView: View {
             fileURL: fileURL,
             fullText: "",
             language: "",
-            notes: "",
             summary: nil,
             segments: [],
             collection: nil,

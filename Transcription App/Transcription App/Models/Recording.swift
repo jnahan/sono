@@ -11,7 +11,7 @@ enum TranscriptionStatus: String, Codable {
 
 /// Represents a single audio recording with its transcription
 /// Contains the audio file, full transcribed text, segments with timestamps,
-/// optional notes, and optional folder organization
+/// and optional folder organization
 @Model
 class Recording {
     // MARK: - Identifiers
@@ -32,9 +32,6 @@ class Recording {
     var transcriptionStatus: String = TranscriptionStatus.completed.rawValue // Default to completed for existing recordings
     var failureReason: String? = nil // Description of why transcription failed
     var transcriptionStartedAt: Date? = nil // When transcription began
-    
-    // MARK: - User Notes
-    var notes: String
     
     // MARK: - AI Summary
     var summary: String?
@@ -85,7 +82,6 @@ class Recording {
         fileURL: URL,  // Only accept URL, no need for filePath parameter
         fullText: String,
         language: String,
-        notes: String = "",
         summary: String? = nil,
         segments: [RecordingSegment] = [],
         collection: Collection? = nil,
@@ -110,7 +106,6 @@ class Recording {
 
         self.fullText = fullText
         self.language = language
-        self.notes = notes
         self.summary = summary
         self.segments = segments
         self.collection = collection
