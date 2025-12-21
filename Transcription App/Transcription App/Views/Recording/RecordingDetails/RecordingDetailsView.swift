@@ -178,6 +178,9 @@ struct RecordingDetailsView: View {
             )
         }
         .onAppear {
+            // Always reset to transcript tab when opening recording details
+            selectedTab = .transcript
+
             // Hide preview bar and handle audio switching
             let audioManager = AudioPlayerManager.shared
 
@@ -209,7 +212,7 @@ struct RecordingDetailsView: View {
 
             // Set active recording details ID to hide preview bar
             audioManager.activeRecordingDetailsId = recording.id
-            
+
             // Enable navigation swipe gesture
             enableNavigationSwipeGesture()
         }

@@ -15,7 +15,7 @@ class LLMService {
     // MARK: - Initialization
     private init() {
         // LLM is created fresh for each request to avoid KV cache corruption
-        // No preload needed
+        // No preload needed - model loads quickly enough on first use
     }
 
     // MARK: - Public Methods
@@ -33,22 +33,33 @@ class LLMService {
         systemPrompt: String = LLMPrompts.defaultAssistant,
         onChunk: @escaping (String) -> Void
     ) async throws -> String {
-        // Always reset to ensure clean state and avoid KV cache corruption
-        llm = nil
-        
-        // Load model
+        // Get model URL
         guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "gguf") else {
             throw LLMError.modelNotLoaded
         }
-        
-        // Initialize LLM without template (we'll format manually)
-        llm = LLM(from: modelURL)
-        
+
+        // Create a fresh LLM instance for each request to avoid state issues
+        // The LLM library may have internal state that needs to be reset
+        // All LLM operations MUST run on main thread for Metal/GPU access on physical devices
+        // Configure with explicit parameters for reliable generation on physical devices
+        let llm = LLM(
+            from: modelURL,
+            stopSequence: "<|eot_id|>",   // Llama 3.2 end-of-turn token
+            topK: 40,                      // Top-K sampling
+            topP: 0.9,                     // Nucleus sampling
+            temp: 0.7,                     // Lower temp for more focused responses
+            maxTokenCount: AppConstants.LLM.maxTokenCount
+        )
+
         guard let llm = llm else {
             throw LLMError.modelNotLoaded
         }
-        
+
+        Logger.info("LLMService", "LLM created with temp=0.7, topP=0.9, topK=40, maxTokenCount: \(AppConstants.LLM.maxTokenCount)")
+
         // Manually format the prompt for Llama 3.2 chat template
+        // Format: system message, then user message, then assistant response
+        // Note: No trailing newline after assistant header - model starts generating immediately
         let formattedPrompt = """
         <|start_header_id|>system<|end_header_id|>
 
@@ -57,38 +68,80 @@ class LLMService {
         \(input)<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
         """
-        
+
+        // Increase temperature slightly if needed for better generation
+        llm.temp = 0.9  // Higher temp for more diverse token generation
+
+        // Estimate token count (rough: 1 token ≈ 4 characters for English)
+        let estimatedTokens = formattedPrompt.count / 4
+        let maxTokens = Int(AppConstants.LLM.maxTokenCount)
+
+        Logger.info("LLMService", "Input length: \(input.count)")
+        Logger.info("LLMService", "System prompt length: \(systemPrompt.count)")
+        Logger.info("LLMService", "Formatted prompt length: \(formattedPrompt.count)")
+        Logger.info("LLMService", "Estimated tokens: ~\(estimatedTokens) (max: \(maxTokens))")
+        Logger.info("LLMService", "Input preview: \(input.prefix(200))...")
+        Logger.info("LLMService", "Formatted prompt preview: \(formattedPrompt.prefix(300))...")
+        Logger.info("LLMService", "Formatted prompt ends with: ...\(formattedPrompt.suffix(100))")
+
+        // Throw error if prompt is too long
+        if estimatedTokens > maxTokens - 500 {
+            Logger.error("LLMService", "Prompt exceeds context window: ~\(estimatedTokens) tokens (max: \(maxTokens))")
+            throw LLMError.inputTooLong
+        }
+
         // Set up the update closure to receive streaming chunks
         // The update closure is called during respond() with each chunk
-        llm.update = { outputDelta in
+        // Already on main thread, so onChunk can be called directly
+        llm.update = { (outputDelta: String?) in
             if let delta = outputDelta {
-                // Stream the chunk on main thread
-                Task { @MainActor in
-                    onChunk(delta)
-                }
+                Logger.info("LLMService", "Received chunk: '\(delta.prefix(50))...'")
+                onChunk(delta)
+            } else {
+                Logger.info("LLMService", "Stream complete")
             }
-            // nil outputDelta indicates the stream is complete
         }
-        
-        // Generate the response - update closure will be called during this
+
+        // Generate the response - guaranteed on main thread via @MainActor
+        // This is critical for Metal/GPU access on physical devices
+        Logger.info("LLMService", "Starting generation...")
         await llm.respond(to: formattedPrompt)
-        
-        // Clear the update closure after use to avoid it being called in subsequent requests
-        llm.update = { _ in }
-        
-        // Return the complete output
-        return llm.output.trimmingCharacters(in: .whitespacesAndNewlines)
+        Logger.info("LLMService", "Generation finished")
+
+        // Clear the update closure after use
+        llm.update = { (_: String?) in }
+
+        // Get the output and clean it up
+        let rawOutput = llm.output
+
+        // Remove any leading/trailing whitespace and newlines
+        let cleanedOutput = rawOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Log for debugging
+        Logger.info("LLMService", "Raw output length: \(rawOutput.count), cleaned length: \(cleanedOutput.count)")
+        if cleanedOutput.isEmpty {
+            Logger.warning("LLMService", "Output is empty after trimming. Raw output was: '\(rawOutput)'")
+        } else if cleanedOutput == "..." {
+            Logger.warning("LLMService", "LLM returned '...' indicating empty generation. This suggests the model failed to generate tokens.")
+        } else {
+            Logger.success("LLMService", "Generated response: '\(cleanedOutput.prefix(100))...'")
+        }
+
+        return cleanedOutput
     }
 }
 
 // MARK: - Errors
 enum LLMError: LocalizedError {
     case modelNotLoaded
-    
+    case inputTooLong
+
     var errorDescription: String? {
         switch self {
         case .modelNotLoaded:
             return "LLM model is not loaded."
+        case .inputTooLong:
+            return "Transcription is too long to process. Maximum length is approximately \(AppConstants.LLM.maxInputCharacters) characters."
         }
     }
 }

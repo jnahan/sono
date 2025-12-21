@@ -19,7 +19,7 @@ struct SummaryView: View {
                         // Show "Summarizing..." with blue dot
                         VStack(alignment: .leading, spacing: 8) {
                             PulsatingDot()
-                            
+
                             Text("Summarizing...")
                                 .font(.dmSansRegular(size: 16))
                                 .foregroundColor(.baseBlack)
@@ -36,22 +36,31 @@ struct SummaryView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
-        } else if let error = viewModel.summaryError {
-            VStack(alignment: .leading, spacing: 16) {
-                errorContentView()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
         } else if let summary = recording.summary, !summary.isEmpty {
+            // Show summary even if there's an error (error might be informational)
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     summaryContentView(summary: summary)
+
+                    // Show error message if present
+                    if let error = viewModel.summaryError {
+                        Text(error)
+                            .font(.dmSansRegular(size: 14))
+                            .foregroundColor(.red)
+                            .padding(.top, 8)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
+        } else if let error = viewModel.summaryError {
+            VStack(alignment: .leading, spacing: 16) {
+                errorContentView(error: error)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
         } else {
             SummaryEmptyStateView {
                 Task {
@@ -63,15 +72,15 @@ struct SummaryView: View {
     
     // MARK: - Subviews
 
-    private func errorContentView() -> some View {
+    private func errorContentView(error: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Failed to generate summary")
+            Text(error)
                 .font(.dmSansRegular(size: 16))
                 .foregroundColor(.baseBlack)
 
             AIResponseButtons(
                 onCopy: {
-                    UIPasteboard.general.string = "Failed to generate summary"
+                    UIPasteboard.general.string = error
                 },
                 onRegenerate: {
                     Task {
@@ -79,7 +88,7 @@ struct SummaryView: View {
                     }
                 },
                 onExport: {
-                    ShareHelper.shareText("Failed to generate summary")
+                    ShareHelper.shareText(error)
                 }
             )
         }

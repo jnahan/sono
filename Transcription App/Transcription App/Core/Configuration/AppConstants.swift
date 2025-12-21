@@ -18,7 +18,15 @@ enum AppConstants {
 
     /// LLM configuration constants
     enum LLM {
-        static let maxContextLength = 80000
+        /// Maximum context window in tokens (for quantized Llama 3.2 1B on mobile)
+        static let maxTokenCount: Int32 = 4096
+
+        /// Maximum input length in characters (~3750 tokens, leaves ~350 for response)
+        /// Estimate: 1 token ≈ 4 characters
+        /// Supports ~15-17 minutes of transcription
+        static let maxInputCharacters = 15000
+
+        /// Maximum summary output length in characters
         static let maxSummaryLength = 500
     }
     

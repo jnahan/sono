@@ -76,9 +76,10 @@ class AskSonoViewModel: ObservableObject {
         error = nil
 
         do {
-            // Check if transcription exceeds max context length
-            if recording.fullText.count > AppConstants.LLM.maxContextLength {
-                let aiMessage = ChatMessage(text: "Failed to summarize recording", isUser: false)
+            // Check if transcription exceeds max input length
+            if recording.fullText.count > AppConstants.LLM.maxInputCharacters {
+                let errorMsg = "Transcription is too long to process. Maximum length is approximately \(AppConstants.LLM.maxInputCharacters) characters."
+                let aiMessage = ChatMessage(text: errorMsg, isUser: false)
                 messages.append(aiMessage)
                 isProcessing = false
                 return

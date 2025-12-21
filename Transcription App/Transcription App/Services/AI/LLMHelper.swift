@@ -9,8 +9,8 @@ enum LLMResponseValidator {
     static func isValid(_ response: String) -> Bool {
         let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Must not be empty and have minimum length
-        guard !trimmed.isEmpty, trimmed.count >= 10 else {
+        // Must not be empty
+        guard !trimmed.isEmpty else {
             return false
         }
 

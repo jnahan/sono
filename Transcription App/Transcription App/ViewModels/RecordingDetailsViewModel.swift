@@ -30,28 +30,30 @@ class RecordingDetailsViewModel: ObservableObject {
             summaryError = "Cannot generate summary: transcription is empty."
             return
         }
-        
+
         isGeneratingSummary = true
         summaryError = nil
 
         do {
-            // Check if transcription exceeds max context length
-            if recording.fullText.count > AppConstants.LLM.maxContextLength {
-                recording.summary = "Failed to summarize recording"
-                isGeneratingSummary = false
+            // Check if transcription exceeds max input length
+            if recording.fullText.count > AppConstants.LLM.maxInputCharacters {
+                // Set both error and summary message before updating state
+                recording.summary = "Transcription is too long to summarize"
+                summaryError = "Transcription is too long to summarize. Maximum length is approximately \(AppConstants.LLM.maxInputCharacters) characters (\(recording.fullText.count) characters in transcript)."
 
                 // Save the failure message
-                await MainActor.run {
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        summaryError = "Failed to save: \(error.localizedDescription)"
-                    }
+                do {
+                    try modelContext.save()
+                } catch {
+                    summaryError = "Failed to save: \(error.localizedDescription)"
                 }
+
+                isGeneratingSummary = false
                 return
             }
 
-            let prompt = recording.fullText
+            // Format prompt to explicitly request summarization
+            let prompt = "Please summarize the following text:\n\n\(recording.fullText)"
 
             // Reset streaming text
             streamingSummary = ""
@@ -67,31 +69,28 @@ class RecordingDetailsViewModel: ObservableObject {
                 }
             }
 
+            // Log the actual response for debugging
+            Logger.info("RecordingDetailsViewModel", "LLM response length: \(summary.count), content: \(summary.prefix(100))")
+
             // Validate response
             guard LLMResponseValidator.isValid(summary) else {
+                Logger.warning("RecordingDetailsViewModel", "Invalid LLM response: '\(summary)' (length: \(summary.count))")
                 summaryError = "Model returned invalid response. Please try again."
                 isGeneratingSummary = false
                 return
             }
 
-            // Limit summary length
-            let finalSummary = LLMResponseValidator.limit(
-                summary,
-                to: AppConstants.LLM.maxSummaryLength
-            )
-            
-            recording.summary = finalSummary
-            
+            // Use full summary without truncation
+            recording.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+
             // Clear streaming text
             streamingSummary = ""
-            
-            // Save asynchronously to avoid blocking main thread
-            await MainActor.run {
-                do {
-                    try modelContext.save()
-                } catch {
-                    summaryError = "Failed to save summary: \(error.localizedDescription)"
-                }
+
+            // Save to database (already on MainActor, no need to wrap)
+            do {
+                try modelContext.save()
+            } catch {
+                summaryError = "Failed to save summary: \(error.localizedDescription)"
             }
             
         } catch {
