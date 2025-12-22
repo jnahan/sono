@@ -118,11 +118,14 @@ struct RecordingFormView: View {
                         } else {
                             // Save recording and dismiss - go back to home
                             if let savedRecording = viewModel.saveRecording(modelContext: modelContext) {
-                                // Call onSaveComplete callback - parent will handle dismissal
+                                viewModel.markTranscriptionStarted(modelContext: modelContext)
+                                viewModel.setTranscriptionContext(modelContext)
+                                viewModel.startTranscriptionIfNeeded()
+
                                 onSaveComplete?(savedRecording)
-                                // Set isPresented to false to trigger binding update
                                 isPresented = false
                             }
+
                         }
                     }
                 } label: {
@@ -172,21 +175,19 @@ struct RecordingFormView: View {
         }
         .onAppear {
             viewModel.setupForm()
-            // Auto-save recording before starting transcription for crash recovery
-            if !viewModel.isEditing {
-                viewModel.autoSaveRecording(modelContext: modelContext)
-                viewModel.markTranscriptionStarted(modelContext: modelContext)
-                viewModel.setTranscriptionContext(modelContext)
 
-                // Autofocus on title field for new recordings
+            if !viewModel.isEditing {
+                // Keep crash recovery auto-save if you want
+                viewModel.autoSaveRecording(modelContext: modelContext)
+
                 #if !os(macOS)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     isTitleFocused = true
                 }
                 #endif
             }
-            viewModel.startTranscriptionIfNeeded()
         }
+
         .onChange(of: scenePhase) { oldPhase, newPhase in
             // Handle app backgrounding during transcription
             if newPhase == .background && !viewModel.isEditing {
