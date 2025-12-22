@@ -62,6 +62,7 @@ struct CollectionsView: View {
                                             deletingCollection = collection
                                         }
                                     )
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.warmGray50)

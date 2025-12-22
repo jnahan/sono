@@ -94,9 +94,10 @@ struct CollectionPickerSheet: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                
+
                 // Remove from collection option (only for mass move in collection detail view)
                 if recordings != nil && showRemoveFromCollection {
                     Button {
@@ -123,10 +124,11 @@ struct CollectionPickerSheet: View {
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
-                
+
                 // Existing collections
                 ForEach(collections) { collection in
                     Button {
@@ -172,6 +174,7 @@ struct CollectionPickerSheet: View {
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
