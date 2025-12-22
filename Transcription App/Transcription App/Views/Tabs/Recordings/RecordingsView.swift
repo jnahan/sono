@@ -4,6 +4,7 @@ import SwiftData
 struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
 
+    @Binding var tabBarLockedHidden: Bool
     @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
 
@@ -138,12 +139,14 @@ struct RecordingsView: View {
         }
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
+                .onAppear {
+                    tabBarLockedHidden = true
+                }
                 .onDisappear {
-                    if selectedRecording?.id == recording.id {
-                        selectedRecording = nil
-                    }
+                    tabBarLockedHidden = false
                 }
         }
+
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(
                 isPresented: Binding(

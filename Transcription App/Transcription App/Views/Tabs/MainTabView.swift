@@ -6,6 +6,7 @@ import AVFoundation
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Collection.name) private var collections: [Collection]
+    @State private var tabBarLockedHidden = false
 
     @State private var selectedTab = 0
 
@@ -34,7 +35,7 @@ struct MainTabView: View {
             default: return true
             }
         }()
-        return isRootForSelectedTab && showPlusButton
+        return isRootForSelectedTab && showPlusButton && !tabBarLockedHidden
     }
 
     var body: some View {
@@ -43,9 +44,11 @@ struct MainTabView: View {
 
                 NavigationStack {
                     RecordingsView(
+                        tabBarLockedHidden: $tabBarLockedHidden,
                         showPlusButton: $showPlusButton,
                         isRoot: $isRecordingsRoot
                     )
+
                 }
                 .tabItem { EmptyView() }
                 .tag(0)
