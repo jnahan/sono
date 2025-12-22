@@ -6,13 +6,14 @@ import SwiftUI
 @MainActor
 class SummaryViewModel: ObservableObject {
     // MARK: - Published Properties
-    
+
     @Published var isGeneratingSummary = false
     @Published var summaryError: String?
     @Published var streamingSummary: String = ""
-    
+    @Published var chunkProgress: String = "" // e.g., "Processing chunk 2 of 5..."
+
     // MARK: - Private Properties
-    
+
     private let recording: Recording
     
     // MARK: - Initialization
@@ -20,7 +21,62 @@ class SummaryViewModel: ObservableObject {
     init(recording: Recording) {
         self.recording = recording
     }
-    
+
+    // MARK: - Private Helper Methods
+
+    /// Splits text into chunks at natural boundaries (sentences/paragraphs)
+    /// - Parameters:
+    ///   - text: The text to split
+    ///   - maxChunkSize: Maximum size of each chunk in characters
+    /// - Returns: Array of text chunks
+    private func splitIntoChunks(_ text: String, maxChunkSize: Int) -> [String] {
+        var chunks: [String] = []
+        var currentChunk = ""
+
+        // Split by sentences (periods followed by space or newline)
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?\n"))
+
+        for sentence in sentences {
+            let trimmedSentence = sentence.trimmingCharacters(in: .whitespaces)
+            if trimmedSentence.isEmpty { continue }
+
+            let sentenceWithPunctuation = trimmedSentence + "."
+
+            // If adding this sentence would exceed max size, save current chunk and start new one
+            if currentChunk.count + sentenceWithPunctuation.count > maxChunkSize && !currentChunk.isEmpty {
+                chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
+                currentChunk = sentenceWithPunctuation + " "
+            } else {
+                currentChunk += sentenceWithPunctuation + " "
+            }
+        }
+
+        // Add remaining chunk if not empty
+        if !currentChunk.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+
+        // Fallback: If we still have a chunk that's too large (single sentence > maxChunkSize),
+        // split it by character count
+        var finalChunks: [String] = []
+        for chunk in chunks {
+            if chunk.count <= maxChunkSize {
+                finalChunks.append(chunk)
+            } else {
+                // Split oversized chunk into smaller pieces
+                var remaining = chunk
+                while !remaining.isEmpty {
+                    let endIndex = remaining.index(remaining.startIndex, offsetBy: min(maxChunkSize, remaining.count))
+                    let piece = String(remaining[..<endIndex])
+                    finalChunks.append(piece)
+                    remaining = String(remaining[endIndex...])
+                }
+            }
+        }
+
+        return finalChunks
+    }
+
     // MARK: - Public Methods
     
     /// Generates an AI summary for the recording's transcription
@@ -33,70 +89,159 @@ class SummaryViewModel: ObservableObject {
 
         isGeneratingSummary = true
         summaryError = nil
+        streamingSummary = ""
+        chunkProgress = ""
 
         do {
-            // Check if transcription exceeds max input length
-            if recording.fullText.count > AppConstants.LLM.maxInputCharacters {
-                // Set both error and summary message before updating state
-                recording.summary = "Transcription is too long to summarize"
-                summaryError = "Transcription is too long to summarize. Maximum length is approximately \(AppConstants.LLM.maxInputCharacters) characters (\(recording.fullText.count) characters in transcript)."
+            let fullText = recording.fullText
 
-                // Save the failure message
-                do {
-                    try modelContext.save()
-                } catch {
-                    Logger.error("SummaryViewModel", "Failed to save: \(error.localizedDescription)")
-                }
-
-                isGeneratingSummary = false
-                return
+            // Check if we need chunked summarization
+            if fullText.count > AppConstants.LLM.maxInputCharacters {
+                Logger.info("SummaryViewModel", "Using chunked summarization for \(fullText.count) characters")
+                try await generateChunkedSummary(fullText: fullText, modelContext: modelContext)
+            } else {
+                Logger.info("SummaryViewModel", "Using standard summarization for \(fullText.count) characters")
+                try await generateStandardSummary(fullText: fullText, modelContext: modelContext)
             }
 
-            // Format prompt to explicitly request summarization
-            let prompt = "Please summarize the following text:\n\n\(recording.fullText)"
-
-            // Reset streaming text
-            streamingSummary = ""
-
-            // Stream the response
-            let summary = try await LLMService.shared.getStreamingCompletion(
-                from: prompt,
-                systemPrompt: LLMPrompts.summarization
-            ) { [weak self] chunk in
-                guard let self = self else { return }
-                Task { @MainActor in
-                    self.streamingSummary += chunk
-                }
-            }
-
-            // Validate response
-            guard LLMResponseValidator.isValid(summary) else {
-                summaryError = ErrorMessages.Summary.invalidResponse
-                isGeneratingSummary = false
-                return
-            }
-
-            // Use full summary without truncation
-            recording.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
-
-            // Clear streaming text
-            streamingSummary = ""
-
-            // Save to database (already on MainActor, no need to wrap)
-            do {
-                try modelContext.save()
-            } catch {
-                summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
-            }
-            
         } catch {
             Logger.error("SummaryViewModel", "Summary generation error: \(error.localizedDescription)")
             summaryError = ErrorMessages.format(ErrorMessages.Summary.generationFailed, error.localizedDescription)
             streamingSummary = ""
+            chunkProgress = ""
         }
 
         isGeneratingSummary = false
         Logger.info("SummaryViewModel", "Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
+    }
+
+    /// Standard summarization for shorter transcriptions
+    private func generateStandardSummary(fullText: String, modelContext: ModelContext) async throws {
+        // Format prompt to explicitly request summarization
+        let prompt = "Please summarize the following text:\n\n\(fullText)"
+
+        // Reset streaming text
+        streamingSummary = ""
+
+        // Stream the response
+        let summary = try await LLMService.shared.getStreamingCompletion(
+            from: prompt,
+            systemPrompt: LLMPrompts.summarization
+        ) { [weak self] chunk in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.streamingSummary += chunk
+            }
+        }
+
+        // Validate response
+        guard LLMResponseValidator.isValid(summary) else {
+            summaryError = ErrorMessages.Summary.invalidResponse
+            return
+        }
+
+        // Use full summary without truncation
+        recording.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Clear streaming text
+        streamingSummary = ""
+
+        // Save to database
+        do {
+            try modelContext.save()
+        } catch {
+            summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
+        }
+    }
+
+    /// Chunked summarization for longer transcriptions using Map-Reduce pattern
+    private func generateChunkedSummary(fullText: String, modelContext: ModelContext) async throws {
+        // Maximum chunk size - leave room for prompts
+        let maxChunkSize = 12000
+
+        // Step 1: Split text into chunks
+        let chunks = splitIntoChunks(fullText, maxChunkSize: maxChunkSize)
+        Logger.info("SummaryViewModel", "Split into \(chunks.count) chunks")
+
+        // Step 2: Summarize each chunk (Map phase)
+        var chunkSummaries: [String] = []
+
+        for (index, chunk) in chunks.enumerated() {
+            // Update progress
+            chunkProgress = "Summarizing part \(index + 1) of \(chunks.count)..."
+            Logger.info("SummaryViewModel", "Processing chunk \(index + 1)/\(chunks.count), size: \(chunk.count) chars")
+
+            // Reset streaming for this chunk
+            streamingSummary = ""
+
+            let chunkPrompt: String
+            if chunks.count == 1 {
+                // Only one chunk (shouldn't happen, but handle gracefully)
+                chunkPrompt = "Please summarize the following text:\n\n\(chunk)"
+            } else {
+                // Multiple chunks - provide context
+                chunkPrompt = "This is part \(index + 1) of \(chunks.count) from a longer transcription. Please provide a detailed summary of this section:\n\n\(chunk)"
+            }
+
+            let chunkSummary = try await LLMService.shared.getStreamingCompletion(
+                from: chunkPrompt,
+                systemPrompt: LLMPrompts.summarization
+            ) { [weak self] streamChunk in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    self.streamingSummary += streamChunk
+                }
+            }
+
+            // Validate chunk summary
+            guard LLMResponseValidator.isValid(chunkSummary) else {
+                throw NSError(domain: "SummaryViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
+            }
+
+            chunkSummaries.append(chunkSummary.trimmingCharacters(in: .whitespacesAndNewlines))
+            Logger.info("SummaryViewModel", "Chunk \(index + 1) summary: \(chunkSummary.count) chars")
+        }
+
+        // Step 3: Combine chunk summaries
+        let combinedSummaries = chunkSummaries.joined(separator: "\n\n")
+        Logger.info("SummaryViewModel", "Combined summaries: \(combinedSummaries.count) chars")
+
+        // Step 4: Generate final summary from chunk summaries (Reduce phase)
+        chunkProgress = "Creating final summary..."
+        streamingSummary = ""
+
+        let finalPrompt = "The following are summaries of different sections from a longer transcription. Please create a single cohesive summary that captures the main points:\n\n\(combinedSummaries)"
+
+        let finalSummary = try await LLMService.shared.getStreamingCompletion(
+            from: finalPrompt,
+            systemPrompt: LLMPrompts.summarization
+        ) { [weak self] chunk in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.streamingSummary += chunk
+            }
+        }
+
+        // Validate final summary
+        guard LLMResponseValidator.isValid(finalSummary) else {
+            summaryError = ErrorMessages.Summary.invalidResponse
+            return
+        }
+
+        // Save final summary
+        recording.summary = finalSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Clear UI state
+        streamingSummary = ""
+        chunkProgress = ""
+
+        // Save to database
+        do {
+            try modelContext.save()
+            Logger.info("SummaryViewModel", "Final summary saved: \(finalSummary.count) chars")
+        } catch {
+            summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
+        }
     }
 }
 

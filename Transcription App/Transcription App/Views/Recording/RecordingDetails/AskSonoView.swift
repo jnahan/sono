@@ -167,21 +167,40 @@ struct AskSonoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 // Message text or thinking state
                 if showThinking {
-                    // Show "Thinking..." with blue dot
+                    // Show "Thinking..." with blue dot and chunk progress
                     VStack(alignment: .leading, spacing: 8) {
                         PulsatingDot()
-                        
+
                         Text("Thinking...")
                             .font(.dmSansRegular(size: 16))
                             .foregroundColor(.baseBlack)
+
+                        // Show chunk progress if available
+                        if !viewModel.chunkProgress.isEmpty {
+                            Text(viewModel.chunkProgress)
+                                .font(.dmSansRegular(size: 14))
+                                .foregroundColor(.warmGray500)
+                        }
                     }
                 } else {
-                    // Show message text (either streaming or complete)
-                    let displayText = hasStreamingText ? viewModel.streamingText : message.text
-                    Text(displayText)
-                        .font(.dmSansRegular(size: 16))
-                        .foregroundColor(.baseBlack)
-                        .lineSpacing(4)
+                    // Show message text (either streaming or complete) with optional chunk progress
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Show chunk progress if available and streaming
+                        if hasStreamingText && !viewModel.chunkProgress.isEmpty {
+                            HStack(spacing: 8) {
+                                PulsatingDot()
+                                Text(viewModel.chunkProgress)
+                                    .font(.dmSansMedium(size: 14))
+                                    .foregroundColor(.accent)
+                            }
+                        }
+
+                        let displayText = hasStreamingText ? viewModel.streamingText : message.text
+                        Text(displayText)
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.baseBlack)
+                            .lineSpacing(4)
+                    }
                 }
                 
                 // Action buttons (only show when not streaming or when streaming is complete)

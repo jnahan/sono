@@ -16,20 +16,39 @@ struct SummaryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     if viewModel.streamingSummary.isEmpty {
-                        // Show "Summarizing..." with blue dot
+                        // Show "Summarizing..." with blue dot and chunk progress
                         VStack(alignment: .leading, spacing: 8) {
                             PulsatingDot()
 
                             Text("Summarizing...")
                                 .font(.dmSansRegular(size: 16))
                                 .foregroundColor(.baseBlack)
+
+                            // Show chunk progress if available
+                            if !viewModel.chunkProgress.isEmpty {
+                                Text(viewModel.chunkProgress)
+                                    .font(.dmSansRegular(size: 14))
+                                    .foregroundColor(.warmGray500)
+                            }
                         }
                     } else {
-                        // Show streaming text
-                        Text(viewModel.streamingSummary)
-                            .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.baseBlack)
-                            .lineSpacing(4)
+                        // Show streaming text with optional chunk progress above it
+                        VStack(alignment: .leading, spacing: 12) {
+                            // Show chunk progress if available
+                            if !viewModel.chunkProgress.isEmpty {
+                                HStack(spacing: 8) {
+                                    PulsatingDot()
+                                    Text(viewModel.chunkProgress)
+                                        .font(.dmSansMedium(size: 14))
+                                        .foregroundColor(.accent)
+                                }
+                            }
+
+                            Text(viewModel.streamingSummary)
+                                .font(.dmSansRegular(size: 16))
+                                .foregroundColor(.baseBlack)
+                                .lineSpacing(4)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
