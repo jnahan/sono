@@ -153,8 +153,7 @@ struct CollectionDetailView: View {
                 recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),
                 onMassMoveComplete: {
                     viewModel.exitSelectionMode()
-                },
-                showRemoveFromCollection: true
+                }
             )
         }
         .sheet(isPresented: $showDeleteConfirm) {

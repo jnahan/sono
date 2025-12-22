@@ -10,7 +10,6 @@ struct CollectionPickerSheet: View {
     // Mass move support
     let recordings: [Recording]? // If provided, this is a mass move operation
     let onMassMoveComplete: (() -> Void)? // Callback after mass move
-    let showRemoveFromCollection: Bool // Whether to show "Remove from collection" option
     
     @State private var showCreateCollection = false
     @State private var newCollectionName = ""
@@ -40,8 +39,7 @@ struct CollectionPickerSheet: View {
         modelContext: ModelContext,
         isPresented: Binding<Bool>,
         recordings: [Recording]? = nil,
-        onMassMoveComplete: (() -> Void)? = nil,
-        showRemoveFromCollection: Bool = false
+        onMassMoveComplete: (() -> Void)? = nil
     ) {
         self.collections = collections
         self._selectedCollections = selectedCollections
@@ -49,7 +47,6 @@ struct CollectionPickerSheet: View {
         self._isPresented = isPresented
         self.recordings = recordings
         self.onMassMoveComplete = onMassMoveComplete
-        self.showRemoveFromCollection = showRemoveFromCollection
     }
     
     var body: some View {
@@ -97,37 +94,6 @@ struct CollectionPickerSheet: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-
-                // Remove from collection option (only for mass move in collection detail view)
-                if recordings != nil && showRemoveFromCollection {
-                    Button {
-                        handleSelection(nil)
-                    } label: {
-                        HStack(spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.warmGray200)
-                                    .frame(width: 40, height: 40)
-
-                                Image("folder-minus")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.warmGray600)
-                            }
-
-                            Text("Remove from collection")
-                                .font(.dmSansMedium(size: 16))
-                                .foregroundColor(.baseBlack)
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
 
                 // Existing collections
                 ForEach(collections) { collection in
@@ -264,37 +230,11 @@ struct CollectionPickerSheet: View {
             }
         }
     }
-
-    private func handleSelection(_ collection: Collection?) {
-        guard let recordings = recordings else { return }
-
-        // Handle "Remove from collection" option
-        Task { @MainActor in
-            for recording in recordings {
-                if collection == nil {
-                    // Remove from all collections
-                    recording.collections.removeAll()
-                }
-            }
-
-            do {
-                try modelContext.save()
-                isPresented = false
-                onMassMoveComplete?()
-            } catch {
-                Logger.error("CollectionPicker", "Failed to move recordings: \(error.localizedDescription)")
-            }
-        }
-    }
     
     private func calculateHeight() -> CGFloat {
         let baseHeight: CGFloat = 280
         let rowHeight: CGFloat = 64
-
-        var additionalRows = collections.count
-        if recordings != nil && showRemoveFromCollection {
-            additionalRows += 1 // Add row for "Remove from collection"
-        }
+        let additionalRows = collections.count
 
         return baseHeight + (CGFloat(additionalRows) * rowHeight)
     }
