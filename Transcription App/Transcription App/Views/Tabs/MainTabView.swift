@@ -1,73 +1,87 @@
 import SwiftUI
 import SwiftData
-
-private struct ShowPlusButtonKey: EnvironmentKey {
-    static let defaultValue: Binding<Bool> = .constant(true)
-}
-
-extension EnvironmentValues {
-    var showPlusButton: Binding<Bool> {
-        get { self[ShowPlusButtonKey.self] }
-        set { self[ShowPlusButtonKey.self] = newValue }
-    }
-}
+import UIKit
+import AVFoundation
 
 
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Collection.name) private var collections: [Collection]
 
-
     @State private var selectedTab = 0
+
+    // ✅ Keep your NavigationStacks if you want, but DO NOT use path.isEmpty logic
+    @State private var recordingsPath = NavigationPath()
+    @State private var collectionsPath = NavigationPath()
+
+    // ✅ Special UI mode (selection mode etc.)
     @State private var showPlusButton = true
+
+    // ✅ NEW: per-tab nav depth
+    @State private var recordingsDepth: Int = 0
+    @State private var collectionsDepth: Int = 0
+
     @ObservedObject private var actionSheetManager = ActionSheetManager.shared
 
     @State private var showNewRecordingSheet = false
     @State private var showRecorderScreen = false
     @State private var showFilePicker = false
     @State private var showVideoPicker = false
-    // used to pass file url from picker to transcription screen
+
     @State private var pendingAudioURL: URL?
     @State private var isExtractingAudio = false
     @State private var showExtractionError = false
     @State private var extractionErrorMessage = ""
-    
+
+    private var shouldShowCustomTabBar: Bool {
+        let isOnRoot: Bool = {
+            switch selectedTab {
+            case 0: return recordingsDepth == 0
+            case 1: return collectionsDepth == 0
+            default: return true
+            }
+        }()
+        return isOnRoot && showPlusButton
+    }
+
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
-                RecordingsView()
-                    .environment(\.showPlusButton, $showPlusButton)
-                    .tabItem { EmptyView() } // Hide default tab item
-                    .tag(0)
 
-                CollectionsView()
-                    .environment(\.showPlusButton, $showPlusButton)
-                    .tabItem { EmptyView() } // Hide default tab item
-                    .tag(1)
+                NavigationStack(path: $recordingsPath) {
+                    RecordingsView(
+                        showPlusButton: $showPlusButton,
+                        navDepth: $recordingsDepth
+                    )
+                }
+                .tabItem { EmptyView() }
+                .tag(0)
+
+                NavigationStack(path: $collectionsPath) {
+                    CollectionsView(
+                        navDepth: $collectionsDepth
+                    )
+                }
+                .tabItem { EmptyView() }
+                .tag(1)
             }
-        
-            // Custom Tab Bar
+
+            // ✅ Custom Tab Bar ONLY on RecordingsView root + CollectionsView root
             VStack {
                 Spacer()
-                
-                if showPlusButton {
+
+                if shouldShowCustomTabBar {
                     VStack(spacing: 0) {
                         HStack(spacing: 40) {
-                            // Home button
-                            Button {
-                                selectedTab = 0
-                            } label: {
+                            Button { selectedTab = 0 } label: {
                                 Image(selectedTab == 0 ? "house-fill" : "house")
                                     .resizable()
                                     .renderingMode(.template)
                                     .foregroundColor(selectedTab == 0 ? .baseBlack : .warmGray400)
                                     .frame(width: 32, height: 32)
                             }
-                            
-                            // Plus button
-                            Button {
-                                showNewRecordingSheet = true
-                            } label: {
+
+                            Button { showNewRecordingSheet = true } label: {
                                 HStack(spacing: 8) {
                                     Image("plus-bold")
                                         .resizable()
@@ -79,11 +93,8 @@ struct MainTabView: View {
                                 .background(Color.baseBlack)
                                 .cornerRadius(32)
                             }
-                            
-                            // Folder button
-                            Button {
-                                selectedTab = 1
-                            } label: {
+
+                            Button { selectedTab = 1 } label: {
                                 Image(selectedTab == 1 ? "folder-fill" : "folder")
                                     .resizable()
                                     .renderingMode(.template)
@@ -94,15 +105,12 @@ struct MainTabView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 12)
                         .padding(.bottom, 8)
-                        .background(
-                            Color.warmGray50
-                                .ignoresSafeArea(edges: .bottom)
-                        )
+                        .background(Color.warmGray50.ignoresSafeArea(edges: .bottom))
                     }
                 }
             }
-            
-            // ActionSheet overlay - must be on top
+
+            // overlays
             if showNewRecordingSheet {
                 NewRecordingSheet(
                     onRecordAudio: { showRecorderScreen = true },
@@ -113,7 +121,6 @@ struct MainTabView: View {
                 .zIndex(1000)
             }
 
-            // Dots three action sheet
             if actionSheetManager.isPresented {
                 DotsThreeSheet(
                     isPresented: $actionSheetManager.isPresented,
@@ -121,37 +128,28 @@ struct MainTabView: View {
                 )
                 .zIndex(1000)
             }
-
         }
         .overlay(alignment: .top) {
             if showExtractionError {
-                ErrorToastView(
-                    message: extractionErrorMessage,
-                    isPresented: $showExtractionError
-                )
-                .padding(.top, 8)
+                ErrorToastView(message: extractionErrorMessage, isPresented: $showExtractionError)
+                    .padding(.top, 8)
             }
         }
         .onAppear {
-            // Hide the default tab bar and remove borders
             let appearance = UITabBar.appearance()
             appearance.isHidden = true
             appearance.backgroundImage = UIImage()
             appearance.shadowImage = UIImage()
             appearance.backgroundColor = .clear
         }
+
+        // ---- keep your existing recorder / pickers / covers below unchanged ----
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView(
-                onDismiss: {
-                    showRecorderScreen = false
-                },
+                onDismiss: { showRecorderScreen = false },
                 onSaveComplete: { recording in
-                    // Post notification AFTER form is dismissed
-                    // Use Task to ensure this is async and doesn't interfere with save
                     Task { @MainActor in
-                        // Small delay to ensure form dismissal is complete
-                        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds (longer since RecorderView also dismisses)
-                        // Only post notification if recording needs transcription
+                        try? await Task.sleep(nanoseconds: 500_000_000)
                         if recording.status != .completed {
                             NotificationCenter.default.post(
                                 name: AppConstants.Notification.recordingSaved,
@@ -163,30 +161,22 @@ struct MainTabView: View {
                 }
             )
         }
-        // handle file picker, video picker logic
         .sheet(isPresented: $showFilePicker) {
             MediaFilePicker(
                 onFilePicked: { url, mediaType in
                     showFilePicker = false
-
-                    // If it's a video file, extract audio first
                     if mediaType == .video {
                         Task {
                             isExtractingAudio = true
                             do {
                                 let audioURL = try await AudioExtractor.extractAudio(from: url)
-
-                                // Delete the temp video file after extraction
                                 try? FileManager.default.removeItem(at: url)
-
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     pendingAudioURL = audioURL
                                 }
                             } catch {
-                                // Clean up temp video file even on error
                                 try? FileManager.default.removeItem(at: url)
-
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     extractionErrorMessage = error.localizedDescription
@@ -195,38 +185,27 @@ struct MainTabView: View {
                             }
                         }
                     } else {
-                        // Audio file - use directly
                         pendingAudioURL = url
                     }
                 },
-                onCancel: {
-                    showFilePicker = false
-                }
+                onCancel: { showFilePicker = false }
             )
         }
         .sheet(isPresented: $showVideoPicker) {
             PhotoVideoPicker(
                 onMediaPicked: { url in
                     showVideoPicker = false
-
-                    // PhotoVideoPicker always returns video files - extract audio
                     Task {
                         isExtractingAudio = true
                         do {
                             let audioURL = try await AudioExtractor.extractAudio(from: url)
-
-                            // The temp video file from Photos will be cleaned up by system,
-                            // but we can explicitly delete it to free space immediately
                             try? FileManager.default.removeItem(at: url)
-
                             await MainActor.run {
                                 isExtractingAudio = false
                                 pendingAudioURL = audioURL
                             }
                         } catch {
-                            // Clean up temp video file even on error
                             try? FileManager.default.removeItem(at: url)
-
                             await MainActor.run {
                                 isExtractingAudio = false
                                 extractionErrorMessage = error.localizedDescription
@@ -235,9 +214,7 @@ struct MainTabView: View {
                         }
                     }
                 },
-                onCancel: {
-                    showVideoPicker = false
-                }
+                onCancel: { showVideoPicker = false }
             )
         }
         .fullScreenCover(item: $pendingAudioURL) { audioURL in
@@ -252,20 +229,13 @@ struct MainTabView: View {
                 modelContext: modelContext,
                 onExit: {
                     pendingAudioURL = nil
-                    selectedTab = 0  // Go back to recordings home tab
+                    selectedTab = 0
                 },
                 onSaveComplete: { recording in
                     pendingAudioURL = nil
-                    // fullScreenCover will auto-dismiss when pendingAudioURL becomes nil
-                    // Ensure we're on recordings tab
                     selectedTab = 0
-                    
-                    // Post notification AFTER form is dismissed and we're back on recordings tab
-                    // Use Task to ensure this is async and doesn't interfere with save
                     Task { @MainActor in
-                        // Small delay to ensure form dismissal is complete
-                        try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
-                        // Only post notification if recording needs transcription
+                        try? await Task.sleep(nanoseconds: 200_000_000)
                         if recording.status != .completed {
                             NotificationCenter.default.post(
                                 name: AppConstants.Notification.recordingSaved,

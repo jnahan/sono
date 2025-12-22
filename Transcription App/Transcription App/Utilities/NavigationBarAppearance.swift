@@ -61,3 +61,20 @@ extension View {
         )
     }
 }
+
+
+struct NavDepthTracker: ViewModifier {
+    @Binding var depth: Int
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear { depth += 1 }
+            .onDisappear { depth = max(0, depth - 1) }
+    }
+}
+
+extension View {
+    func trackNavDepth(_ depth: Binding<Int>) -> some View {
+        self.modifier(NavDepthTracker(depth: depth))
+    }
+}

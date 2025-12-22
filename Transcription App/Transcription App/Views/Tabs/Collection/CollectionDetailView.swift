@@ -10,7 +10,7 @@ struct CollectionDetailView: View {
     @StateObject private var viewModel = RecordingListViewModel()
 
     let collection: Collection
-    var showPlusButton: Binding<Bool>
+    @Binding var navDepth: Int
 
     @State private var selectedRecording: Recording?
     @State private var editingCollection = false
@@ -18,14 +18,13 @@ struct CollectionDetailView: View {
     @State private var deletingCollection = false
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
-    
+
     private var recordings: [Recording] {
-        allRecordings.filter { recording in
-            recording.collections.contains(where: { $0.id == collection.id })
-        }
-        .sorted { $0.recordedAt > $1.recordedAt }
+        allRecordings
+            .filter { rec in rec.collections.contains(where: { $0.id == collection.id }) }
+            .sorted { $0.recordedAt > $1.recordedAt }
     }
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
@@ -42,7 +41,7 @@ struct CollectionDetailView: View {
                     },
                     onRightTap: {
                         if viewModel.isSelectionMode {
-                            // Shouldn't happen, but handle it
+                            // no-op
                         } else if !viewModel.filteredRecordings.isEmpty {
                             viewModel.enterSelectionMode()
                         } else {
@@ -58,19 +57,17 @@ struct CollectionDetailView: View {
                         }
                     }
                 )
-                
+
                 VStack(alignment: .leading, spacing: 16) {
                     if !recordings.isEmpty {
                         SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                             .padding(.horizontal, 20)
                     }
-                    
                     recordingsList
                 }
                 .padding(.top, 8)
             }
-            
-            // Mass action buttons (fixed at bottom, 8px above safe area, only in selection mode)
+
             if viewModel.isSelectionMode {
                 MassActionButtons(
                     onDelete: { showDeleteConfirm = true },
@@ -93,7 +90,7 @@ struct CollectionDetailView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
-        .environment(\.showPlusButton, showPlusButton)
+
         .sheet(isPresented: $editingCollection) {
             CollectionFormSheet(
                 isPresented: $editingCollection,
@@ -107,6 +104,7 @@ struct CollectionDetailView: View {
                 currentCollection: collection
             )
         }
+
         .sheet(isPresented: $deletingCollection) {
             ConfirmationSheet(
                 isPresented: $deletingCollection,
@@ -115,35 +113,40 @@ struct CollectionDetailView: View {
                 confirmButtonText: "Delete collection",
                 cancelButtonText: "Cancel",
                 onConfirm: {
-                    // Just delete the collection - .nullify will remove relationships
                     modelContext.delete(collection)
                     deletingCollection = false
                     dismiss()
                 }
             )
         }
+
+        // ✅ Push details inside collection (track depth)
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
+                .trackNavDepth($navDepth)
                 .onDisappear {
-                    // Clean up when view disappears (works for both swipe and button tap)
                     if selectedRecording?.id == recording.id {
                         selectedRecording = nil
                     }
                 }
         }
+
+        // ✅ Push edit inside collection (track depth)
         .navigationDestination(item: $viewModel.editingRecording) { recording in
-                RecordingFormView(
-                    isPresented: Binding(
-                        get: { viewModel.editingRecording != nil },
-                        set: { if !$0 { viewModel.cancelEdit() } }
-                    ),
-                    audioURL: nil,
-                    existingRecording: recording,
-                    collections: collections,
-                    modelContext: modelContext,
-                    onExit: nil
-                )
+            RecordingFormView(
+                isPresented: Binding(
+                    get: { viewModel.editingRecording != nil },
+                    set: { if !$0 { viewModel.cancelEdit() } }
+                ),
+                audioURL: nil,
+                existingRecording: recording,
+                collections: collections,
+                modelContext: modelContext,
+                onExit: nil
+            )
+            .trackNavDepth($navDepth)
         }
+
         .sheet(isPresented: $showMoveToCollection) {
             CollectionPickerSheet(
                 collections: collections,
@@ -156,6 +159,7 @@ struct CollectionDetailView: View {
                 }
             )
         }
+
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -170,40 +174,20 @@ struct CollectionDetailView: View {
                 }
             )
         }
-        .onChange(of: viewModel.searchText) { oldValue, newValue in
+
+        .onChange(of: viewModel.searchText) { _, _ in
             viewModel.updateFilteredRecordings(from: recordings)
         }
-        .onChange(of: recordings) { oldValue, newValue in
+        .onChange(of: recordings) { _, _ in
             viewModel.updateFilteredRecordings(from: recordings)
         }
         .onAppear {
             viewModel.configure(modelContext: modelContext)
             viewModel.updateFilteredRecordings(from: recordings)
-            showPlusButton.wrappedValue = false
-            // Reset navigation state when returning to this view
             selectedRecording = nil
         }
     }
-    
-    // MARK: - Selection Mode Actions
-    
-    private func deleteSelectedRecordings() {
-        let selectedArray = viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings)
-        // Cancel any active transcriptions before deleting
-        for recording in selectedArray {
-            TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
-        }
-        viewModel.deleteRecordings(selectedArray)
-    }
-    
-    private func copySelectedRecordings() {
-        viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
-    }
-    
-    private func exportSelectedRecordings() {
-        viewModel.exportRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
-    }
-    
+
     private var recordingsList: some View {
         RecordingsListView(
             recordings: viewModel.filteredRecordings,
@@ -227,12 +211,27 @@ struct CollectionDetailView: View {
             bottomContentMargin: nil
         )
     }
-    
+
+    private func deleteSelectedRecordings() {
+        let selectedArray = viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings)
+        for recording in selectedArray {
+            TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+        }
+        viewModel.deleteRecordings(selectedArray)
+    }
+
+    private func copySelectedRecordings() {
+        viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
+    }
+
+    private func exportSelectedRecordings() {
+        viewModel.exportRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
+    }
+
     private func deleteRecordings(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
                 let recording = viewModel.filteredRecordings[index]
-                // Cancel any active transcription before deleting
                 TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                 modelContext.delete(recording)
             }

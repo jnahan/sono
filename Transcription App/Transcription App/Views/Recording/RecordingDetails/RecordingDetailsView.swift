@@ -12,11 +12,13 @@ enum RecordingDetailTab {
 struct RecordingDetailsView: View {
     let recording: Recording
     var onDismiss: (() -> Void)? = nil
+
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var viewModel: RecordingDetailsViewModel
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.showPlusButton) private var showPlusButton
+
     @Query(sort: \Collection.name) private var collections: [Collection]
 
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
@@ -32,15 +34,11 @@ struct RecordingDetailsView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Custom Top Bar
                 CustomTopBar(
                     title: "",
                     leftIcon: "caret-left",
                     rightIcon: "dots-three-bold",
                     onLeftTap: {
-                        // Show tab bar when going back
-                        showPlusButton.wrappedValue = true
-                        // Use callback if provided, otherwise use dismiss
                         if let onDismiss = onDismiss {
                             onDismiss()
                         } else {
@@ -69,8 +67,7 @@ struct RecordingDetailsView: View {
                         ])
                     }
                 )
-                
-                // Header
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
                         .font(.dmSansMedium(size: 14))
@@ -84,7 +81,6 @@ struct RecordingDetailsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
 
-                // Tab Selector
                 HStack(spacing: 16) {
                     TabButton(
                         title: "Transcript",
@@ -109,7 +105,6 @@ struct RecordingDetailsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
 
-                // Content Area
                 VStack(spacing: 0) {
                     if selectedTab == .transcript {
                         transcriptView
@@ -123,8 +118,7 @@ struct RecordingDetailsView: View {
 
                 Spacer()
             }
-            
-            // Audio Player Controls (Fixed at bottom) - Only show in transcript tab
+
             if selectedTab == .transcript {
                 VStack {
                     Spacer()
@@ -135,7 +129,6 @@ struct RecordingDetailsView: View {
                         fullText: recording.fullText,
                         onSharePressed: {
                             if let url = recording.resolvedURL {
-                                // Share both transcription .txt file and audio file
                                 if let transcriptionFileURL = ShareHelper.createTranscriptionFile(recording.fullText, title: recording.title) {
                                     ShareHelper.shareItems([transcriptionFileURL, url])
                                 } else {
@@ -152,6 +145,7 @@ struct RecordingDetailsView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
+
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(
                 isPresented: $showEditRecording,
@@ -162,6 +156,7 @@ struct RecordingDetailsView: View {
                 onExit: nil
             )
         }
+
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -170,7 +165,6 @@ struct RecordingDetailsView: View {
                 confirmButtonText: "Delete recording",
                 cancelButtonText: "Cancel",
                 onConfirm: {
-                    // Cancel any active transcription before deleting
                     TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
                     modelContext.delete(recording)
                     showDeleteConfirm = false
@@ -178,74 +172,57 @@ struct RecordingDetailsView: View {
                 }
             )
         }
+
         .onAppear {
-            // Always reset to transcript tab when opening recording details
             selectedTab = .transcript
 
-            // Hide preview bar and handle audio switching
             let audioManager = AudioPlayerManager.shared
 
-            // If global player is playing a different recording, stop it
             if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
                 audioManager.stop()
             }
 
-            // If global player is playing the same recording, sync state to local player
             if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
                 let wasPlaying = audioManager.player.isPlaying
                 let currentTime = audioManager.player.currentTime
-                audioManager.stop() // Stop global player
+                audioManager.stop()
 
-                // Load and sync to local player
                 if let url = recording.resolvedURL {
                     audioPlayback.preload(url: url)
                     audioPlayback.seek(to: currentTime)
-                    if wasPlaying {
-                        audioPlayback.play()
-                    }
+                    if wasPlaying { audioPlayback.play() }
                 }
             } else {
-                // Just load the audio
                 if let url = recording.resolvedURL {
                     audioPlayback.preload(url: url)
                 }
             }
 
-            // Set active recording details ID to hide preview bar
             audioManager.activeRecordingDetailsId = recording.id
         }
+
         .onDisappear {
             audioPlayback.stop()
-            // Clear active recording details ID to show preview bar again
             AudioPlayerManager.shared.clearActiveRecordingDetails()
-            // Ensure tab bar is shown when leaving details view
-            showPlusButton.wrappedValue = true
         }
     }
-    
-    // MARK: - Transcript View
 
     private var transcriptView: some View {
         TranscriptView(
             recording: recording,
             audioPlayback: audioPlayback,
             viewModel: viewModel
-        ) 
+        )
         .id(recording.id)
     }
-    
-    // MARK: - Summary View
 
     private var summaryView: some View {
         SummaryView(recording: recording)
-            .id(recording.id)  // Force view recreation when recording changes
+            .id(recording.id)
     }
-    
-    // MARK: - Ask Sono View
 
     private var askSonoView: some View {
         AskSonoView(recording: recording)
-            .id(recording.id)  // Force view recreation when recording changes
+            .id(recording.id)
     }
 }
-

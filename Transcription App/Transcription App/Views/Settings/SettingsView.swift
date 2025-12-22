@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.showPlusButton) private var showPlusButton
     
     @State private var audioLanguage: String
     @State private var showTimestamps: Bool
@@ -127,9 +126,6 @@ struct SettingsView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
-        .onAppear {
-            showPlusButton.wrappedValue = false
-        }
         .onChange(of: audioLanguage) { oldValue, newValue in
             SettingsManager.shared.audioLanguage = newValue
         }
