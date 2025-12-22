@@ -15,10 +15,11 @@ struct RecordingDetailsView: View {
     
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var viewModel: RecordingDetailsViewModel
-    
+    @StateObject private var progressManager = TranscriptionProgressManager.shared
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     @Query(sort: \Collection.name) private var collections: [Collection]
     
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
@@ -30,6 +31,7 @@ struct RecordingDetailsView: View {
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var selectedTab: RecordingDetailTab = .transcript
+    @State private var currentProgress: Double = 0.0
     
     var body: some View {
         ZStack {
@@ -114,7 +116,7 @@ struct RecordingDetailsView: View {
             if selectedTab == .transcript {
                 VStack {
                     Spacer()
-                    
+
                     RecordingPlayerBar(
                         audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
@@ -132,6 +134,15 @@ struct RecordingDetailsView: View {
                         }
                     )
                 }
+            }
+
+            // Show transcription progress overlay when status is inProgress
+            if recording.status == .inProgress {
+                TranscriptionProgressOverlay(
+                    progress: currentProgress,
+                    isQueued: progressManager.isQueued(recordingId: recording.id),
+                    queuePosition: progressManager.getOverallPosition(for: recording.id)
+                )
             }
         }
         .background(Color.warmGray50.ignoresSafeArea())
@@ -197,6 +208,18 @@ struct RecordingDetailsView: View {
             audioPlayback.stop()
             AudioPlayerManager.shared.clearActiveRecordingDetails()
         }
+
+        .onChange(of: progressManager.activeTranscriptions[recording.id]) { _, newProgress in
+            if let progress = newProgress {
+                currentProgress = progress
+            }
+        }
+
+        .onChange(of: recording.status) { oldStatus, newStatus in
+            if oldStatus == .inProgress && newStatus == .completed {
+                currentProgress = 1.0
+            }
+        }
     }
     
     private var transcriptView: some View {
@@ -211,5 +234,71 @@ struct RecordingDetailsView: View {
     private var summaryView: some View {
         SummaryView(recording: recording)
             .id(recording.id)
+    }
+}
+
+// MARK: - Transcription Progress Overlay
+
+private struct TranscriptionProgressOverlay: View {
+    let progress: Double
+    let isQueued: Bool
+    let queuePosition: (position: Int, total: Int)?
+
+    var body: some View {
+        ZStack {
+            Color.warmGray50
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                if isQueued {
+                    VStack(spacing: 0) {
+                        Text("Waiting to transcribe")
+                            .font(.dmSansSemiBold(size: 24))
+                            .foregroundColor(.baseBlack)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer()
+                            .frame(height: 8)
+
+                        Text("Your recording will be transcribed when the current transcription finishes.")
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.warmGray700)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 20)
+                } else {
+                    VStack(spacing: 0) {
+                        Text("\(Int(progress * 100))%")
+                            .font(.dmSansSemiBold(size: 64))
+                            .foregroundColor(.baseBlack)
+
+                        Spacer()
+                            .frame(height: 8)
+
+                        Text("Transcribing audio")
+                            .font(.dmSansSemiBold(size: 24))
+                            .foregroundColor(.baseBlack)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer()
+                            .frame(height: 8)
+
+                        Text("Transcription in progress. Please do not close.")
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.warmGray700)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+        }
     }
 }

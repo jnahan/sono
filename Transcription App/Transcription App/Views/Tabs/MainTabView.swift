@@ -27,6 +27,9 @@ struct MainTabView: View {
     @State private var showExtractionError = false
     @State private var extractionErrorMessage = ""
 
+    @State private var selectedRecordingForDetails: Recording?
+    @State private var navigateToRecordingDetails = false
+
     private var shouldShowCustomTabBar: Bool {
         let isRootForSelectedTab: Bool = {
             switch selectedTab {
@@ -48,7 +51,20 @@ struct MainTabView: View {
                         showPlusButton: $showPlusButton,
                         isRoot: $isRecordingsRoot
                     )
-
+                    .navigationDestination(isPresented: $navigateToRecordingDetails) {
+                        if let recording = selectedRecordingForDetails {
+                            RecordingDetailsView(recording: recording, onDismiss: {
+                                navigateToRecordingDetails = false
+                                selectedRecordingForDetails = nil
+                            })
+                            .onAppear {
+                                tabBarLockedHidden = true
+                            }
+                            .onDisappear {
+                                tabBarLockedHidden = false
+                            }
+                        }
+                    }
                 }
                 .tabItem { EmptyView() }
                 .tag(0)
@@ -156,16 +172,9 @@ struct MainTabView: View {
                     showRecorderScreen = false
                 },
                 onSaveComplete: { recording in
-                    Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 500_000_000)
-                        if recording.status != .completed {
-                            NotificationCenter.default.post(
-                                name: AppConstants.Notification.recordingSaved,
-                                object: nil,
-                                userInfo: ["recordingId": recording.id]
-                            )
-                        }
-                    }
+                    // Navigate to recording details to show progress
+                    selectedRecordingForDetails = recording
+                    navigateToRecordingDetails = true
                 }
             )
         }
@@ -183,7 +192,7 @@ struct MainTabView: View {
 
                                 await MainActor.run {
                                     isExtractingAudio = false
-                                    pendingAudioURL = audioURL
+                                    handleMediaSave(audioURL: audioURL)
                                 }
                             } catch {
                                 try? FileManager.default.removeItem(at: url)
@@ -196,7 +205,7 @@ struct MainTabView: View {
                             }
                         }
                     } else {
-                        pendingAudioURL = url
+                        handleMediaSave(audioURL: url)
                     }
                 },
                 onCancel: {
@@ -217,7 +226,7 @@ struct MainTabView: View {
 
                             await MainActor.run {
                                 isExtractingAudio = false
-                                pendingAudioURL = audioURL
+                                handleMediaSave(audioURL: audioURL)
                             }
                         } catch {
                             try? FileManager.default.removeItem(at: url)
@@ -235,36 +244,140 @@ struct MainTabView: View {
                 }
             )
         }
-        .fullScreenCover(item: $pendingAudioURL) { audioURL in
-            RecordingFormView(
-                isPresented: Binding(
-                    get: { pendingAudioURL != nil },
-                    set: { if !$0 { pendingAudioURL = nil } }
-                ),
-                audioURL: audioURL,
-                existingRecording: nil,
-                collections: collections,
-                modelContext: modelContext,
-                onExit: {
-                    pendingAudioURL = nil
-                    selectedTab = 0
-                },
-                onSaveComplete: { recording in
-                    pendingAudioURL = nil
-                    selectedTab = 0
+    }
 
+    // MARK: - Helper Methods
+
+    /// Handle saving media (file/video upload) and navigate to details
+    private func handleMediaSave(audioURL: URL) {
+        Logger.info("MainTabView", "Handling media save for: \(audioURL.lastPathComponent)")
+
+        // Create recording with default title (trimmed to max length)
+        let filename = audioURL.deletingPathExtension().lastPathComponent
+        let maxLength = 50 // AppConstants.Validation.maxTitleLength
+
+        // For video extractions, clean up the filename
+        var cleanFilename = filename
+        if filename.contains("-audio-") {
+            if let videoName = filename.components(separatedBy: "-audio-").first, !videoName.isEmpty {
+                cleanFilename = videoName
+            }
+        }
+
+        let title = String(cleanFilename.prefix(maxLength))
+
+        let recording = Recording(
+            title: title,
+            fileURL: audioURL,
+            fullText: "",
+            language: "",
+            summary: nil,
+            segments: [],
+            collections: [],
+            recordedAt: Date(),
+            transcriptionStatus: .notStarted,
+            failureReason: nil,
+            transcriptionStartedAt: nil
+        )
+
+        modelContext.insert(recording)
+
+        do {
+            try modelContext.save()
+            Logger.success("MainTabView", "Recording saved successfully")
+
+            // Mark transcription as started
+            recording.status = .inProgress
+            recording.transcriptionStartedAt = Date()
+            try modelContext.save()
+
+            // Start transcription asynchronously
+            startTranscription(for: recording, audioURL: audioURL)
+
+            // Navigate to recording details
+            selectedTab = 0 // Switch to recordings tab
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 400_000_000) // Small delay for tab switch
+                selectedRecordingForDetails = recording
+                navigateToRecordingDetails = true
+            }
+        } catch {
+            Logger.error("MainTabView", "Failed to save recording: \(error.localizedDescription)")
+        }
+    }
+
+    /// Start transcription for a recording
+    private func startTranscription(for recording: Recording, audioURL: URL) {
+        let recordingId = recording.id
+
+        Task { @MainActor in
+            do {
+                Logger.info("MainTabView", "Starting transcription for recording: \(recordingId.uuidString.prefix(8))")
+
+                let result = try await TranscriptionService.shared.transcribe(
+                    audioURL: audioURL,
+                    recordingId: recordingId
+                ) { progress in
                     Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 200_000_000)
-                        if recording.status != .completed {
-                            NotificationCenter.default.post(
-                                name: AppConstants.Notification.recordingSaved,
-                                object: nil,
-                                userInfo: ["recordingId": recording.id]
+                        if !Task.isCancelled {
+                            TranscriptionProgressManager.shared.updateProgress(
+                                for: recordingId,
+                                progress: progress
                             )
                         }
                     }
                 }
-            )
+
+                // Update recording with results
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                guard let recordings = try? modelContext.fetch(descriptor),
+                      let rec = recordings.first else {
+                    Logger.info("MainTabView", "Recording deleted during transcription")
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    return
+                }
+
+                rec.fullText = result.text
+                rec.language = result.language
+                rec.status = .completed
+                rec.failureReason = nil
+
+                // Add segments
+                rec.segments.removeAll()
+                for segment in result.segments {
+                    let recSegment = RecordingSegment(
+                        start: segment.start,
+                        end: segment.end,
+                        text: segment.text
+                    )
+                    modelContext.insert(recSegment)
+                    rec.segments.append(recSegment)
+                }
+
+                try modelContext.save()
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                Logger.success("MainTabView", "Transcription completed successfully")
+
+            } catch {
+                Logger.error("MainTabView", "Transcription failed: \(error.localizedDescription)")
+
+                // Update recording to failed status
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                if let recordings = try? modelContext.fetch(descriptor),
+                   let rec = recordings.first {
+                    rec.status = .failed
+                    rec.failureReason = "Transcription failed"
+                    try? modelContext.save()
+                }
+
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            }
         }
     }
 }

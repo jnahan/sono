@@ -9,8 +9,6 @@ struct RecorderView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var showTranscriptionDetail = false
-    @State private var pendingAudioURL: URL? = nil
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
     @State private var userCanceledRecording = false
@@ -38,8 +36,7 @@ struct RecorderView: View {
                     RecorderControl(
                         state: recorderControl,
                         onFinishRecording: { url in
-                            pendingAudioURL = url
-                            showTranscriptionDetail = true
+                            handleRecordingComplete(audioURL: url)
                         }
                     )
                 }
@@ -63,41 +60,6 @@ struct RecorderView: View {
                         }
 
                         dismiss()
-                    }
-                )
-            }
-            .fullScreenCover(item: Binding(
-                get: { showTranscriptionDetail ? pendingAudioURL : nil },
-                set: { newValue in
-                    if newValue == nil {
-                        showTranscriptionDetail = false
-                        pendingAudioURL = nil
-                    }
-                }
-            )) { audioURL in
-                RecordingFormView(
-                    isPresented: $showTranscriptionDetail,
-                    audioURL: audioURL,
-                    existingRecording: nil,
-                    collections: collections,
-                    modelContext: modelContext,
-                    onExit: {
-                        pendingAudioURL = nil
-                        showTranscriptionDetail = false
-                        dismiss()
-                    },
-                    onSaveComplete: { recording in
-                        // Clear state - this will dismiss RecordingFormView's fullScreenCover
-                        pendingAudioURL = nil
-                        showTranscriptionDetail = false
-                        // Notify parent about saved recording
-                        onSaveComplete?(recording)
-                        // Then dismiss RecorderView to go back to home
-                        // Use a small delay to ensure RecordingFormView dismisses first
-                        Task { @MainActor in
-                            try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
-                            onDismiss?()
-                        }
                     }
                 )
             }
@@ -157,6 +119,131 @@ struct RecorderView: View {
         // Recording exists but not in database - auto-save it
         Logger.info("RecorderView", "Auto-saving recording after return from background")
         performAutoSave(fileURL: fileURL)
+    }
+
+    /// Handle recording completion - save and start transcription
+    private func handleRecordingComplete(audioURL: URL) {
+        Logger.info("RecorderView", "Handling recording completion for: \(audioURL.lastPathComponent)")
+
+        // Create recording with default values
+        let filename = audioURL.deletingPathExtension().lastPathComponent
+        let maxLength = 50 // AppConstants.Validation.maxTitleLength
+        let title = String(filename.prefix(maxLength))
+
+        let recording = Recording(
+            title: title,
+            fileURL: audioURL,
+            fullText: "",
+            language: "",
+            summary: nil,
+            segments: [],
+            collections: [],
+            recordedAt: Date(),
+            transcriptionStatus: .notStarted,
+            failureReason: nil,
+            transcriptionStartedAt: nil
+        )
+
+        modelContext.insert(recording)
+
+        do {
+            try modelContext.save()
+            Logger.success("RecorderView", "Recording saved successfully")
+
+            // Mark transcription as started
+            recording.status = .inProgress
+            recording.transcriptionStartedAt = Date()
+            try modelContext.save()
+
+            // Start transcription asynchronously
+            startTranscription(for: recording, audioURL: audioURL)
+
+            // Notify parent with recording
+            onSaveComplete?(recording)
+
+            // Dismiss RecorderView after delay to prevent modal conflict
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 400_000_000) // 0.4 seconds
+                onDismiss?()
+            }
+        } catch {
+            Logger.error("RecorderView", "Failed to save recording: \(error.localizedDescription)")
+        }
+    }
+
+    /// Start transcription for a recording
+    private func startTranscription(for recording: Recording, audioURL: URL) {
+        let recordingId = recording.id
+
+        Task { @MainActor in
+            do {
+                Logger.info("RecorderView", "Starting transcription for recording: \(recordingId.uuidString.prefix(8))")
+
+                let result = try await TranscriptionService.shared.transcribe(
+                    audioURL: audioURL,
+                    recordingId: recordingId
+                ) { progress in
+                    Task { @MainActor in
+                        if !Task.isCancelled {
+                            TranscriptionProgressManager.shared.updateProgress(
+                                for: recordingId,
+                                progress: progress
+                            )
+                        }
+                    }
+                }
+
+                // Update recording with results
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                guard let recordings = try? modelContext.fetch(descriptor),
+                      let rec = recordings.first else {
+                    Logger.info("RecorderView", "Recording deleted during transcription")
+                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    return
+                }
+
+                rec.fullText = result.text
+                rec.language = result.language
+                rec.status = .completed
+                rec.failureReason = nil
+
+                // Add segments
+                rec.segments.removeAll()
+                for segment in result.segments {
+                    let recSegment = RecordingSegment(
+                        start: segment.start,
+                        end: segment.end,
+                        text: segment.text
+                    )
+                    modelContext.insert(recSegment)
+                    rec.segments.append(recSegment)
+                }
+
+                try modelContext.save()
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                Logger.success("RecorderView", "Transcription completed successfully")
+
+            } catch {
+                Logger.error("RecorderView", "Transcription failed: \(error.localizedDescription)")
+
+                // Update recording to failed status
+                let descriptor = FetchDescriptor<Recording>(
+                    predicate: #Predicate { r in r.id == recordingId }
+                )
+
+                if let recordings = try? modelContext.fetch(descriptor),
+                   let rec = recordings.first {
+                    rec.status = .failed
+                    rec.failureReason = "Transcription failed"
+                    try? modelContext.save()
+                }
+
+                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            }
+        }
     }
 
     /// Auto-save recording if there's an audio file but user hasn't finished

@@ -14,8 +14,7 @@ struct RecordingFormView: View {
     @StateObject private var viewModel: RecordingFormViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    @FocusState private var isTitleFocused: Bool
-    
+
     init(
         isPresented: Binding<Bool>,
         audioURL: URL?,
@@ -32,9 +31,14 @@ struct RecordingFormView: View {
         self.modelContext = modelContext
         self.onExit = onExit
         self.onSaveComplete = onSaveComplete
-        self._viewModel = StateObject(wrappedValue: RecordingFormViewModel(audioURL: audioURL, existingRecording: existingRecording))
+        self._viewModel = StateObject(
+            wrappedValue: RecordingFormViewModel(
+                audioURL: audioURL,
+                existingRecording: existingRecording
+            )
+        )
     }
-    
+
     var body: some View {
         ZStack {
             Color.warmGray50
@@ -64,7 +68,6 @@ struct RecordingFormView: View {
                 }
 
                 ScrollView {
-                    // Form fields
                     VStack(spacing: 20) {
                         // Title field
                         VStack(alignment: .leading, spacing: 6) {
@@ -74,7 +77,6 @@ struct RecordingFormView: View {
                                 placeholder: "Title",
                                 error: viewModel.titleError
                             )
-                            .focused($isTitleFocused)
                         }
 
                         // Collection field
@@ -86,7 +88,6 @@ struct RecordingFormView: View {
                                         if viewModel.selectedCollections.isEmpty {
                                             return ""
                                         }
-                                        // Sort collections by name and join with comma
                                         let names = viewModel.selectedCollections
                                             .sorted { $0.name < $1.name }
                                             .map { $0.name }
@@ -96,7 +97,9 @@ struct RecordingFormView: View {
                                 ),
                                 placeholder: "Select collections",
                                 showChevron: true,
-                                onTap: { viewModel.showCollectionPicker = true }
+                                onTap: {
+                                    viewModel.showCollectionPicker = true
+                                }
                             )
                         }
                     }
@@ -106,7 +109,7 @@ struct RecordingFormView: View {
                 .scrollDismissesKeyboard(.interactively)
 
                 Spacer()
-                
+
                 // Save button
                 Button {
                     viewModel.validateForm()
@@ -116,8 +119,8 @@ struct RecordingFormView: View {
                             isPresented = false
                             dismiss()
                         } else {
-                            // Save recording and dismiss - go back to home
                             if let savedRecording = viewModel.saveRecording(modelContext: modelContext) {
+                                // Transcribe only after Save
                                 viewModel.markTranscriptionStarted(modelContext: modelContext)
                                 viewModel.setTranscriptionContext(modelContext)
                                 viewModel.startTranscriptionIfNeeded()
@@ -125,14 +128,12 @@ struct RecordingFormView: View {
                                 onSaveComplete?(savedRecording)
                                 isPresented = false
                             }
-
                         }
                     }
                 } label: {
                     Text(viewModel.saveButtonText)
                 }
                 .buttonStyle(PrimaryButtonStyle())
-                // Disable button when validation fails - errors show in real-time so user knows why
                 .disabled(!viewModel.isFormValid)
             }
         }
@@ -162,11 +163,9 @@ struct RecordingFormView: View {
                 confirmButtonText: "Discard recording",
                 cancelButtonText: "Continue editing",
                 onConfirm: {
-                    // Clean up first, then dismiss
                     viewModel.cleanupOnExit(modelContext: modelContext)
-                    // Small delay to ensure deletion saves before dismissing
                     Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                        try? await Task.sleep(nanoseconds: 100_000_000)
                         isPresented = false
                         onExit?()
                     }
@@ -177,37 +176,25 @@ struct RecordingFormView: View {
             viewModel.setupForm()
 
             if !viewModel.isEditing {
-                // Keep crash recovery auto-save if you want
+                // Keep crash recovery auto-save
                 viewModel.autoSaveRecording(modelContext: modelContext)
-
-                #if !os(macOS)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isTitleFocused = true
-                }
-                #endif
             }
         }
-
         .onChange(of: scenePhase) { oldPhase, newPhase in
-            // Handle app backgrounding during transcription
             if newPhase == .background && !viewModel.isEditing {
                 Logger.info("RecordingForm", "App backgrounded - saving recording state")
-                // Save current state even if transcription is still in progress
                 _ = viewModel.saveRecording(modelContext: modelContext)
 
-                // Mark that we were backgrounded during transcription
                 if viewModel.isTranscribing {
                     Logger.info("RecordingForm", "Backgrounded during transcription")
                     viewModel.markBackgrounded()
                 }
             } else if newPhase == .active && oldPhase == .background && !viewModel.isEditing {
                 Logger.info("RecordingForm", "App returned from background")
-                // Check if we need to resume transcription
                 viewModel.handleReturnFromBackground(modelContext: modelContext)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
-            // Low memory warning - save recording state
             if viewModel.isTranscribing && !viewModel.isEditing {
                 Logger.warning("RecordingForm", "Low memory warning during transcription - saving state")
                 _ = viewModel.saveRecording(modelContext: modelContext)
@@ -215,7 +202,6 @@ struct RecordingFormView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
-            // App is being terminated - save recording state
             if viewModel.isTranscribing && !viewModel.isEditing {
                 Logger.warning("RecordingForm", "App terminating during transcription - saving state")
                 _ = viewModel.saveRecording(modelContext: modelContext)
@@ -225,4 +211,3 @@ struct RecordingFormView: View {
         .enableSwipeBack()
     }
 }
-
