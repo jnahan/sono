@@ -5,7 +5,7 @@ struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Binding var showPlusButton: Bool
-    @Binding var navDepth: Int
+    @Binding var isRoot: Bool
 
     @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
     @Query(sort: \Collection.name) private var collections: [Collection]
@@ -73,12 +73,9 @@ struct RecordingsView: View {
         .onChange(of: recordings) { _, _ in
             viewModel.updateFilteredRecordings(from: recordings)
         }
-
-        // keep your selection mode logic (this is separate from nav depth)
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
             showPlusButton = !isSelecting
         }
-
         .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notification.recordingSaved)) { notification in
             guard let recordingId = notification.userInfo?["recordingId"] as? UUID else { return }
 
@@ -95,17 +92,18 @@ struct RecordingsView: View {
 
             selectedRecording = nil
             showPlusButton = !viewModel.isSelectionMode
+            updateRootState()
         }
+        .onChange(of: selectedRecording) { _, _ in updateRootState() }
+        .onChange(of: showSettings) { _, _ in updateRootState() }
+        .onChange(of: viewModel.editingRecording) { _, _ in updateRootState() }
 
-        // ✅ Settings push (track depth)
         .navigationDestination(item: Binding(
             get: { showSettings ? "settings" : nil },
             set: { showSettings = ($0 != nil) }
         )) { _ in
             SettingsView()
-                .trackNavDepth($navDepth)
         }
-
         .sheet(isPresented: $showMoveToCollection) {
             CollectionPickerSheet(
                 collections: collections,
@@ -118,7 +116,6 @@ struct RecordingsView: View {
                 }
             )
         }
-
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -133,26 +130,20 @@ struct RecordingsView: View {
                 }
             )
         }
-
         .sheet(item: $selectedRecordingForProgress) { recording in
             TranscriptionProgressSheet(recording: recording, onComplete: { completedRecording in
                 selectedRecordingForProgress = nil
                 selectedRecording = completedRecording
             })
         }
-
-        // ✅ Details push (track depth)
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
-                .trackNavDepth($navDepth)
                 .onDisappear {
                     if selectedRecording?.id == recording.id {
                         selectedRecording = nil
                     }
                 }
         }
-
-        // ✅ Edit push (track depth)
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(
                 isPresented: Binding(
@@ -165,11 +156,16 @@ struct RecordingsView: View {
                 modelContext: modelContext,
                 onExit: nil
             )
-            .trackNavDepth($navDepth)
         }
-
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private func updateRootState() {
+        let pushed = (selectedRecording != nil)
+        || showSettings
+        || (viewModel.editingRecording != nil)
+        isRoot = !pushed
     }
 
     private var recordingsList: some View {

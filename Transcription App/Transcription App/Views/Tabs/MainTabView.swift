@@ -3,23 +3,16 @@ import SwiftData
 import UIKit
 import AVFoundation
 
-
 struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Collection.name) private var collections: [Collection]
 
     @State private var selectedTab = 0
 
-    // ✅ Keep your NavigationStacks if you want, but DO NOT use path.isEmpty logic
-    @State private var recordingsPath = NavigationPath()
-    @State private var collectionsPath = NavigationPath()
-
-    // ✅ Special UI mode (selection mode etc.)
     @State private var showPlusButton = true
 
-    // ✅ NEW: per-tab nav depth
-    @State private var recordingsDepth: Int = 0
-    @State private var collectionsDepth: Int = 0
+    @State private var isRecordingsRoot = true
+    @State private var isCollectionsRoot = true
 
     @ObservedObject private var actionSheetManager = ActionSheetManager.shared
 
@@ -34,46 +27,47 @@ struct MainTabView: View {
     @State private var extractionErrorMessage = ""
 
     private var shouldShowCustomTabBar: Bool {
-        let isOnRoot: Bool = {
+        let isRootForSelectedTab: Bool = {
             switch selectedTab {
-            case 0: return recordingsDepth == 0
-            case 1: return collectionsDepth == 0
+            case 0: return isRecordingsRoot
+            case 1: return isCollectionsRoot
             default: return true
             }
         }()
-        return isOnRoot && showPlusButton
+        return isRootForSelectedTab && showPlusButton
     }
 
     var body: some View {
         ZStack {
             TabView(selection: $selectedTab) {
 
-                NavigationStack(path: $recordingsPath) {
+                NavigationStack {
                     RecordingsView(
                         showPlusButton: $showPlusButton,
-                        navDepth: $recordingsDepth
+                        isRoot: $isRecordingsRoot
                     )
                 }
                 .tabItem { EmptyView() }
                 .tag(0)
 
-                NavigationStack(path: $collectionsPath) {
+                NavigationStack {
                     CollectionsView(
-                        navDepth: $collectionsDepth
+                        isRoot: $isCollectionsRoot
                     )
                 }
                 .tabItem { EmptyView() }
                 .tag(1)
             }
 
-            // ✅ Custom Tab Bar ONLY on RecordingsView root + CollectionsView root
             VStack {
                 Spacer()
 
                 if shouldShowCustomTabBar {
                     VStack(spacing: 0) {
                         HStack(spacing: 40) {
-                            Button { selectedTab = 0 } label: {
+                            Button {
+                                selectedTab = 0
+                            } label: {
                                 Image(selectedTab == 0 ? "house-fill" : "house")
                                     .resizable()
                                     .renderingMode(.template)
@@ -81,7 +75,9 @@ struct MainTabView: View {
                                     .frame(width: 32, height: 32)
                             }
 
-                            Button { showNewRecordingSheet = true } label: {
+                            Button {
+                                showNewRecordingSheet = true
+                            } label: {
                                 HStack(spacing: 8) {
                                     Image("plus-bold")
                                         .resizable()
@@ -94,7 +90,9 @@ struct MainTabView: View {
                                 .cornerRadius(32)
                             }
 
-                            Button { selectedTab = 1 } label: {
+                            Button {
+                                selectedTab = 1
+                            } label: {
                                 Image(selectedTab == 1 ? "folder-fill" : "folder")
                                     .resizable()
                                     .renderingMode(.template)
@@ -105,12 +103,16 @@ struct MainTabView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 12)
                         .padding(.bottom, 8)
-                        .background(Color.warmGray50.ignoresSafeArea(edges: .bottom))
+                        .background(
+                            Color.warmGray50
+                                .ignoresSafeArea(edges: .bottom)
+                        )
                     }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeOut(duration: 0.12), value: shouldShowCustomTabBar)
                 }
             }
 
-            // overlays
             if showNewRecordingSheet {
                 NewRecordingSheet(
                     onRecordAudio: { showRecorderScreen = true },
@@ -131,8 +133,11 @@ struct MainTabView: View {
         }
         .overlay(alignment: .top) {
             if showExtractionError {
-                ErrorToastView(message: extractionErrorMessage, isPresented: $showExtractionError)
-                    .padding(.top, 8)
+                ErrorToastView(
+                    message: extractionErrorMessage,
+                    isPresented: $showExtractionError
+                )
+                .padding(.top, 8)
             }
         }
         .onAppear {
@@ -142,11 +147,11 @@ struct MainTabView: View {
             appearance.shadowImage = UIImage()
             appearance.backgroundColor = .clear
         }
-
-        // ---- keep your existing recorder / pickers / covers below unchanged ----
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView(
-                onDismiss: { showRecorderScreen = false },
+                onDismiss: {
+                    showRecorderScreen = false
+                },
                 onSaveComplete: { recording in
                     Task { @MainActor in
                         try? await Task.sleep(nanoseconds: 500_000_000)
@@ -165,18 +170,21 @@ struct MainTabView: View {
             MediaFilePicker(
                 onFilePicked: { url, mediaType in
                     showFilePicker = false
+
                     if mediaType == .video {
                         Task {
                             isExtractingAudio = true
                             do {
                                 let audioURL = try await AudioExtractor.extractAudio(from: url)
                                 try? FileManager.default.removeItem(at: url)
+
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     pendingAudioURL = audioURL
                                 }
                             } catch {
                                 try? FileManager.default.removeItem(at: url)
+
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     extractionErrorMessage = error.localizedDescription
@@ -188,24 +196,29 @@ struct MainTabView: View {
                         pendingAudioURL = url
                     }
                 },
-                onCancel: { showFilePicker = false }
+                onCancel: {
+                    showFilePicker = false
+                }
             )
         }
         .sheet(isPresented: $showVideoPicker) {
             PhotoVideoPicker(
                 onMediaPicked: { url in
                     showVideoPicker = false
+
                     Task {
                         isExtractingAudio = true
                         do {
                             let audioURL = try await AudioExtractor.extractAudio(from: url)
                             try? FileManager.default.removeItem(at: url)
+
                             await MainActor.run {
                                 isExtractingAudio = false
                                 pendingAudioURL = audioURL
                             }
                         } catch {
                             try? FileManager.default.removeItem(at: url)
+
                             await MainActor.run {
                                 isExtractingAudio = false
                                 extractionErrorMessage = error.localizedDescription
@@ -214,7 +227,9 @@ struct MainTabView: View {
                         }
                     }
                 },
-                onCancel: { showVideoPicker = false }
+                onCancel: {
+                    showVideoPicker = false
+                }
             )
         }
         .fullScreenCover(item: $pendingAudioURL) { audioURL in
@@ -234,6 +249,7 @@ struct MainTabView: View {
                 onSaveComplete: { recording in
                     pendingAudioURL = nil
                     selectedTab = 0
+
                     Task { @MainActor in
                         try? await Task.sleep(nanoseconds: 200_000_000)
                         if recording.status != .completed {

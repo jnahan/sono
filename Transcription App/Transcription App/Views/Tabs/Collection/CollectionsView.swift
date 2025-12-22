@@ -4,7 +4,7 @@ import SwiftData
 struct CollectionsView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @Binding var navDepth: Int
+    @Binding var isRoot: Bool
 
     @Query(sort: \Collection.createdAt, order: .reverse) private var collections: [Collection]
     @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
@@ -75,12 +75,16 @@ struct CollectionsView: View {
         }
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear { selectedCollection = nil }
+        .onAppear {
+            selectedCollection = nil
+            updateRootState()
+        }
+        .onChange(of: selectedCollection) { _, _ in
+            updateRootState()
+        }
 
-        // ✅ Push detail (track depth)
         .navigationDestination(item: $selectedCollection) { collection in
-            CollectionDetailView(collection: collection, navDepth: $navDepth)
-                .trackNavDepth($navDepth)
+            CollectionDetailView(collection: collection)
         }
 
         .sheet(isPresented: $showCreateCollection) {
@@ -141,6 +145,10 @@ struct CollectionsView: View {
                 )
             }
         }
+    }
+
+    private func updateRootState() {
+        isRoot = (selectedCollection == nil)
     }
 
     private func recordingCount(for collection: Collection) -> Int {

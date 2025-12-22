@@ -10,7 +10,6 @@ struct CollectionDetailView: View {
     @StateObject private var viewModel = RecordingListViewModel()
 
     let collection: Collection
-    @Binding var navDepth: Int
 
     @State private var selectedRecording: Recording?
     @State private var editingCollection = false
@@ -63,6 +62,7 @@ struct CollectionDetailView: View {
                         SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                             .padding(.horizontal, 20)
                     }
+
                     recordingsList
                 }
                 .padding(.top, 8)
@@ -120,10 +120,8 @@ struct CollectionDetailView: View {
             )
         }
 
-        // ✅ Push details inside collection (track depth)
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
-                .trackNavDepth($navDepth)
                 .onDisappear {
                     if selectedRecording?.id == recording.id {
                         selectedRecording = nil
@@ -131,7 +129,6 @@ struct CollectionDetailView: View {
                 }
         }
 
-        // ✅ Push edit inside collection (track depth)
         .navigationDestination(item: $viewModel.editingRecording) { recording in
             RecordingFormView(
                 isPresented: Binding(
@@ -144,7 +141,6 @@ struct CollectionDetailView: View {
                 modelContext: modelContext,
                 onExit: nil
             )
-            .trackNavDepth($navDepth)
         }
 
         .sheet(isPresented: $showMoveToCollection) {
