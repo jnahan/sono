@@ -20,8 +20,10 @@ struct CollectionDetailView: View {
     @State private var showDeleteConfirm = false
     
     private var recordings: [Recording] {
-        allRecordings.filter { $0.collection?.id == collection.id }
-            .sorted { $0.recordedAt > $1.recordedAt }
+        allRecordings.filter { recording in
+            recording.collections.contains(where: { $0.id == collection.id })
+        }
+        .sorted { $0.recordedAt > $1.recordedAt }
     }
     
     var body: some View {
@@ -109,21 +111,11 @@ struct CollectionDetailView: View {
             ConfirmationSheet(
                 isPresented: $deletingCollection,
                 title: "Delete collection?",
-                message: "Are you sure you want to delete \"\(collection.name)\"? This will remove all \(recordings.count) recording\(recordings.count == 1 ? "" : "s") in this collection.",
+                message: "Are you sure you want to delete \"\(collection.name)\"? Recordings in this collection will remain in your library.",
                 confirmButtonText: "Delete collection",
                 cancelButtonText: "Cancel",
                 onConfirm: {
-                    // Cancel any active transcriptions before deleting
-                    for recording in recordings {
-                        TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
-                    }
-                    
-                    // Delete all recordings in this collection
-                    for recording in recordings {
-                        modelContext.delete(recording)
-                    }
-                    
-                    // Delete the collection
+                    // Just delete the collection - .nullify will remove relationships
                     modelContext.delete(collection)
                     deletingCollection = false
                     dismiss()
@@ -155,7 +147,7 @@ struct CollectionDetailView: View {
         .sheet(isPresented: $showMoveToCollection) {
             CollectionPickerSheet(
                 collections: collections,
-                selectedCollection: .constant(nil),
+                selectedCollections: .constant(Set<Collection>()),
                 modelContext: modelContext,
                 isPresented: $showMoveToCollection,
                 recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),

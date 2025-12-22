@@ -82,10 +82,19 @@ struct RecordingFormView: View {
                             InputLabel(text: "Collection")
                             InputField(
                                 text: Binding(
-                                    get: { viewModel.selectedCollection?.name ?? "" },
+                                    get: {
+                                        if viewModel.selectedCollections.isEmpty {
+                                            return ""
+                                        }
+                                        // Sort collections by name and join with comma
+                                        let names = viewModel.selectedCollections
+                                            .sorted { $0.name < $1.name }
+                                            .map { $0.name }
+                                        return names.joined(separator: ", ")
+                                    },
                                     set: { _ in }
                                 ),
-                                placeholder: "Select collection",
+                                placeholder: "Select collections",
                                 showChevron: true,
                                 onTap: { viewModel.showCollectionPicker = true }
                             )
@@ -137,7 +146,7 @@ struct RecordingFormView: View {
         .sheet(isPresented: $viewModel.showCollectionPicker) {
             CollectionPickerSheet(
                 collections: collections,
-                selectedCollection: $viewModel.selectedCollection,
+                selectedCollections: $viewModel.selectedCollections,
                 modelContext: modelContext,
                 isPresented: $viewModel.showCollectionPicker
             )

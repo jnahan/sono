@@ -12,7 +12,7 @@ class RecordingFormViewModel: ObservableObject {
             updateFormValidity()
         }
     }
-    @Published var selectedCollection: Collection? = nil
+    @Published var selectedCollections: Set<Collection> = []
     
     // Transcription state
     @Published var transcribedText: String = ""
@@ -69,7 +69,7 @@ class RecordingFormViewModel: ObservableObject {
         if let recording = existingRecording {
             // Pre-populate for editing
             title = recording.title
-            selectedCollection = recording.collection
+            selectedCollections = Set(recording.collections)
             transcribedText = recording.fullText
             transcribedLanguage = recording.language
         } else if let url = audioURL {
@@ -474,7 +474,7 @@ class RecordingFormViewModel: ObservableObject {
             language: "",
             summary: nil,
             segments: [],
-            collection: nil,
+            collections: [],
             recordedAt: Date(),
             transcriptionStatus: .notStarted,
             failureReason: nil,
@@ -523,7 +523,7 @@ class RecordingFormViewModel: ObservableObject {
         recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
         recording.fullText = transcribedText
         recording.language = transcribedLanguage
-        recording.collection = selectedCollection
+        recording.collections = Array(selectedCollections)
         recording.status = .completed
         recording.failureReason = nil
 
@@ -548,7 +548,7 @@ class RecordingFormViewModel: ObservableObject {
         if let recording = autoSavedRecording {
             // Update metadata only - transcription continues in background
             recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
-            recording.collection = selectedCollection
+            recording.collections = Array(selectedCollections)
 
             // Update transcription data if already completed
             if !isTranscribing && !transcribedText.isEmpty {
@@ -599,7 +599,7 @@ class RecordingFormViewModel: ObservableObject {
             language: transcribedLanguage,
             summary: nil,  // Summary will be generated when user clicks Summary tab
             segments: [],  // Start with empty array
-            collection: selectedCollection,
+            collections: Array(selectedCollections),
             recordedAt: Date(),
             transcriptionStatus: status
         )
@@ -629,7 +629,7 @@ class RecordingFormViewModel: ObservableObject {
         guard let recording = existingRecording else { return }
 
         recording.title = title.trimmed.isEmpty ? "Untitled recording" : title.trimmed
-        recording.collection = selectedCollection
+        recording.collections = Array(selectedCollections)
     }
     
     // MARK: - Cleanup

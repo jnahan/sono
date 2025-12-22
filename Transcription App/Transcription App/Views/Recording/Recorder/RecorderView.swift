@@ -194,7 +194,7 @@ struct RecorderView: View {
             language: "",
             summary: nil,
             segments: [],
-            collection: nil,
+            collections: [],
             recordedAt: Date(),
             transcriptionStatus: .notStarted,
             failureReason: "Recording was interrupted. The app was closed before transcription could start.",

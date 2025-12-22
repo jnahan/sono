@@ -38,7 +38,7 @@ class Recording {
     
     // MARK: - Organization
     @Relationship(inverse: \Collection.recordings)
-    var collection: Collection?
+    var collections: [Collection] = []
     
     // MARK: - Computed Properties
     var status: TranscriptionStatus {
@@ -84,7 +84,7 @@ class Recording {
         language: String,
         summary: String? = nil,
         segments: [RecordingSegment] = [],
-        collection: Collection? = nil,
+        collections: [Collection] = [],
         recordedAt: Date,
         transcriptionStatus: TranscriptionStatus = .completed,
         failureReason: String? = nil,
@@ -108,7 +108,7 @@ class Recording {
         self.language = language
         self.summary = summary
         self.segments = segments
-        self.collection = collection
+        self.collections = collections
         self.recordedAt = recordedAt
         self.transcriptionStatus = transcriptionStatus.rawValue
         self.failureReason = failureReason

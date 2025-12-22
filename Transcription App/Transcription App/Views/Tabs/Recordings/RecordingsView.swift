@@ -118,7 +118,7 @@ struct RecordingsView: View {
             .sheet(isPresented: $showMoveToCollection) {
                 CollectionPickerSheet(
                     collections: collections,
-                    selectedCollection: .constant(nil),
+                    selectedCollections: .constant(Set<Collection>()),
                     modelContext: modelContext,
                     isPresented: $showMoveToCollection,
                     recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),

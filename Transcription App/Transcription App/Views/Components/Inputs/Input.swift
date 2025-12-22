@@ -68,6 +68,8 @@ struct InputField: View {
                 Text(text.isEmpty ? placeholder : text)
                     .font(.system(size: 16))
                     .foregroundColor(text.isEmpty ? .warmGray400 : .baseBlack)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 Spacer()
                 if showChevron {
                     Image("caret-right")

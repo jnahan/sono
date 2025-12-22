@@ -134,31 +134,17 @@ struct CollectionsView: View {
                 set: { if !$0 { deletingCollection = nil } }
             )) {
                 if let collection = deletingCollection {
-                    let collectionRecordingCount = recordings.filter { $0.collection?.id == collection.id }.count
                     ConfirmationSheet(
                         isPresented: Binding(
                             get: { deletingCollection != nil },
                             set: { if !$0 { deletingCollection = nil } }
                         ),
                         title: "Delete collection?",
-                        message: "Are you sure you want to delete \"\(collection.name)\"? This will remove all \(collectionRecordingCount) recording\(collectionRecordingCount == 1 ? "" : "s") in this collection.",
+                        message: "Are you sure you want to delete \"\(collection.name)\"? Recordings in this collection will remain in your library.",
                         confirmButtonText: "Delete collection",
                         cancelButtonText: "Cancel",
                         onConfirm: {
-                            let recordingsInCollection = recordings.filter { $0.collection?.id == collection.id }
-
-                            // Cancel any active transcriptions before deleting
-                            for recording in recordingsInCollection {
-                                TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
-                            }
-
-                            // Delete all recordings in this collection
-                            // Note: Despite cascade rule on Collection, manual deletion ensures proper cleanup
-                            for recording in recordingsInCollection {
-                                modelContext.delete(recording)
-                            }
-
-                            // Delete the collection
+                            // Just delete the collection - .nullify will remove relationships
                             modelContext.delete(collection)
 
                             do {
@@ -176,7 +162,9 @@ struct CollectionsView: View {
     }
 
     private func recordingCount(for collection: Collection) -> Int {
-        recordings.filter { $0.collection?.id == collection.id }.count
+        recordings.filter { recording in
+            recording.collections.contains(where: { $0.id == collection.id })
+        }.count
     }
     
     private func createCollection() {

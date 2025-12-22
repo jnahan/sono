@@ -3,7 +3,7 @@ import SwiftData
 
 struct CollectionPickerSheet: View {
     let collections: [Collection]
-    @Binding var selectedCollection: Collection?
+    @Binding var selectedCollections: Set<Collection>
     let modelContext: ModelContext
     @Binding var isPresented: Bool
     
@@ -14,10 +14,29 @@ struct CollectionPickerSheet: View {
     
     @State private var showCreateCollection = false
     @State private var newCollectionName = ""
-    
+
+    // Computed property to determine which collections should show checkmarks
+    private var collectionsWithCheckmarks: Set<UUID> {
+        if let recordings = recordings {
+            // For mass actions: show checkmark if ALL selected recordings are in this collection
+            guard !recordings.isEmpty else { return Set() }
+
+            // Get the intersection of all recording collections
+            var commonCollections = Set(recordings.first!.collections.map { $0.id })
+            for recording in recordings.dropFirst() {
+                let recordingCollections = Set(recording.collections.map { $0.id })
+                commonCollections.formIntersection(recordingCollections)
+            }
+            return commonCollections
+        } else {
+            // For single selection: show checkmarks for selected collections
+            return Set(selectedCollections.map { $0.id })
+        }
+    }
+
     init(
         collections: [Collection],
-        selectedCollection: Binding<Collection?>,
+        selectedCollections: Binding<Set<Collection>>,
         modelContext: ModelContext,
         isPresented: Binding<Bool>,
         recordings: [Recording]? = nil,
@@ -25,7 +44,7 @@ struct CollectionPickerSheet: View {
         showRemoveFromCollection: Bool = false
     ) {
         self.collections = collections
-        self._selectedCollection = selectedCollection
+        self._selectedCollections = selectedCollections
         self.modelContext = modelContext
         self._isPresented = isPresented
         self.recordings = recordings
@@ -37,7 +56,7 @@ struct CollectionPickerSheet: View {
         VStack(spacing: 0) {
             // Top bar
             CustomTopBar(
-                title: "Add to collection",
+                title: "Select collections",
                 leftIcon: "x",
                 onLeftTap: {
                     isPresented = false
@@ -112,17 +131,16 @@ struct CollectionPickerSheet: View {
                 ForEach(collections) { collection in
                     Button {
                         if recordings != nil {
-                            // Mass move: move immediately
-                            handleSelection(collection)
+                            // Mass move: toggle collection for all recordings
+                            handleMassToggle(collection)
                         } else {
-                            // Single selection: toggle
-                            if selectedCollection?.id == collection.id {
-                                selectedCollection = nil
+                            // Multi-select: toggle collection in set
+                            if selectedCollections.contains(where: { $0.id == collection.id }) {
+                                selectedCollections.remove(collection)
                             } else {
-                                selectedCollection = collection
-                                // Automatically close the modal when a collection is selected
-                                isPresented = false
+                                selectedCollections.insert(collection)
                             }
+                            // Don't auto-close - let user click Done
                         }
                     } label: {
                         HStack(spacing: 16) {
@@ -144,7 +162,7 @@ struct CollectionPickerSheet: View {
 
                             Spacer()
 
-                            if selectedCollection?.id == collection.id {
+                            if collectionsWithCheckmarks.contains(collection.id) {
                                 Image("check-bold")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
@@ -195,14 +213,14 @@ struct CollectionPickerSheet: View {
                         Task { @MainActor in
                             do {
                                 try modelContext.save()
-                                
+
                                 if recordings != nil {
-                                    // Mass move: move to newly created collection
-                                    handleSelection(newCollection)
+                                    // Mass move: add to newly created collection
+                                    handleMassToggle(newCollection)
                                 } else {
-                                    // Single selection: select the new collection
-                                    selectedCollection = newCollection
-                                    isPresented = false
+                                    // Multi-select: add the new collection
+                                    selectedCollections.insert(newCollection)
+                                    // Don't auto-dismiss - let user continue selecting
                                 }
                             } catch {
                                 Logger.error("CollectionPicker", "Failed to save new collection: \(error.localizedDescription)")
@@ -216,26 +234,53 @@ struct CollectionPickerSheet: View {
         }
     }
     
-    private func handleSelection(_ collection: Collection?) {
-        if let recordings = recordings {
-            // Mass move operation - perform asynchronously to avoid blocking main thread
-            Task { @MainActor in
-                for recording in recordings {
-                    recording.collection = collection
-                }
-                
-                do {
-                    try modelContext.save()
-                    isPresented = false
-                    onMassMoveComplete?()
-                } catch {
-                    Logger.error("CollectionPicker", "Failed to move recordings: \(error.localizedDescription)")
+    private func handleMassToggle(_ collection: Collection) {
+        guard let recordings = recordings else { return }
+
+        Task { @MainActor in
+            // Check if all recordings are already in this collection
+            let allInCollection = collectionsWithCheckmarks.contains(collection.id)
+
+            for recording in recordings {
+                if allInCollection {
+                    // Remove from this collection
+                    recording.collections.removeAll(where: { $0.id == collection.id })
+                } else {
+                    // Add to this collection if not already present
+                    if !recording.collections.contains(where: { $0.id == collection.id }) {
+                        recording.collections.append(collection)
+                    }
                 }
             }
-        } else {
-            // Single selection - handled in button action
-            selectedCollection = collection
-            isPresented = false
+
+            do {
+                try modelContext.save()
+                // Don't auto-dismiss - let user continue selecting
+            } catch {
+                Logger.error("CollectionPicker", "Failed to toggle collection: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func handleSelection(_ collection: Collection?) {
+        guard let recordings = recordings else { return }
+
+        // Handle "Remove from collection" option
+        Task { @MainActor in
+            for recording in recordings {
+                if collection == nil {
+                    // Remove from all collections
+                    recording.collections.removeAll()
+                }
+            }
+
+            do {
+                try modelContext.save()
+                isPresented = false
+                onMassMoveComplete?()
+            } catch {
+                Logger.error("CollectionPicker", "Failed to move recordings: \(error.localizedDescription)")
+            }
         }
     }
     
