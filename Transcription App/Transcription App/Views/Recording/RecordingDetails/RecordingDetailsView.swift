@@ -74,10 +74,13 @@ struct RecordingDetailsView: View {
                     Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
                         .font(.dmSansMedium(size: 14))
                         .foregroundColor(.warmGray400)
-                    
+
                     Text(recording.title)
                         .font(.dmSansSemiBold(size: 24))
                         .foregroundColor(.baseBlack)
+
+                    // Collection tags
+                    CollectionTagsView(collections: recording.collections)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
