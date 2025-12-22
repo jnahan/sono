@@ -63,7 +63,6 @@
 		5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F252ECE92E500049626 /* RecorderControl.swift */; };
 		5D962F2B2ECEBAC000049626 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2A2ECEBAC000049626 /* SettingsView.swift */; };
 		5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */; };
-		5D962F2E2ECEBBF900049626 /* TranscriptionProgressSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */; };
 		5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */; };
 		5DA01ABB2ED90291006BF0F3 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */; };
 		5DA3BD362EEF476D005512C4 /* LLMHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA3BD352EEF476D005512C4 /* LLMHelper.swift */; };
@@ -144,7 +143,6 @@
 		5D962F252ECE92E500049626 /* RecorderControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderControl.swift; sourceTree = "<group>"; };
 		5D962F2A2ECEBAC000049626 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		5D962F2C2ECEBBF800049626 /* RecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailsView.swift; sourceTree = "<group>"; };
-		5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionProgressSheet.swift; sourceTree = "<group>"; };
 		5D968B852EDEBB2D00E6BC5E /* CustomSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSlider.swift; sourceTree = "<group>"; };
 		5DA01ABA2ED90291006BF0F3 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		5DA3BD352EEF476D005512C4 /* LLMHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMHelper.swift; sourceTree = "<group>"; };
@@ -455,7 +453,6 @@
 				5D1570662ED96BEE0094E13E /* CollectionFormSheet.swift */,
 				5D1570642ED96B0A0094E13E /* CollectionPickerSheet.swift */,
 				5D0ED1152EE0FF2D0003E775 /* ConfirmationSheet.swift */,
-				5D962F2F2ECEBBFA00049626 /* TranscriptionProgressSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -645,7 +642,6 @@
 				5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */,
 				5D962F262ECE92E500049626 /* RecorderControl.swift in Sources */,
 				5D962F2D2ECEBBF800049626 /* RecordingDetailsView.swift in Sources */,
-				5D962F2E2ECEBBF900049626 /* TranscriptionProgressSheet.swift in Sources */,
 				5D7925AE2ECD8E4A002889A6 /* RecordingsView.swift in Sources */,
 				5D0ED1162EE0FF2D0003E775 /* ConfirmationSheet.swift in Sources */,
 				5D0ED11D2EE131860003E775 /* ShareHelper.swift in Sources */,

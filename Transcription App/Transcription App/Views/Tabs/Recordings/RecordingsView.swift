@@ -14,7 +14,6 @@ struct RecordingsView: View {
     @StateObject private var viewModel = RecordingListViewModel()
 
     @State private var selectedRecording: Recording?
-    @State private var selectedRecordingForProgress: Recording?
     @State private var showSettings = false
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
@@ -77,15 +76,6 @@ struct RecordingsView: View {
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
             showPlusButton = !isSelecting
         }
-        .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notification.recordingSaved)) { notification in
-            guard let recordingId = notification.userInfo?["recordingId"] as? UUID else { return }
-
-            if let recording = recordings.first(where: { $0.id == recordingId }),
-               recording.status != .completed,
-               selectedRecordingForProgress == nil {
-                selectedRecordingForProgress = recording
-            }
-        }
         .onAppear {
             viewModel.configure(modelContext: modelContext)
             viewModel.updateFilteredRecordings(from: recordings)
@@ -131,12 +121,6 @@ struct RecordingsView: View {
                 }
             )
         }
-        .sheet(item: $selectedRecordingForProgress) { recording in
-            TranscriptionProgressSheet(recording: recording, onComplete: { completedRecording in
-                selectedRecordingForProgress = nil
-                selectedRecording = completedRecording
-            })
-        }
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
                 .onAppear {
@@ -177,11 +161,7 @@ struct RecordingsView: View {
             viewModel: viewModel,
             emptyStateView: AnyView(RecordingEmptyStateView()),
             onRecordingTap: { recording in
-                if recording.status == .completed {
-                    selectedRecording = recording
-                } else {
-                    selectedRecordingForProgress = recording
-                }
+                selectedRecording = recording
             },
             onDelete: nil,
             horizontalPadding: 20,
