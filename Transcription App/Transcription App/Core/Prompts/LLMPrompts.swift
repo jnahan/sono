@@ -27,13 +27,4 @@ enum LLMPrompts {
     If the text cannot be summarized or no meaningful content is available,
     respond only with: 'Failed to summarize.'
     """
-
-    /// Prompt for answering questions about transcriptions
-    static let transcriptionQA = """
-    You are an assistant that answers questions about transcriptions.
-    Answer questions directly and concisely using only the provided transcription.
-    Do not mention your reasoning, thought process, or internal analysis.
-    If the transcription does not contain enough information to answer the question,
-    respond only with: 'Sorry, I don’t have enough context to answer.'
-    """
 }
