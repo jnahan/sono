@@ -332,23 +332,19 @@ struct RecordingsView: View {
             if shouldShowFab {
                 VStack {
                     Spacer()
-                    HStack {
-                        Spacer()
-                        Button { onAddRecording() } label: {
-                            HStack(spacing: 8) {
-                                Image("plus-bold")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(width: 120, height: 48)
-                            .background(Color.baseBlack)
-                            .cornerRadius(32)
+                    Button { onAddRecording() } label: {
+                        HStack(spacing: 8) {
+                            Image("plus-bold")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.white)
                         }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 16)
+                        .frame(width: 120, height: 48)
+                        .background(Color.baseBlack)
+                        .cornerRadius(32)
                     }
+                    .padding(.bottom, 16)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(.easeOut(duration: 0.12), value: shouldShowFab)
