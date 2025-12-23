@@ -12,7 +12,7 @@ enum RecordingDetailTab {
 struct RecordingDetailsView: View {
     let recording: Recording
     var onDismiss: (() -> Void)? = nil
-    
+
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var viewModel: RecordingDetailsViewModel
     @StateObject private var progressManager = TranscriptionProgressManager.shared
@@ -21,21 +21,23 @@ struct RecordingDetailsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Query(sort: \Collection.name) private var collections: [Collection]
-    
+
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
         self.recording = recording
         self.onDismiss = onDismiss
         _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
     }
-    
+
     @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
     @State private var selectedTab: RecordingDetailTab = .transcript
     @State private var currentProgress: Double = 0.0
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
+
+                // Top bar – always empty title
                 CustomTopBar(
                     title: "",
                     leftIcon: "caret-left",
@@ -69,57 +71,71 @@ struct RecordingDetailsView: View {
                         ])
                     }
                 )
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
-                        .font(.dmSansMedium(size: 14))
-                        .foregroundColor(.warmGray400)
 
-                    Text(recording.title)
-                        .font(.dmSansSemiBold(size: 24))
-                        .foregroundColor(.baseBlack)
+                // Collapsing header + sticky tabs
+                ScrollView {
+                    LazyVStack(
+                        alignment: .leading,
+                        spacing: 0,
+                        pinnedViews: [.sectionHeaders]
+                    ) {
 
-                    // Collection tags
-                    CollectionTagsView(collections: recording.collections)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                
-                HStack(spacing: 16) {
-                    TabButton(
-                        title: "Transcript",
-                        isSelected: selectedTab == .transcript,
-                        action: { selectedTab = .transcript }
-                    )
-                    
-                    TabButton(
-                        title: "Summary",
-                        isSelected: selectedTab == .summary,
-                        action: { selectedTab = .summary }
-                    )
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                
-                VStack(spacing: 0) {
-                    if selectedTab == .transcript {
-                        transcriptView
-                    } else if selectedTab == .summary {
-                        summaryView
+                        // Header (scrolls away)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
+                                .font(.dmSansMedium(size: 14))
+                                .foregroundColor(.warmGray400)
+
+                            Text(recording.title)
+                                .font(.dmSansSemiBold(size: 24))
+                                .foregroundColor(.baseBlack)
+
+                            CollectionTagsView(collections: recording.collections)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+
+                        // Sticky tabs
+                        Section(
+                            header:
+                                HStack(spacing: 16) {
+                                    TabButton(
+                                        title: "Transcript",
+                                        isSelected: selectedTab == .transcript,
+                                        action: { selectedTab = .transcript }
+                                    )
+
+                                    TabButton(
+                                        title: "Summary",
+                                        isSelected: selectedTab == .summary,
+                                        action: { selectedTab = .summary }
+                                    )
+
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 16)
+                                .padding(.bottom, 12)
+                                .background(Color.warmGray50)
+                        ) {
+                            VStack(spacing: 0) {
+                                if selectedTab == .transcript {
+                                    transcriptView
+                                } else if selectedTab == .summary {
+                                    summaryView
+                                }
+                            }
+                            .padding(.top, 12)
+                        }
                     }
                 }
-                .padding(.top, 24)
-                
-                Spacer()
             }
-            
+
+            // Player bar overlay (transcript only)
             if selectedTab == .transcript {
                 VStack {
                     Spacer()
-
                     RecordingPlayerBar(
                         audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
@@ -139,7 +155,7 @@ struct RecordingDetailsView: View {
                 }
             }
 
-            // Show transcription progress overlay when status is inProgress
+            // Transcription progress overlay
             if recording.status == .inProgress {
                 TranscriptionProgressOverlay(
                     progress: currentProgress,
@@ -151,7 +167,7 @@ struct RecordingDetailsView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
-        
+
         .sheet(isPresented: $showEditRecording) {
             RecordingFormView(
                 isPresented: $showEditRecording,
@@ -162,7 +178,7 @@ struct RecordingDetailsView: View {
                 onExit: nil
             )
         }
-        
+
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -178,35 +194,35 @@ struct RecordingDetailsView: View {
                 }
             )
         }
-        
+
         .onAppear {
             selectedTab = .transcript
-            
+
             let audioManager = AudioPlayerManager.shared
-            
-            if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
+
+            if let currentGlobal = audioManager.currentRecording,
+               currentGlobal.id != recording.id {
                 audioManager.stop()
             }
-            
-            if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
+
+            if let currentGlobal = audioManager.currentRecording,
+               currentGlobal.id == recording.id {
                 let wasPlaying = audioManager.player.isPlaying
                 let currentTime = audioManager.player.currentTime
                 audioManager.stop()
-                
+
                 if let url = recording.resolvedURL {
                     audioPlayback.preload(url: url)
                     audioPlayback.seek(to: currentTime)
                     if wasPlaying { audioPlayback.play() }
                 }
-            } else {
-                if let url = recording.resolvedURL {
-                    audioPlayback.preload(url: url)
-                }
+            } else if let url = recording.resolvedURL {
+                audioPlayback.preload(url: url)
             }
-            
+
             audioManager.activeRecordingDetailsId = recording.id
         }
-        
+
         .onDisappear {
             audioPlayback.stop()
             AudioPlayerManager.shared.clearActiveRecordingDetails()
@@ -224,7 +240,7 @@ struct RecordingDetailsView: View {
             }
         }
     }
-    
+
     private var transcriptView: some View {
         TranscriptView(
             recording: recording,
@@ -233,7 +249,7 @@ struct RecordingDetailsView: View {
         )
         .id(recording.id)
     }
-    
+
     private var summaryView: some View {
         SummaryView(recording: recording)
             .id(recording.id)
