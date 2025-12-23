@@ -1,3 +1,7 @@
+//
+//  RecordingDetailsView.swift
+//
+
 import SwiftUI
 import SwiftData
 import AVFoundation
@@ -45,8 +49,6 @@ struct RecordingDetailsView: View {
     @State private var scrollY: CGFloat = 0
     @State private var showTopTitle: Bool = false
 
-    // parent scroll lock for ask-sono
-    @State private var parentScrollView: UIScrollView? = nil
     @State private var askSonoActivationToken = UUID()
 
     var body: some View {
@@ -72,51 +74,77 @@ struct RecordingDetailsView: View {
                     }
                 )
 
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
 
-                        headerView
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear
-                                        .onAppear {
-                                            headerHeight = geo.size.height
-                                            updateTopTitleVisibility()
-                                        }
-                                        .onChange(of: geo.size.height) { _, h in
-                                            headerHeight = h
-                                            updateTopTitleVisibility()
-                                        }
+                            headerView
+                                .background(
+                                    GeometryReader { geo in
+                                        Color.clear
+                                            .onAppear {
+                                                headerHeight = geo.size.height
+                                                updateTopTitleVisibility()
+                                            }
+                                            .onChange(of: geo.size.height) { _, h in
+                                                headerHeight = h
+                                                updateTopTitleVisibility()
+                                            }
+                                    }
+                                )
+
+                            Section(
+                                header: RecordingDetailsTabsHeader(
+                                    selectedTab: selectedTab,
+                                    onSelect: { selectedTab = $0 }
+                                )
+                            ) {
+                                contentForSelectedTab
+                                    .padding(.top, 12)
+                                    .padding(.bottom, 24)
+                            }
+                        }
+                        .background(
+                            ScrollOffsetReader(
+                                onScrollViewFound: { _ in },
+                                onOffsetChange: { y in
+                                    scrollY = y
+                                    updateTopTitleVisibility()
                                 }
                             )
+                            .frame(width: 0, height: 0)
+                        )
+                    }
+                    .scrollDismissesKeyboard(.interactively)
+                    .onTapGesture { if isEditingTitle { saveTitleEdit() } }
 
-                        Section(
-                            header: RecordingDetailsTabsHeader(
-                                selectedTab: selectedTab,
-                                onSelect: { selectedTab = $0 }
-                            )
-                        ) {
-                            contentForSelectedTab
-                                .padding(.top, 12)
-                                .padding(.bottom, 24)
+                    // Ask Sono auto-scroll (parent-owned)
+                    .onAppear {
+                        if selectedTab == .askSono {
+                            scrollAskSonoToBottom(proxy, animated: false)
                         }
                     }
-                    .background(
-                        ScrollOffsetReader(
-                            onScrollViewFound: { sv in
-                                parentScrollView = sv
-                                sv.isScrollEnabled = (selectedTab != .askSono)
-                            },
-                            onOffsetChange: { y in
-                                guard selectedTab != .askSono else { return }
-                                scrollY = y
-                                updateTopTitleVisibility()
-                            }
-                        )
-                        .frame(width: 0, height: 0)
-                    )
+                    .onChange(of: askSonoActivationToken) { _, _ in
+                        if selectedTab == .askSono {
+                            scrollAskSonoToBottom(proxy, animated: false)
+                        }
+                    }
+                    .onChange(of: askSonoVM.messages.count) { _, _ in
+                        if selectedTab == .askSono {
+                            scrollAskSonoToBottom(proxy, animated: true)
+                        }
+                    }
+                    .onChange(of: askSonoVM.isProcessing) { _, processing in
+                        if selectedTab == .askSono, !processing {
+                            scrollAskSonoToBottom(proxy, animated: true)
+                        }
+                    }
+                    .onChange(of: askSonoVM.streamingText) { _, _ in
+                        if selectedTab == .askSono {
+                            scrollAskSonoToBottom(proxy, animated: false)
+                        }
+                    }
                 }
-                .onTapGesture { if isEditingTitle { saveTitleEdit() } }
             }
 
             if recording.status == .inProgress {
@@ -163,13 +191,7 @@ struct RecordingDetailsView: View {
                 onMassMoveComplete: nil
             )
         }
-
-
         .onChange(of: selectedTab) { _, newTab in
-            parentScrollView?.isScrollEnabled = (newTab != .askSono)
-
-            // reset parent scroll to top on tab switch
-            parentScrollView?.setContentOffset(.zero, animated: false)
             scrollY = 0
             showTopTitle = false
             updateTopTitleVisibility()
@@ -178,7 +200,6 @@ struct RecordingDetailsView: View {
                 askSonoActivationToken = UUID()
             }
         }
-
         .onAppear {
             showTopTitle = false
             selectedTab = .transcript
@@ -197,7 +218,7 @@ struct RecordingDetailsView: View {
         }
     }
 
-    // MARK: - Header (inline)
+    // MARK: - Header
 
     private var headerView: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -226,7 +247,7 @@ struct RecordingDetailsView: View {
         .padding(.top, 8)
     }
 
-    // MARK: - Tab content
+    // MARK: - Tab Content
 
     private var contentForSelectedTab: some View {
         Group {
@@ -237,12 +258,12 @@ struct RecordingDetailsView: View {
             case .summary:
                 SummaryView(recording: recording)
             case .askSono:
-                AskSonoView(recording: recording, viewModel: askSonoVM, activationToken: askSonoActivationToken)
+                AskSonoView(recording: recording, viewModel: askSonoVM) // no ScrollView inside
             }
         }
     }
 
-    // MARK: - Bottom bars
+    // MARK: - Bottom Bars
 
     private var bottomBars: some View {
         VStack(spacing: 0) {
@@ -273,6 +294,7 @@ struct RecordingDetailsView: View {
             }
 
             if selectedTab == .askSono {
+                // Keep YOUR existing input styling file; the only required change is its send action uses Task { await ... }
                 AskSonoInputBar(viewModel: askSonoVM)
                     .background(Color.warmGray50)
             }
@@ -280,6 +302,18 @@ struct RecordingDetailsView: View {
     }
 
     // MARK: - Helpers
+
+    private func scrollAskSonoToBottom(_ proxy: ScrollViewProxy, animated: Bool) {
+        DispatchQueue.main.async {
+            if animated {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    proxy.scrollTo(AskSonoView.bottomAnchorId, anchor: .bottom)
+                }
+            } else {
+                proxy.scrollTo(AskSonoView.bottomAnchorId, anchor: .bottom)
+            }
+        }
+    }
 
     private func updateTopTitleVisibility() {
         guard headerHeight > 1 else { return }
@@ -325,7 +359,7 @@ struct RecordingDetailsView: View {
         audioManager.activeRecordingDetailsId = recording.id
     }
 
-    // MARK: - Inline Tabs Header (inside this view)
+    // MARK: - Tabs Header
 
     private struct RecordingDetailsTabsHeader: View {
         let selectedTab: RecordingDetailTab

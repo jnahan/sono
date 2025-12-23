@@ -6,152 +6,97 @@
 import Foundation
 import SwiftUI
 
-/// ViewModel for Ask Sono chat interface
 @MainActor
-class AskSonoViewModel: ObservableObject {
-    // MARK: - Published Properties
+final class AskSonoViewModel: ObservableObject {
+
+    // MARK: - Published
 
     @Published var userPrompt: String = ""
     @Published var messages: [ChatMessage] = []
     @Published var isProcessing: Bool = false
     @Published var error: String?
+
     @Published var streamingMessageId: UUID? = nil
     @Published var streamingText: String = ""
-    @Published var chunkProgress: String = "" // e.g., "Processing chunk 2 of 5..."
+    @Published var chunkProgress: String = ""
     @Published private(set) var inputFieldId: Int = 0
 
-    // MARK: - Private Properties
+    // MARK: - Private
 
     private let recording: Recording
-
-    // MARK: - Initialization
 
     init(recording: Recording) {
         self.recording = recording
     }
 
-    // MARK: - Private Helper Methods
+    // MARK: - Public
 
-    /// Splits text into chunks at natural boundaries (sentences/paragraphs)
-    /// - Parameters:
-    ///   - text: The text to split
-    ///   - maxChunkSize: Maximum size of each chunk in characters
-    /// - Returns: Array of text chunks
-    private func splitIntoChunks(_ text: String, maxChunkSize: Int) -> [String] {
-        var chunks: [String] = []
-        var currentChunk = ""
-
-        // Split by sentences (periods followed by space or newline)
-        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?\n"))
-
-        for sentence in sentences {
-            let trimmedSentence = sentence.trimmingCharacters(in: .whitespaces)
-            if trimmedSentence.isEmpty { continue }
-
-            let sentenceWithPunctuation = trimmedSentence + "."
-
-            // If adding this sentence would exceed max size, save current chunk and start new one
-            if currentChunk.count + sentenceWithPunctuation.count > maxChunkSize && !currentChunk.isEmpty {
-                chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
-                currentChunk = sentenceWithPunctuation + " "
-            } else {
-                currentChunk += sentenceWithPunctuation + " "
-            }
-        }
-
-        // Add remaining chunk if not empty
-        if !currentChunk.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-
-        // Fallback: If we still have a chunk that's too large (single sentence > maxChunkSize),
-        // split it by character count
-        var finalChunks: [String] = []
-        for chunk in chunks {
-            if chunk.count <= maxChunkSize {
-                finalChunks.append(chunk)
-            } else {
-                // Split oversized chunk into smaller pieces
-                var remaining = chunk
-                while !remaining.isEmpty {
-                    let endIndex = remaining.index(remaining.startIndex, offsetBy: min(maxChunkSize, remaining.count))
-                    let piece = String(remaining[..<endIndex])
-                    finalChunks.append(piece)
-                    remaining = String(remaining[endIndex...])
-                }
-            }
-        }
-
-        return finalChunks
-    }
-
-    // MARK: - Public Methods
-
-    /// Sends the user's prompt to the LLM with transcription context
+    /// Keep this async API if your existing UI already calls it.
     func sendPrompt() async {
         let promptText = userPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !promptText.isEmpty else { return }
+        guard !isProcessing else { return }
 
-        // Clear input immediately and force TextField to rebuild
+        // Clear input immediately and force TextField rebuild (your current behavior)
         userPrompt = ""
         inputFieldId += 1
 
         await sendPromptWithText(promptText)
     }
 
-    /// Resends the last user message
-    func resendLastMessage() {
-        // Find last user message
-        guard let lastUserMessage = messages.last(where: { $0.isUser }) else {
-            return
-        }
-
-        // Send the message directly without setting userPrompt
-        Task {
-            await sendPromptWithText(lastUserMessage.text)
-        }
+    /// Non-async helper (optional): safe to call from Buttons without changing styling.
+    func sendPromptFromUI() {
+        Task { await self.sendPrompt() }
     }
 
-    // MARK: - Private Methods
+    func resendLastMessage() {
+        guard let lastUserMessage = messages.last(where: { $0.isUser }) else { return }
+        Task { await sendPromptWithText(lastUserMessage.text) }
+    }
 
-    /// Internal method to send a prompt with specific text
+    // MARK: - Core send (FIXED)
+
     private func sendPromptWithText(_ promptText: String) async {
         let trimmedText = promptText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
 
-        guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            error = "Cannot answer questions: transcription is empty."
+        // ✅ Always show the user message immediately (prevents “clears but nothing happens”)
+        messages.append(ChatMessage(text: trimmedText, isUser: true))
+
+        // ✅ If transcription empty: show assistant message instead of silently returning
+        let transcription = recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !transcription.isEmpty else {
+            let msg = "I can’t answer yet because this recording doesn’t have a transcription."
+            messages.append(ChatMessage(text: msg, isUser: false))
+            error = msg
+            isProcessing = false
+            streamingMessageId = nil
+            streamingText = ""
+            chunkProgress = ""
             return
         }
-
-        // Add user message to chat
-        let userMessage = ChatMessage(text: trimmedText, isUser: true)
-        messages.append(userMessage)
 
         isProcessing = true
         error = nil
         chunkProgress = ""
 
         do {
-            // Create placeholder message for streaming
+            // Placeholder message for streaming
             let streamingId = UUID()
             streamingMessageId = streamingId
             streamingText = ""
-            let placeholderMessage = ChatMessage(id: streamingId, text: "", isUser: false)
-            messages.append(placeholderMessage)
+            messages.append(ChatMessage(id: streamingId, text: "", isUser: false))
 
-            // Check if we need chunked processing
-            if recording.fullText.count > AppConstants.LLM.maxInputCharacters {
-                Logger.info("AskSonoViewModel", "Using chunked processing for \(recording.fullText.count) characters")
-                try await processChunkedQuestion(question: trimmedText, streamingId: streamingId)
+            if transcription.count > AppConstants.LLM.maxInputCharacters {
+                Logger.info("AskSonoViewModel", "Using chunked processing for \(transcription.count) characters")
+                try await processChunkedQuestion(question: trimmedText, transcription: transcription, streamingId: streamingId)
             } else {
-                Logger.info("AskSonoViewModel", "Using standard processing for \(recording.fullText.count) characters")
-                try await processStandardQuestion(question: trimmedText, streamingId: streamingId)
+                Logger.info("AskSonoViewModel", "Using standard processing for \(transcription.count) characters")
+                try await processStandardQuestion(question: trimmedText, transcription: transcription, streamingId: streamingId)
             }
-
         } catch {
             self.error = "Failed to get response: \(error.localizedDescription)"
-            removeLastMessage()
+            removeLastMessageIfAssistant()
             streamingText = ""
             streamingMessageId = nil
             chunkProgress = ""
@@ -160,69 +105,55 @@ class AskSonoViewModel: ObservableObject {
         isProcessing = false
     }
 
-    /// Standard Q&A for shorter transcriptions
-    private func processStandardQuestion(question: String, streamingId: UUID) async throws {
-        // Build prompt
+    // MARK: - Standard Q&A
+
+    private func processStandardQuestion(question: String, transcription: String, streamingId: UUID) async throws {
         let prompt = """
         Transcription:
-        \(recording.fullText)
+        \(transcription)
 
         Question: \(question)
         """
 
-        // Stream the response
         let llmResponse = try await LLMService.shared.getStreamingCompletion(
             from: prompt,
             systemPrompt: LLMPrompts.transcriptionQA
         ) { [weak self] chunk in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
-                if self.streamingMessageId == streamingId {
-                    self.streamingText += chunk
-                    self.updateStreamingMessage()
-                }
+                guard self.streamingMessageId == streamingId else { return }
+                self.streamingText += chunk
+                self.updateStreamingMessage()
             }
         }
 
-        // Validate and finalize response
         let trimmedResponse = llmResponse.trimmingCharacters(in: .whitespacesAndNewlines)
         guard LLMResponseValidator.isValid(trimmedResponse) else {
             error = "Model returned invalid response. Please try again."
-            removeLastMessage()
+            removeLastMessageIfAssistant()
             return
         }
 
-        // Finalize the message
         finalizeStreamingMessage(with: trimmedResponse)
-
-        // Clear streaming state
         streamingMessageId = nil
         streamingText = ""
     }
 
-    /// Chunked Q&A for longer transcriptions using Map-Reduce pattern
-    private func processChunkedQuestion(question: String, streamingId: UUID) async throws {
-        // Maximum chunk size - leave room for prompts
-        let maxChunkSize = 12000
+    // MARK: - Chunked Q&A (Map-Reduce)
 
-        // Step 1: Split text into chunks
-        let chunks = splitIntoChunks(recording.fullText, maxChunkSize: maxChunkSize)
+    private func processChunkedQuestion(question: String, transcription: String, streamingId: UUID) async throws {
+        let maxChunkSize = 12000
+        let chunks = splitIntoChunks(transcription, maxChunkSize: maxChunkSize)
         Logger.info("AskSonoViewModel", "Split into \(chunks.count) chunks")
 
-        // Step 2: Ask question for each chunk (Map phase)
         var chunkAnswers: [String] = []
 
         for (index, chunk) in chunks.enumerated() {
-            // Update progress
             chunkProgress = "Searching part \(index + 1) of \(chunks.count)..."
-            Logger.info("AskSonoViewModel", "Processing chunk \(index + 1)/\(chunks.count), size: \(chunk.count) chars")
-
-            // Reset streaming for this chunk
             streamingText = ""
 
             let chunkPrompt: String
             if chunks.count == 1 {
-                // Only one chunk (shouldn't happen, but handle gracefully)
                 chunkPrompt = """
                 Transcription:
                 \(chunk)
@@ -230,7 +161,6 @@ class AskSonoViewModel: ObservableObject {
                 Question: \(question)
                 """
             } else {
-                // Multiple chunks - provide context
                 chunkPrompt = """
                 This is part \(index + 1) of \(chunks.count) from a longer transcription.
 
@@ -247,32 +177,25 @@ class AskSonoViewModel: ObservableObject {
                 from: chunkPrompt,
                 systemPrompt: LLMPrompts.transcriptionQA
             ) { [weak self] streamChunk in
-                guard let self = self else { return }
+                guard let self else { return }
                 Task { @MainActor in
-                    if self.streamingMessageId == streamingId {
-                        self.streamingText += streamChunk
-                        self.updateStreamingMessage()
-                    }
+                    guard self.streamingMessageId == streamingId else { return }
+                    self.streamingText += streamChunk
+                    self.updateStreamingMessage()
                 }
             }
 
-            // Validate chunk answer
             guard LLMResponseValidator.isValid(chunkAnswer) else {
                 throw NSError(domain: "AskSonoViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
             }
 
             chunkAnswers.append(chunkAnswer.trimmingCharacters(in: .whitespacesAndNewlines))
-            Logger.info("AskSonoViewModel", "Chunk \(index + 1) answer: \(chunkAnswer.count) chars")
         }
 
-        // Step 3: Combine chunk answers
-        let combinedAnswers = chunkAnswers.joined(separator: "\n\n---\n\n")
-        Logger.info("AskSonoViewModel", "Combined answers: \(combinedAnswers.count) chars")
-
-        // Step 4: Generate final answer from chunk answers (Reduce phase)
         chunkProgress = "Creating final answer..."
         streamingText = ""
 
+        let combinedAnswers = chunkAnswers.joined(separator: "\n\n---\n\n")
         let finalPrompt = """
         The following are answers from different sections of a transcription to the question: "\(question)"
 
@@ -286,63 +209,100 @@ class AskSonoViewModel: ObservableObject {
             from: finalPrompt,
             systemPrompt: LLMPrompts.transcriptionQA
         ) { [weak self] chunk in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
-                if self.streamingMessageId == streamingId {
-                    self.streamingText += chunk
-                    self.updateStreamingMessage()
+                guard self.streamingMessageId == streamingId else { return }
+                self.streamingText += chunk
+                self.updateStreamingMessage()
+            }
+        }
+
+        let trimmedResponse = finalAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard LLMResponseValidator.isValid(trimmedResponse) else {
+            error = "Model returned invalid response. Please try again."
+            removeLastMessageIfAssistant()
+            return
+        }
+
+        finalizeStreamingMessage(with: trimmedResponse)
+        streamingMessageId = nil
+        streamingText = ""
+        chunkProgress = ""
+    }
+
+    // MARK: - Streaming message updates
+
+    private func updateStreamingMessage() {
+        guard let lastIndex = messages.indices.last else { return }
+        guard !messages[lastIndex].isUser else { return }
+
+        let existing = messages[lastIndex]
+        messages[lastIndex] = ChatMessage(
+            id: existing.id,
+            text: streamingText,
+            isUser: false,
+            timestamp: existing.timestamp
+        )
+    }
+
+    private func finalizeStreamingMessage(with text: String) {
+        guard let lastIndex = messages.indices.last else { return }
+        guard !messages[lastIndex].isUser else { return }
+
+        let existing = messages[lastIndex]
+        messages[lastIndex] = ChatMessage(
+            id: existing.id,
+            text: text,
+            isUser: false,
+            timestamp: existing.timestamp
+        )
+    }
+
+    private func removeLastMessageIfAssistant() {
+        guard let last = messages.last, !last.isUser else { return }
+        messages.removeLast()
+    }
+
+    // MARK: - Chunking helper
+
+    private func splitIntoChunks(_ text: String, maxChunkSize: Int) -> [String] {
+        var chunks: [String] = []
+        var currentChunk = ""
+
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?\n"))
+
+        for sentence in sentences {
+            let trimmedSentence = sentence.trimmingCharacters(in: .whitespaces)
+            if trimmedSentence.isEmpty { continue }
+
+            let sentenceWithPunctuation = trimmedSentence + "."
+
+            if currentChunk.count + sentenceWithPunctuation.count > maxChunkSize && !currentChunk.isEmpty {
+                chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
+                currentChunk = sentenceWithPunctuation + " "
+            } else {
+                currentChunk += sentenceWithPunctuation + " "
+            }
+        }
+
+        if !currentChunk.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+
+        var finalChunks: [String] = []
+        for chunk in chunks {
+            if chunk.count <= maxChunkSize {
+                finalChunks.append(chunk)
+            } else {
+                var remaining = chunk
+                while !remaining.isEmpty {
+                    let endIndex = remaining.index(remaining.startIndex, offsetBy: min(maxChunkSize, remaining.count))
+                    finalChunks.append(String(remaining[..<endIndex]))
+                    remaining = String(remaining[endIndex...])
                 }
             }
         }
 
-        // Validate final answer
-        let trimmedResponse = finalAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard LLMResponseValidator.isValid(trimmedResponse) else {
-            error = "Model returned invalid response. Please try again."
-            removeLastMessage()
-            return
-        }
-
-        // Finalize the message
-        finalizeStreamingMessage(with: trimmedResponse)
-
-        // Clear UI state
-        streamingMessageId = nil
-        streamingText = ""
-        chunkProgress = ""
-
-        Logger.info("AskSonoViewModel", "Final answer saved: \(trimmedResponse.count) chars")
-    }
-
-    private func updateStreamingMessage() {
-        if let lastIndex = messages.indices.last, !messages[lastIndex].isUser {
-            let existingMessage = messages[lastIndex]
-            let updatedMessage = ChatMessage(
-                id: existingMessage.id,
-                text: streamingText,
-                isUser: false,
-                timestamp: existingMessage.timestamp
-            )
-            messages[lastIndex] = updatedMessage
-        }
-    }
-
-    private func finalizeStreamingMessage(with text: String) {
-        if let lastIndex = messages.indices.last, !messages[lastIndex].isUser {
-            let existingMessage = messages[lastIndex]
-            let finalMessage = ChatMessage(
-                id: existingMessage.id,
-                text: text,
-                isUser: false,
-                timestamp: existingMessage.timestamp
-            )
-            messages[lastIndex] = finalMessage
-        }
-    }
-
-    private func removeLastMessage() {
-        if !messages.isEmpty && !messages[messages.count - 1].isUser {
-            messages.removeLast()
-        }
+        return finalChunks
     }
 }

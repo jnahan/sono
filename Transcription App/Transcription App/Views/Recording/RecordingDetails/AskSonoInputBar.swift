@@ -1,3 +1,7 @@
+//
+//  AskSonoInputBar.swift
+//
+
 import SwiftUI
 
 struct AskSonoInputBar: View {
@@ -21,13 +25,22 @@ struct AskSonoInputBar: View {
                         .tint(.baseBlack)
                         .focused($isInputFocused)
                         .lineLimit(1...5)
+                        // Keep your rebuild behavior
                         .id("askSonoInput-\(viewModel.inputFieldId)")
+                        // ✅ Send on keyboard "return"/submit
+                        .submitLabel(.send)
+                        .onSubmit {
+                            guard !viewModel.isProcessing else { return }
+                            Task { await viewModel.sendPrompt() }
+                        }
                 }
 
                 Spacer()
 
                 Button(action: {
+                    // ✅ Don’t clear locally — VM clears userPrompt
                     isInputFocused = false
+                    guard !viewModel.isProcessing else { return }
                     Task { await viewModel.sendPrompt() }
                 }) {
                     ZStack {
@@ -49,7 +62,8 @@ struct AskSonoInputBar: View {
                         }
                     }
                 }
-                .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
+                .buttonStyle(.plain)
+                .disabled(viewModel.userPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isProcessing)
             }
             .padding(.leading, 16)
             .padding(.top, 10)
