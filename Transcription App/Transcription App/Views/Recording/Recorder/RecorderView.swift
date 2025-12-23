@@ -125,13 +125,9 @@ struct RecorderView: View {
     private func handleRecordingComplete(audioURL: URL) {
         Logger.info("RecorderView", "Handling recording completion for: \(audioURL.lastPathComponent)")
 
-        // Create recording with default values
-        let filename = audioURL.deletingPathExtension().lastPathComponent
-        let maxLength = 50 // AppConstants.Validation.maxTitleLength
-        let title = String(filename.prefix(maxLength))
-
+        // Create recording with default title
         let recording = Recording(
-            title: title,
+            title: "Untitled recording",
             fileURL: audioURL,
             fullText: "",
             language: "",
@@ -275,7 +271,7 @@ struct RecorderView: View {
     private func performAutoSave(fileURL: URL) {
         // Create recording with notStarted status
         let recording = Recording(
-            title: fileURL.deletingPathExtension().lastPathComponent,
+            title: "Untitled recording",
             fileURL: fileURL,
             fullText: "",
             language: "",
