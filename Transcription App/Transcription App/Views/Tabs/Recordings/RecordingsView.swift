@@ -48,18 +48,23 @@ struct RecordingsView: View {
                 VStack(spacing: 0) {
                     CustomTopBar(
                         title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
-                        leftIcon: viewModel.isSelectionMode ? "x" : "check-circle",
-                        rightIcon: viewModel.isSelectionMode ? nil : "folder",
+
+                        leftIcon: viewModel.isSelectionMode ? "x" : "list",
+                        rightIcon: "check-circle",
+
                         onLeftTap: {
                             if viewModel.isSelectionMode {
                                 viewModel.exitSelectionMode()
                             } else {
-                                viewModel.enterSelectionMode()
+                                showCollectionDrawer = true
                             }
                         },
+
                         onRightTap: {
-                            if !viewModel.isSelectionMode {
-                                showCollectionDrawer = true
+                            if viewModel.isSelectionMode {
+                                viewModel.exitSelectionMode()
+                            } else {
+                                viewModel.enterSelectionMode()
                             }
                         }
                     )
@@ -314,7 +319,7 @@ struct RecordingsView: View {
             },
             onDelete: nil,
             horizontalPadding: 20,
-            bottomContentMargin: 120
+            bottomContentMargin: 20
         )
     }
 
