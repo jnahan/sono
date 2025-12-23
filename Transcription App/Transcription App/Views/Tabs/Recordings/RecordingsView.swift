@@ -1,3 +1,7 @@
+//
+//  RecordingsView.swift
+//
+
 import SwiftUI
 import SwiftData
 
@@ -8,7 +12,6 @@ struct RecordingsView: View {
     @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
 
-    // NEW: callback to open the "new recording" sheet
     let onAddRecording: () -> Void
 
     @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
@@ -29,6 +32,13 @@ struct RecordingsView: View {
     @State private var deletingCollection: Collection?
     @State private var editCollectionName = ""
 
+    // Drawer interaction
+    @GestureState private var dragTranslation: CGFloat = 0
+    @State private var isDraggingDrawer = false
+
+    private let drawerWidth: CGFloat = 300
+    private let edgeOpenZone: CGFloat = 28
+
     // MARK: - Derived
 
     private var recordingsFilteredByCollection: [Recording] {
@@ -42,131 +52,79 @@ struct RecordingsView: View {
         isRoot && showPlusButton && !tabBarLockedHidden
     }
 
+    private var baseOffset: CGFloat { showCollectionDrawer ? drawerWidth : 0 }
+
+    /// Current offset (0...drawerWidth), including interactive drag.
+    private var currentOffset: CGFloat {
+        let raw = baseOffset + dragTranslation
+        return min(max(raw, 0), drawerWidth)
+    }
+
+    /// 0...1 used to dim the content slightly while drawer is open/dragging.
+    private var openProgress: CGFloat {
+        drawerWidth == 0 ? 0 : (currentOffset / drawerWidth)
+    }
+
     var body: some View {
-        ZStack {
-            ZStack(alignment: .bottom) {
-                VStack(spacing: 0) {
-                    CustomTopBar(
-                        title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
+        ZStack(alignment: .leading) {
 
-                        leftIcon: viewModel.isSelectionMode ? "x" : "list",
-                        rightIcon: "check-circle",
-
-                        onLeftTap: {
-                            if viewModel.isSelectionMode {
-                                viewModel.exitSelectionMode()
-                            } else {
-                                showCollectionDrawer = true
-                            }
-                        },
-
-                        onRightTap: {
-                            if viewModel.isSelectionMode {
-                                viewModel.exitSelectionMode()
-                            } else {
-                                viewModel.enterSelectionMode()
-                            }
-                        }
-                    )
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        if !recordings.isEmpty {
-                            SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
-                                .padding(.horizontal, 20)
-                        }
-
-                        recordingsList
-                    }
-                    .padding(.top, 8)
+            // Drawer under content (left)
+            CollectionDrawerView(
+                collections: collections,
+                recordings: recordings,
+                selectedCollection: selectedCollectionFilter,
+                onSelectAll: {
+                    selectedCollectionFilter = nil
+                    applyFiltersToViewModel()
+                    closeDrawer()
+                },
+                onSelectCollection: { c in
+                    selectedCollectionFilter = c
+                    applyFiltersToViewModel()
+                    closeDrawer()
+                },
+                onRename: { c in
+                    editingCollection = c
+                    editCollectionName = c.name
+                    closeDrawer()
+                },
+                onDelete: { c in
+                    deletingCollection = c
+                    closeDrawer()
                 }
+            )
+            .frame(width: drawerWidth)
+            .ignoresSafeArea(edges: .vertical)
 
-                if viewModel.isSelectionMode {
-                    MassActionButtons(
-                        onDelete: { showDeleteConfirm = true },
-                        onCopy: { copySelectedRecordings() },
-                        onMove: { showMoveToCollection = true },
-                        onExport: { exportSelectedRecordings() },
-                        isDisabled: viewModel.selectedRecordings.isEmpty,
-                        horizontalPadding: 20,
-                        bottomPadding: 12,
-                        bottomSafeAreaPadding: 8
-                    )
+            // Main content pushed right (and dimmed slightly when open)
+            ZStack {
+                mainContent
+                    .opacity(1.0 - (0.10 * openProgress)) // dims to 0.90 at full open
+
+                // Tap-to-close overlay ON TOP when open (no visible dim layer; dim is via opacity above)
+                if openProgress > 0.01 {
+                    Color.black
+                        .opacity(0.001)
+                        .contentShape(Rectangle())
+                        .onTapGesture { closeDrawer() }
                 }
             }
-
-            // Drawer overlay
-            if showCollectionDrawer {
-                CollectionDrawerView(
-                    collections: collections,
-                    recordings: recordings,
-                    selectedCollection: selectedCollectionFilter,
-                    onSelectAll: {
-                        selectedCollectionFilter = nil
-                        applyFiltersToViewModel()
-                    },
-                    onSelectCollection: { c in
-                        selectedCollectionFilter = c
-                        applyFiltersToViewModel()
-                    },
-                    onRename: { c in
-                        editingCollection = c
-                        editCollectionName = c.name
-                    },
-                    onDelete: { c in
-                        deletingCollection = c
-                    },
-                    onClose: { showCollectionDrawer = false }
-                )
-                .transition(.move(edge: .leading).combined(with: .opacity))
-                .zIndex(1000)
-            }
-
-            // ✅ FAB (same “pill” button you had)
-            if shouldShowFab {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button {
-                            onAddRecording()
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image("plus-bold")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(width: 120, height: 48)
-                            .background(Color.baseBlack)
-                            .cornerRadius(32)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 16)
-                    }
+            .offset(x: currentOffset)
+            .gesture(drawerGesture)
+            // ✅ Key: NO animation while dragging (prevents bounce/glitch)
+            .transaction { tx in
+                if isDraggingDrawer {
+                    tx.animation = nil
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.easeOut(duration: 0.12), value: shouldShowFab)
-                .zIndex(900)
             }
-        }
-        .overlay(alignment: .top) {
-            if viewModel.showCopyToast {
-                ToastView(message: "Copied transcription")
-                    .padding(.top, 8)
-            }
+            // ✅ Only animate the snapped open/close state changes
+            .animation(.spring(response: 0.36, dampingFraction: 0.92), value: showCollectionDrawer)
         }
 
-        // Re-filter from collection-filtered source
-        .onChange(of: viewModel.searchText) { _, _ in
-            applyFiltersToViewModel()
-        }
-        .onChange(of: recordings) { _, _ in
-            applyFiltersToViewModel()
-        }
-        .onChange(of: selectedCollectionFilter) { _, _ in
-            applyFiltersToViewModel()
-        }
+        // Filtering
+        .onChange(of: viewModel.searchText) { _, _ in applyFiltersToViewModel() }
+        .onChange(of: recordings) { _, _ in applyFiltersToViewModel() }
+        .onChange(of: selectedCollectionFilter) { _, _ in applyFiltersToViewModel() }
 
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
             showPlusButton = !isSelecting
@@ -202,9 +160,7 @@ struct RecordingsView: View {
                 modelContext: modelContext,
                 isPresented: $showMoveToCollection,
                 recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),
-                onMassMoveComplete: {
-                    viewModel.exitSelectionMode()
-                }
+                onMassMoveComplete: { viewModel.exitSelectionMode() }
             )
         }
 
@@ -260,7 +216,6 @@ struct RecordingsView: View {
                     onConfirm: {
                         modelContext.delete(collection)
                         deletingCollection = nil
-
                         if selectedCollectionFilter?.id == collection.id {
                             selectedCollectionFilter = nil
                             applyFiltersToViewModel()
@@ -289,19 +244,161 @@ struct RecordingsView: View {
                 onExit: nil
             )
         }
+    }
 
+    // MARK: - Single “ChatGPT-like” Drawer Gesture
+
+    private var drawerGesture: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onChanged { value in
+                // If closed, only start opening if the gesture began near left edge
+                if !showCollectionDrawer {
+                    guard value.startLocation.x <= edgeOpenZone else { return }
+                }
+                isDraggingDrawer = true
+            }
+            .updating($dragTranslation) { value, state, _ in
+                // If closed, only allow translation if gesture started in edge zone
+                if !showCollectionDrawer && value.startLocation.x > edgeOpenZone {
+                    state = 0
+                    return
+                }
+                state = value.translation.width
+            }
+            .onEnded { value in
+                defer { isDraggingDrawer = false }
+
+                // If closed and not an edge swipe, ignore
+                if !showCollectionDrawer && value.startLocation.x > edgeOpenZone {
+                    return
+                }
+
+                let predicted = baseOffset + value.predictedEndTranslation.width
+                let shouldOpen = predicted > drawerWidth * 0.5
+
+                if shouldOpen {
+                    openDrawer()
+                } else {
+                    closeDrawer()
+                }
+            }
+    }
+
+    // MARK: - Main Content (your original UI)
+
+    private var mainContent: some View {
+        ZStack {
+            ZStack(alignment: .bottom) {
+                VStack(spacing: 0) {
+                    CustomTopBar(
+                        title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
+                        leftIcon: viewModel.isSelectionMode ? "x" : "list",
+                        rightIcon: "check-circle",
+                        onLeftTap: {
+                            if viewModel.isSelectionMode {
+                                viewModel.exitSelectionMode()
+                            } else {
+                                toggleDrawer()
+                            }
+                        },
+                        onRightTap: {
+                            if viewModel.isSelectionMode {
+                                viewModel.exitSelectionMode()
+                            } else {
+                                viewModel.enterSelectionMode()
+                            }
+                        }
+                    )
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        if !recordings.isEmpty {
+                            SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
+                                .padding(.horizontal, 20)
+                        }
+                        recordingsList
+                    }
+                    .padding(.top, 8)
+                }
+
+                if viewModel.isSelectionMode {
+                    MassActionButtons(
+                        onDelete: { showDeleteConfirm = true },
+                        onCopy: { copySelectedRecordings() },
+                        onMove: { showMoveToCollection = true },
+                        onExport: { exportSelectedRecordings() },
+                        isDisabled: viewModel.selectedRecordings.isEmpty,
+                        horizontalPadding: 20,
+                        bottomPadding: 12,
+                        bottomSafeAreaPadding: 8
+                    )
+                }
+            }
+
+            if shouldShowFab {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button { onAddRecording() } label: {
+                            HStack(spacing: 8) {
+                                Image("plus-bold")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 120, height: 48)
+                            .background(Color.baseBlack)
+                            .cornerRadius(32)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 16)
+                    }
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.easeOut(duration: 0.12), value: shouldShowFab)
+                .zIndex(900)
+            }
+        }
+        .overlay(alignment: .top) {
+            if viewModel.showCopyToast {
+                ToastView(message: "Copied transcription")
+                    .padding(.top, 8)
+            }
+        }
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Helpers
 
+    private func toggleDrawer() {
+        showCollectionDrawer ? closeDrawer() : openDrawer()
+    }
+
+    private func openDrawer() {
+        let gen = UIImpactFeedbackGenerator(style: .soft)
+        gen.prepare()
+        withAnimation(.spring(response: 0.36, dampingFraction: 0.92)) {
+            showCollectionDrawer = true
+        }
+        gen.impactOccurred()
+    }
+
+    private func closeDrawer() {
+        let gen = UIImpactFeedbackGenerator(style: .soft)
+        gen.prepare()
+        withAnimation(.spring(response: 0.36, dampingFraction: 0.92)) {
+            showCollectionDrawer = false
+        }
+        gen.impactOccurred()
+    }
+
     private func updateRootState() {
         let pushed =
-            (selectedRecording != nil)
-            || showSettings
-            || (viewModel.editingRecording != nil)
-
+            (selectedRecording != nil) ||
+            showSettings ||
+            (viewModel.editingRecording != nil)
         isRoot = !pushed
     }
 
@@ -314,9 +411,7 @@ struct RecordingsView: View {
             recordings: viewModel.filteredRecordings,
             viewModel: viewModel,
             emptyStateView: AnyView(RecordingEmptyStateView()),
-            onRecordingTap: { recording in
-                selectedRecording = recording
-            },
+            onRecordingTap: { selectedRecording = $0 },
             onDelete: nil,
             horizontalPadding: 20,
             bottomContentMargin: 20
