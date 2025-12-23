@@ -8,9 +8,10 @@ import SwiftData
 struct CollectionDrawerView: View {
     let collections: [Collection]
     let recordings: [Recording]
-    let selectedCollection: Collection?
+    let selectedFilter: CollectionFilter
 
     let onSelectAll: () -> Void
+    let onSelectUnorganized: () -> Void
     let onSelectCollection: (Collection) -> Void
     let onRename: (Collection) -> Void
     let onDelete: (Collection) -> Void
@@ -36,7 +37,26 @@ struct CollectionDrawerView: View {
 
                             Spacer()
 
-                            if selectedCollection == nil {
+                            if selectedFilter == .all {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.baseBlack)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button { onSelectUnorganized() } label: {
+                        HStack {
+                            Text("Unorganized recordings")
+                                .font(.dmSansMedium(size: 16))
+                                .foregroundColor(.baseBlack)
+
+                            Spacer()
+
+                            if selectedFilter == .unorganized {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(.baseBlack)
@@ -62,7 +82,7 @@ struct CollectionDrawerView: View {
                             )
                             .padding(.horizontal, 20)
                             .background(
-                                selectedCollection?.id == collection.id
+                                (selectedFilter == .collection(collection))
                                 ? Color.warmGray50
                                 : Color.clear
                             )

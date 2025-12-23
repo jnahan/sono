@@ -25,7 +25,7 @@ struct RecordingsView: View {
 
     // Drawer + filter
     @State private var showCollectionDrawer = false
-    @State private var selectedCollectionFilter: Collection? = nil
+    @State private var selectedCollectionFilter: CollectionFilter = .all
 
     @State private var editingCollection: Collection?
     @State private var deletingCollection: Collection?
@@ -41,9 +41,15 @@ struct RecordingsView: View {
     // MARK: - Derived
 
     private var recordingsFilteredByCollection: [Recording] {
-        guard let c = selectedCollectionFilter else { return recordings }
-        return recordings.filter { rec in
-            rec.collections.contains(where: { $0.id == c.id })
+        switch selectedCollectionFilter {
+        case .all:
+            return recordings
+        case .unorganized:
+            return recordings.filter { $0.collections.isEmpty }
+        case .collection(let collection):
+            return recordings.filter { rec in
+                rec.collections.contains(where: { $0.id == collection.id })
+            }
         }
     }
 
@@ -71,14 +77,19 @@ struct RecordingsView: View {
             CollectionDrawerView(
                 collections: collections,
                 recordings: recordings,
-                selectedCollection: selectedCollectionFilter,
+                selectedFilter: selectedCollectionFilter,
                 onSelectAll: {
-                    selectedCollectionFilter = nil
+                    selectedCollectionFilter = .all
+                    applyFiltersToViewModel()
+                    closeDrawer()
+                },
+                onSelectUnorganized: {
+                    selectedCollectionFilter = .unorganized
                     applyFiltersToViewModel()
                     closeDrawer()
                 },
                 onSelectCollection: { c in
-                    selectedCollectionFilter = c
+                    selectedCollectionFilter = .collection(c)
                     applyFiltersToViewModel()
                     closeDrawer()
                 },
@@ -214,8 +225,9 @@ struct RecordingsView: View {
                     onConfirm: {
                         modelContext.delete(collection)
                         deletingCollection = nil
-                        if selectedCollectionFilter?.id == collection.id {
-                            selectedCollectionFilter = nil
+                        if case .collection(let selectedCollection) = selectedCollectionFilter,
+                           selectedCollection.id == collection.id {
+                            selectedCollectionFilter = .all
                             applyFiltersToViewModel()
                         }
                     }

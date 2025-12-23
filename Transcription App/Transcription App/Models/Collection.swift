@@ -31,3 +31,24 @@ class Collection: Hashable {
         hasher.combine(id)
     }
 }
+
+// MARK: - Collection Filter
+
+enum CollectionFilter: Equatable {
+    case all
+    case unorganized
+    case collection(Collection)
+
+    static func == (lhs: CollectionFilter, rhs: CollectionFilter) -> Bool {
+        switch (lhs, rhs) {
+        case (.all, .all):
+            return true
+        case (.unorganized, .unorganized):
+            return true
+        case (.collection(let lhsCollection), .collection(let rhsCollection)):
+            return lhsCollection.id == rhsCollection.id
+        default:
+            return false
+        }
+    }
+}
