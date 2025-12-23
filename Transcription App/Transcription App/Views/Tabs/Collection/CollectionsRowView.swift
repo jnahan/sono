@@ -10,16 +10,10 @@ struct CollectionsRowView: View {
         HStack(spacing: 12) {
 
             // Collection Info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(collection.name)
-                    .font(.dmSansSemiBold(size: 16))
-                    .foregroundColor(.baseBlack)
-                
-                Text("\(recordingCount) recordings")
-                    .font(.system(size: 14))
-                    .foregroundColor(.warmGray500)
-            }
-            
+            Text("\(collection.name) (\(recordingCount))")
+                .font(.dmSansMedium(size: 16))
+                .foregroundColor(.baseBlack)
+
             Spacer()
             
             // Three-dot menu
