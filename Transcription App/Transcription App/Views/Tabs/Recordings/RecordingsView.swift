@@ -57,6 +57,17 @@ struct RecordingsView: View {
         isRoot && showPlusButton
     }
 
+    private var currentFilterTitle: String {
+        switch selectedCollectionFilter {
+        case .all:
+            return "All recordings"
+        case .unorganized:
+            return "Unorganized recordings"
+        case .collection(let collection):
+            return collection.name
+        }
+    }
+
     private var baseOffset: CGFloat { showCollectionDrawer ? drawerWidth : 0 }
 
     /// Current offset (0...drawerWidth), including interactive drag.
@@ -286,7 +297,7 @@ struct RecordingsView: View {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 0) {
                     CustomTopBar(
-                        title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
+                        title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : currentFilterTitle,
                         leftIcon: viewModel.isSelectionMode ? "x" : "list",
                         rightIcon: "check-circle",
                         onLeftTap: {
