@@ -26,7 +26,7 @@ struct Transcription_AppApp: App {
                 Color.warmGray50
                     .ignoresSafeArea()
 
-                MainTabView()
+                AppRootView()
                     .modelContainer(sharedModelContainer)
                     .environment(\.font, .dmSansRegular(size: 16))
             }

@@ -8,6 +8,9 @@ struct RecordingsView: View {
     @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
 
+    // NEW: callback to open the "new recording" sheet
+    let onAddRecording: () -> Void
+
     @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
     @Query(sort: \Collection.name) private var collections: [Collection]
 
@@ -18,14 +21,13 @@ struct RecordingsView: View {
     @State private var showMoveToCollection = false
     @State private var showDeleteConfirm = false
 
-    // NEW: drawer + filter
+    // Drawer + filter
     @State private var showCollectionDrawer = false
     @State private var selectedCollectionFilter: Collection? = nil
-    
+
     @State private var editingCollection: Collection?
     @State private var deletingCollection: Collection?
     @State private var editCollectionName = ""
-
 
     // MARK: - Derived
 
@@ -36,6 +38,10 @@ struct RecordingsView: View {
         }
     }
 
+    private var shouldShowFab: Bool {
+        isRoot && showPlusButton && !tabBarLockedHidden
+    }
+
     var body: some View {
         ZStack {
             ZStack(alignment: .bottom) {
@@ -43,7 +49,6 @@ struct RecordingsView: View {
                     CustomTopBar(
                         title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : "Recordings",
                         leftIcon: viewModel.isSelectionMode ? "x" : "check-circle",
-                        // ✅ folder icon when not selecting, otherwise nil
                         rightIcon: viewModel.isSelectionMode ? nil : "folder",
                         onLeftTap: {
                             if viewModel.isSelectionMode {
@@ -53,7 +58,6 @@ struct RecordingsView: View {
                             }
                         },
                         onRightTap: {
-                            // Open drawer (only when not selection mode)
                             if !viewModel.isSelectionMode {
                                 showCollectionDrawer = true
                             }
@@ -85,13 +89,12 @@ struct RecordingsView: View {
                 }
             }
 
-            // NEW: drawer overlay (functional first)
+            // Drawer overlay
             if showCollectionDrawer {
                 CollectionDrawerView(
                     collections: collections,
                     recordings: recordings,
                     selectedCollection: selectedCollectionFilter,
-
                     onSelectAll: {
                         selectedCollectionFilter = nil
                         applyFiltersToViewModel()
@@ -112,6 +115,35 @@ struct RecordingsView: View {
                 .transition(.move(edge: .leading).combined(with: .opacity))
                 .zIndex(1000)
             }
+
+            // ✅ FAB (same “pill” button you had)
+            if shouldShowFab {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            onAddRecording()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image("plus-bold")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 120, height: 48)
+                            .background(Color.baseBlack)
+                            .cornerRadius(32)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 16)
+                    }
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.easeOut(duration: 0.12), value: shouldShowFab)
+                .zIndex(900)
+            }
         }
         .overlay(alignment: .top) {
             if viewModel.showCopyToast {
@@ -120,25 +152,19 @@ struct RecordingsView: View {
             }
         }
 
-        // Whenever search changes, re-filter from the collection-filtered source
+        // Re-filter from collection-filtered source
         .onChange(of: viewModel.searchText) { _, _ in
             applyFiltersToViewModel()
         }
-
-        // Whenever recordings change (new recording / delete), re-filter
         .onChange(of: recordings) { _, _ in
             applyFiltersToViewModel()
         }
-
-        // Whenever collection selection changes, re-filter
         .onChange(of: selectedCollectionFilter) { _, _ in
             applyFiltersToViewModel()
         }
 
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
             showPlusButton = !isSelecting
-            // Optional: prevent changing filter while selecting
-            // (you can remove this if you want)
             if isSelecting { showCollectionDrawer = false }
         }
 
@@ -156,7 +182,7 @@ struct RecordingsView: View {
         .onChange(of: showSettings) { _, _ in updateRootState() }
         .onChange(of: viewModel.editingRecording) { _, _ in updateRootState() }
 
-        // Settings (unchanged)
+        // Settings
         .navigationDestination(item: Binding(
             get: { showSettings ? "settings" : nil },
             set: { showSettings = ($0 != nil) }
@@ -191,6 +217,7 @@ struct RecordingsView: View {
                 }
             )
         }
+
         .sheet(isPresented: Binding(
             get: { editingCollection != nil },
             set: { if !$0 { editingCollection = nil } }
@@ -229,7 +256,6 @@ struct RecordingsView: View {
                         modelContext.delete(collection)
                         deletingCollection = nil
 
-                        // If currently filtered by this collection, reset filter
                         if selectedCollectionFilter?.id == collection.id {
                             selectedCollectionFilter = nil
                             applyFiltersToViewModel()
@@ -238,7 +264,6 @@ struct RecordingsView: View {
                 )
             }
         }
-
 
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
@@ -276,8 +301,6 @@ struct RecordingsView: View {
     }
 
     private func applyFiltersToViewModel() {
-        // Your VM expects the “source list” and handles search text itself.
-        // We provide the collection-filtered source list.
         viewModel.updateFilteredRecordings(from: recordingsFilteredByCollection)
     }
 

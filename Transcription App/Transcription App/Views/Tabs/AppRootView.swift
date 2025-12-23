@@ -3,17 +3,12 @@ import SwiftData
 import UIKit
 import AVFoundation
 
-struct MainTabView: View {
+struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Collection.name) private var collections: [Collection]
+
     @State private var tabBarLockedHidden = false
-
-    @State private var selectedTab = 0
-
     @State private var showPlusButton = true
-
     @State private var isRecordingsRoot = true
-    @State private var isCollectionsRoot = true
 
     @ObservedObject private var actionSheetManager = ActionSheetManager.shared
 
@@ -22,7 +17,6 @@ struct MainTabView: View {
     @State private var showFilePicker = false
     @State private var showVideoPicker = false
 
-    @State private var pendingAudioURL: URL?
     @State private var isExtractingAudio = false
     @State private var showExtractionError = false
     @State private var extractionErrorMessage = ""
@@ -30,105 +24,29 @@ struct MainTabView: View {
     @State private var selectedRecordingForDetails: Recording?
     @State private var navigateToRecordingDetails = false
 
-    private var shouldShowCustomTabBar: Bool {
-        let isRootForSelectedTab: Bool = {
-            switch selectedTab {
-            case 0: return isRecordingsRoot
-            case 1: return isCollectionsRoot
-            default: return true
-            }
-        }()
-        return isRootForSelectedTab && showPlusButton && !tabBarLockedHidden
-    }
-
     var body: some View {
         ZStack {
-            TabView(selection: $selectedTab) {
-
-                NavigationStack {
-                    RecordingsView(
-                        tabBarLockedHidden: $tabBarLockedHidden,
-                        showPlusButton: $showPlusButton,
-                        isRoot: $isRecordingsRoot
-                    )
-                    .navigationDestination(isPresented: $navigateToRecordingDetails) {
-                        if let recording = selectedRecordingForDetails {
-                            RecordingDetailsView(recording: recording, onDismiss: {
+            NavigationStack {
+                RecordingsView(
+                    tabBarLockedHidden: $tabBarLockedHidden,
+                    showPlusButton: $showPlusButton,
+                    isRoot: $isRecordingsRoot,
+                    onAddRecording: {
+                        showNewRecordingSheet = true
+                    }
+                )
+                .navigationDestination(isPresented: $navigateToRecordingDetails) {
+                    if let recording = selectedRecordingForDetails {
+                        RecordingDetailsView(
+                            recording: recording,
+                            onDismiss: {
                                 navigateToRecordingDetails = false
                                 selectedRecordingForDetails = nil
-                            })
-                            .onAppear {
-                                tabBarLockedHidden = true
                             }
-                            .onDisappear {
-                                tabBarLockedHidden = false
-                            }
-                        }
-                    }
-                }
-                .tabItem { EmptyView() }
-                .tag(0)
-
-                NavigationStack {
-                    CollectionsView(
-                        isRoot: $isCollectionsRoot
-                    )
-                }
-                .tabItem { EmptyView() }
-                .tag(1)
-            }
-
-            VStack {
-                Spacer()
-
-                if shouldShowCustomTabBar {
-                    VStack(spacing: 0) {
-                        HStack(spacing: 40) {
-                            Button {
-                                selectedTab = 0
-                            } label: {
-                                Image(selectedTab == 0 ? "house-fill" : "house")
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundColor(selectedTab == 0 ? .baseBlack : .warmGray400)
-                                    .frame(width: 32, height: 32)
-                            }
-
-                            Button {
-                                showNewRecordingSheet = true
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image("plus-bold")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(.white)
-                                }
-                                .frame(width: 120, height: 48)
-                                .background(Color.baseBlack)
-                                .cornerRadius(32)
-                            }
-
-                            Button {
-                                selectedTab = 1
-                            } label: {
-                                Image(selectedTab == 1 ? "folder-fill" : "folder")
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundColor(selectedTab == 1 ? .baseBlack : .warmGray400)
-                                    .frame(width: 32, height: 32)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 12)
-                        .padding(.bottom, 8)
-                        .background(
-                            Color.warmGray50
-                                .ignoresSafeArea(edges: .bottom)
                         )
+                        .onAppear { tabBarLockedHidden = true }
+                        .onDisappear { tabBarLockedHidden = false }
                     }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(.easeOut(duration: 0.12), value: shouldShowCustomTabBar)
                 }
             }
 
@@ -168,11 +86,8 @@ struct MainTabView: View {
         }
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView(
-                onDismiss: {
-                    showRecorderScreen = false
-                },
+                onDismiss: { showRecorderScreen = false },
                 onSaveComplete: { recording in
-                    // Navigate to recording details to show progress
                     selectedRecordingForDetails = recording
                     navigateToRecordingDetails = true
                 }
@@ -196,7 +111,6 @@ struct MainTabView: View {
                                 }
                             } catch {
                                 try? FileManager.default.removeItem(at: url)
-
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     extractionErrorMessage = error.localizedDescription
@@ -208,9 +122,7 @@ struct MainTabView: View {
                         handleMediaSave(audioURL: url)
                     }
                 },
-                onCancel: {
-                    showFilePicker = false
-                }
+                onCancel: { showFilePicker = false }
             )
         }
         .sheet(isPresented: $showVideoPicker) {
@@ -230,7 +142,6 @@ struct MainTabView: View {
                             }
                         } catch {
                             try? FileManager.default.removeItem(at: url)
-
                             await MainActor.run {
                                 isExtractingAudio = false
                                 extractionErrorMessage = error.localizedDescription
@@ -239,24 +150,17 @@ struct MainTabView: View {
                         }
                     }
                 },
-                onCancel: {
-                    showVideoPicker = false
-                }
+                onCancel: { showVideoPicker = false }
             )
         }
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Same helpers you already had
 
-    /// Handle saving media (file/video upload) and navigate to details
     private func handleMediaSave(audioURL: URL) {
-        Logger.info("MainTabView", "Handling media save for: \(audioURL.lastPathComponent)")
-
-        // Create recording with default title (trimmed to max length)
         let filename = audioURL.deletingPathExtension().lastPathComponent
-        let maxLength = 50 // AppConstants.Validation.maxTitleLength
+        let maxLength = 50
 
-        // For video extractions, clean up the filename
         var cleanFilename = filename
         if filename.contains("-audio-") {
             if let videoName = filename.components(separatedBy: "-audio-").first, !videoName.isEmpty {
@@ -284,58 +188,44 @@ struct MainTabView: View {
 
         do {
             try modelContext.save()
-            Logger.success("MainTabView", "Recording saved successfully")
 
-            // Mark transcription as started
             recording.status = .inProgress
             recording.transcriptionStartedAt = Date()
             try modelContext.save()
 
-            // Start transcription asynchronously
             startTranscription(for: recording, audioURL: audioURL)
 
-            // Navigate to recording details
-            selectedTab = 0 // Switch to recordings tab
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 400_000_000) // Small delay for tab switch
-                selectedRecordingForDetails = recording
-                navigateToRecordingDetails = true
-            }
+            // Jump to details
+            selectedRecordingForDetails = recording
+            navigateToRecordingDetails = true
         } catch {
-            Logger.error("MainTabView", "Failed to save recording: \(error.localizedDescription)")
+            extractionErrorMessage = error.localizedDescription
+            showExtractionError = true
         }
     }
 
-    /// Start transcription for a recording
     private func startTranscription(for recording: Recording, audioURL: URL) {
         let recordingId = recording.id
 
         Task { @MainActor in
             do {
-                Logger.info("MainTabView", "Starting transcription for recording: \(recordingId.uuidString.prefix(8))")
-
                 let result = try await TranscriptionService.shared.transcribe(
                     audioURL: audioURL,
                     recordingId: recordingId
                 ) { progress in
                     Task { @MainActor in
                         if !Task.isCancelled {
-                            TranscriptionProgressManager.shared.updateProgress(
-                                for: recordingId,
-                                progress: progress
-                            )
+                            TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
                         }
                     }
                 }
 
-                // Update recording with results
                 let descriptor = FetchDescriptor<Recording>(
                     predicate: #Predicate { r in r.id == recordingId }
                 )
 
                 guard let recordings = try? modelContext.fetch(descriptor),
                       let rec = recordings.first else {
-                    Logger.info("MainTabView", "Recording deleted during transcription")
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
                     return
                 }
@@ -345,26 +235,17 @@ struct MainTabView: View {
                 rec.status = .completed
                 rec.failureReason = nil
 
-                // Add segments
                 rec.segments.removeAll()
                 for segment in result.segments {
-                    let recSegment = RecordingSegment(
-                        start: segment.start,
-                        end: segment.end,
-                        text: segment.text
-                    )
+                    let recSegment = RecordingSegment(start: segment.start, end: segment.end, text: segment.text)
                     modelContext.insert(recSegment)
                     rec.segments.append(recSegment)
                 }
 
                 try modelContext.save()
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                Logger.success("MainTabView", "Transcription completed successfully")
 
             } catch {
-                Logger.error("MainTabView", "Transcription failed: \(error.localizedDescription)")
-
-                // Update recording to failed status
                 let descriptor = FetchDescriptor<Recording>(
                     predicate: #Predicate { r in r.id == recordingId }
                 )
