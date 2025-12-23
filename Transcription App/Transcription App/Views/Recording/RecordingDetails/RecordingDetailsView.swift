@@ -133,6 +133,12 @@ struct RecordingDetailsView: View {
                                         action: { selectedTab = .summary }
                                     )
 
+                                    TabButton(
+                                        title: "Ask Sono",
+                                        isSelected: selectedTab == .askSono,
+                                        action: { selectedTab = .askSono }
+                                    )
+
                                     Spacer()
                                 }
                                 .padding(.horizontal, 20)
@@ -145,6 +151,8 @@ struct RecordingDetailsView: View {
                                     transcriptView
                                 } else if selectedTab == .summary {
                                     summaryView
+                                } else if selectedTab == .askSono {
+                                    askSonoView
                                 }
                             }
                             .padding(.top, 12)
@@ -310,6 +318,11 @@ struct RecordingDetailsView: View {
 
     private var summaryView: some View {
         SummaryView(recording: recording)
+            .id(recording.id)
+    }
+
+    private var askSonoView: some View {
+        AskSonoView(recording: recording)
             .id(recording.id)
     }
 }
