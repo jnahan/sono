@@ -19,7 +19,6 @@
 		5D0ED1232EE131E90003E775 /* URL+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */; };
 		5D0ED1252EE131F50003E775 /* String+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1242EE131F50003E775 /* String+Validation.swift */; };
 		5D0ED1272EE134920003E775 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1262EE134920003E775 /* AppConstants.swift */; };
-		5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */; };
 		5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */; };
 		5D0ED1372EE150000003E775 /* LanguageMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0ED1362EE150000003E775 /* LanguageMapper.swift */; };
 		5D12FFF02EE33C7400F1FAE2 /* LLM in Frameworks */ = {isa = PBXBuildFile; productRef = 5D12FFEF2EE33C7400F1FAE2 /* LLM */; };
@@ -37,7 +36,6 @@
 		5D3045433635A2EDFD1090003E775 /* View+ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */; };
 		5D3731384131A2EDFD1090003E775 /* View+ConditionalModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */; };
 		5D3935303133A2EDFD1090003E775 /* SummaryEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */; };
-		5D4622D42ED83570009A454D /* RecordingFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4622D32ED83570009A454D /* RecordingFormView.swift */; };
 		5D4FA9A92EDD274900CBF284 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */; };
 		5D700ED62EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */; };
 		5D700ED72EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */; };
@@ -100,7 +98,6 @@
 		5D0ED1222EE131E90003E775 /* URL+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Identifiable.swift"; sourceTree = "<group>"; };
 		5D0ED1242EE131F50003E775 /* String+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Validation.swift"; sourceTree = "<group>"; };
 		5D0ED1262EE134920003E775 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
-		5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormViewModel.swift; sourceTree = "<group>"; };
 		5D0ED12E2EE26FE20003E775 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsManager.swift; sourceTree = "<group>"; };
 		5D0ED1362EE150000003E775 /* LanguageMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageMapper.swift; sourceTree = "<group>"; };
 		5D12FFF72EE3500100F1FAE2 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
@@ -117,7 +114,6 @@
 		5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ButtonStyles.swift"; sourceTree = "<group>"; };
 		5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ConditionalModifiers.swift"; sourceTree = "<group>"; };
 		5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryEmptyStateView.swift; sourceTree = "<group>"; };
-		5D4622D32ED83570009A454D /* RecordingFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFormView.swift; sourceTree = "<group>"; };
 		5D4FA9A82EDD274800CBF284 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5D700ED42EE8D5570099B4F2 /* DMSans-Italic-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-Italic-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		5D700ED52EE8D5570099B4F2 /* DMSans-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DMSans-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
@@ -187,7 +183,6 @@
 			isa = PBXGroup;
 			children = (
 				5DB579072ED8475F002DC84D /* NewRecordingSheet.swift */,
-				5D4622D32ED83570009A454D /* RecordingFormView.swift */,
 			);
 			path = RecordingForm;
 			sourceTree = "<group>";
@@ -208,7 +203,6 @@
 		5D0ED1302EE144650003E775 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				5D0ED12A2EE144640003E775 /* RecordingFormViewModel.swift */,
 				5DB579262ED8D5D1002DC84D /* RecordingListViewModel.swift */,
 				5D12FFF92EE3500300F1FAE2 /* RecordingDetailsViewModel.swift */,
 				5D9271342EE50DC900A34B16 /* SummaryViewModel.swift */,
@@ -702,12 +696,10 @@
 				5D3731384131A2EDFD1090003E775 /* View+ConditionalModifiers.swift in Sources */,
 				5D3935303133A2EDFD1090003E775 /* SummaryEmptyStateView.swift in Sources */,
 				5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */,
-				5D4622D42ED83570009A454D /* RecordingFormView.swift in Sources */,
 				5DB579022ED84343002DC84D /* RecorderView.swift in Sources */,
 				5D962F242ECE8DD400049626 /* RecorderVisualizer.swift in Sources */,
 				5D1570652ED96B0A0094E13E /* CollectionPickerSheet.swift in Sources */,
 				5DB579042ED84651002DC84D /* AppRootView.swift in Sources */,
-				5D0ED12B2EE144640003E775 /* RecordingFormViewModel.swift in Sources */,
 				5D1570672ED96BEE0094E13E /* CollectionFormSheet.swift in Sources */,
 				5DB579252ED8D143002DC84D /* TranscriptionService.swift in Sources */,
 				5D12FFF62EE3500000F1FAE2 /* LLMService.swift in Sources */,

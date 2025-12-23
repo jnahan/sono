@@ -143,7 +143,6 @@ struct RecordingsView: View {
 
         .onChange(of: selectedRecording) { _, _ in updateRootState() }
         .onChange(of: showSettings) { _, _ in updateRootState() }
-        .onChange(of: viewModel.editingRecording) { _, _ in updateRootState() }
 
         // Settings
         .navigationDestination(item: Binding(
@@ -231,19 +230,6 @@ struct RecordingsView: View {
                 .onDisappear { tabBarLockedHidden = false }
         }
 
-        .navigationDestination(item: $viewModel.editingRecording) { recording in
-            RecordingFormView(
-                isPresented: Binding(
-                    get: { viewModel.editingRecording != nil },
-                    set: { if !$0 { viewModel.cancelEdit() } }
-                ),
-                audioURL: nil,
-                existingRecording: recording,
-                collections: collections,
-                modelContext: modelContext,
-                onExit: nil
-            )
-        }
     }
 
     // MARK: - Single “ChatGPT-like” Drawer Gesture
@@ -397,8 +383,7 @@ struct RecordingsView: View {
     private func updateRootState() {
         let pushed =
             (selectedRecording != nil) ||
-            showSettings ||
-            (viewModel.editingRecording != nil)
+            showSettings
         isRoot = !pushed
     }
 
@@ -414,7 +399,9 @@ struct RecordingsView: View {
             onRecordingTap: { selectedRecording = $0 },
             onDelete: nil,
             horizontalPadding: 20,
-            bottomContentMargin: 20
+            bottomContentMargin: 20,
+            collections: collections,
+            modelContext: modelContext
         )
     }
 

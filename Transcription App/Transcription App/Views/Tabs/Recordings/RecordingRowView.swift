@@ -1,19 +1,22 @@
 import SwiftUI
+import SwiftData
 
 /// Reusable row component for displaying a recording with menu actions
 struct RecordingRowView: View {
     // MARK: - Properties
     let recording: Recording
     let onCopy: () -> Void
-    let onEdit: () -> Void
     let onDelete: () -> Void
-    
+    let collections: [Collection]
+    let modelContext: ModelContext
+
     // Selection mode properties
     var isSelectionMode: Bool = false
     var isSelected: Bool = false
     var onSelectionToggle: (() -> Void)? = nil
-    
+
     @State private var showDeleteConfirm = false
+    @State private var showCollectionPicker = false
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     
     // MARK: - Body
@@ -194,7 +197,9 @@ struct RecordingRowView: View {
                                     ShareHelper.shareFile(at: url)
                                 }
                             }),
-                            ActionItem(title: "Edit", icon: "pencil-simple", action: onEdit),
+                            ActionItem(title: "Add to collection", icon: "folder-open", action: {
+                                showCollectionPicker = true
+                            }),
                             ActionItem(title: "Delete", icon: "trash", action: { showDeleteConfirm = true }, isDestructive: true)
                         ]
                     )
@@ -215,6 +220,17 @@ struct RecordingRowView: View {
                     onDelete()
                     showDeleteConfirm = false
                 }
+            )
+        }
+
+        .sheet(isPresented: $showCollectionPicker) {
+            CollectionPickerSheet(
+                collections: collections,
+                selectedCollections: .constant(Set<Collection>()),
+                modelContext: modelContext,
+                isPresented: $showCollectionPicker,
+                recordings: [recording],
+                onMassMoveComplete: nil
             )
         }
     }

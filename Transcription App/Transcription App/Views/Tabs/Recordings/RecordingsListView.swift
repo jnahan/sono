@@ -11,7 +11,9 @@ struct RecordingsListView: View {
     let onDelete: ((IndexSet) -> Void)?
     let horizontalPadding: CGFloat
     let bottomContentMargin: CGFloat?
-    
+    let collections: [Collection]
+    let modelContext: ModelContext
+
     init(
         recordings: [Recording],
         viewModel: RecordingListViewModel,
@@ -19,7 +21,9 @@ struct RecordingsListView: View {
         onRecordingTap: @escaping (Recording) -> Void,
         onDelete: ((IndexSet) -> Void)? = nil,
         horizontalPadding: CGFloat = 20,
-        bottomContentMargin: CGFloat? = nil
+        bottomContentMargin: CGFloat? = nil,
+        collections: [Collection],
+        modelContext: ModelContext
     ) {
         self.recordings = recordings
         self.viewModel = viewModel
@@ -28,6 +32,8 @@ struct RecordingsListView: View {
         self.onDelete = onDelete
         self.horizontalPadding = horizontalPadding
         self.bottomContentMargin = bottomContentMargin
+        self.collections = collections
+        self.modelContext = modelContext
     }
     
     var body: some View {
@@ -55,8 +61,9 @@ struct RecordingsListView: View {
                                 RecordingRowView(
                                     recording: recording,
                                     onCopy: { viewModel.copyRecording(recording) },
-                                    onEdit: { viewModel.editRecording(recording) },
                                     onDelete: { viewModel.deleteRecording(recording) },
+                                    collections: collections,
+                                    modelContext: modelContext,
                                     isSelectionMode: viewModel.isSelectionMode,
                                     isSelected: viewModel.isSelected(recording.id),
                                     onSelectionToggle: {

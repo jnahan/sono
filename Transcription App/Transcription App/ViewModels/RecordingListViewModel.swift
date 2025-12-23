@@ -3,9 +3,6 @@ import SwiftData
 
 /// Shared logic for displaying and managing a list of recordings
 class RecordingListViewModel: ObservableObject {
-    // MARK: - Edit State
-    @Published var editingRecording: Recording?
-    
     // MARK: - Toast State
     @Published var showCopyToast = false
     
@@ -39,24 +36,13 @@ class RecordingListViewModel: ObservableObject {
             withAnimation { self.showCopyToast = false }
         }
     }
-    
-    /// Sets a recording for editing
-    /// - Parameter recording: The recording to edit
-    func editRecording(_ recording: Recording) {
-        editingRecording = recording
-    }
-    
+
     /// Deletes a recording and cancels any active transcription
     /// - Parameter recording: The recording to delete
     @MainActor func deleteRecording(_ recording: Recording) {
         // Cancel any active transcription for this recording
         TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
         modelContext?.delete(recording)
-    }
-    
-    /// Cancels the current edit operation
-    func cancelEdit() {
-        editingRecording = nil
     }
     
     /// Displays a copy confirmation toast

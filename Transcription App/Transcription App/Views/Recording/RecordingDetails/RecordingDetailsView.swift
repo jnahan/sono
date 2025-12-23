@@ -28,10 +28,13 @@ struct RecordingDetailsView: View {
         _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
     }
 
-    @State private var showEditRecording = false
     @State private var showDeleteConfirm = false
+    @State private var showCollectionPicker = false
     @State private var selectedTab: RecordingDetailTab = .transcript
     @State private var currentProgress: Double = 0.0
+    @State private var isEditingTitle = false
+    @State private var editedTitle = ""
+    @FocusState private var isTitleFocused: Bool
 
     var body: some View {
         ZStack {
@@ -62,8 +65,8 @@ struct RecordingDetailsView: View {
                                     ShareHelper.shareFile(at: url)
                                 }
                             }),
-                            ActionItem(title: "Edit", icon: "pencil-simple", action: {
-                                showEditRecording = true
+                            ActionItem(title: "Add to collection", icon: "folder-open", action: {
+                                showCollectionPicker = true
                             }),
                             ActionItem(title: "Delete", icon: "trash", action: {
                                 showDeleteConfirm = true
@@ -86,9 +89,19 @@ struct RecordingDetailsView: View {
                                 .font(.dmSansMedium(size: 14))
                                 .foregroundColor(.warmGray400)
 
-                            Text(recording.title)
-                                .font(.dmSansSemiBold(size: 24))
-                                .foregroundColor(.baseBlack)
+                            if isEditingTitle {
+                                TextField("", text: $editedTitle)
+                                    .font(.dmSansSemiBold(size: 24))
+                                    .foregroundColor(.baseBlack)
+                                    .focused($isTitleFocused)
+                                    .submitLabel(.done)
+                                    .onSubmit { saveTitleEdit() }
+                            } else {
+                                Text(recording.title)
+                                    .font(.dmSansSemiBold(size: 24))
+                                    .foregroundColor(recording.title == "Untitled recording" ? .warmGray400 : .baseBlack)
+                                    .onTapGesture { startTitleEdit() }
+                            }
 
                             CollectionTagsView(collections: recording.collections)
                         }
@@ -96,7 +109,7 @@ struct RecordingDetailsView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
 
-                        // Sticky tabs
+                                // Sticky tabs
                         Section(
                             header:
                                 HStack(spacing: 16) {
@@ -128,6 +141,11 @@ struct RecordingDetailsView: View {
                             }
                             .padding(.top, 12)
                         }
+                    }
+                }
+                .onTapGesture {
+                    if isEditingTitle {
+                        saveTitleEdit()
                     }
                 }
             }
@@ -168,17 +186,6 @@ struct RecordingDetailsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
 
-        .sheet(isPresented: $showEditRecording) {
-            RecordingFormView(
-                isPresented: $showEditRecording,
-                audioURL: nil,
-                existingRecording: recording,
-                collections: collections,
-                modelContext: modelContext,
-                onExit: nil
-            )
-        }
-
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -192,6 +199,17 @@ struct RecordingDetailsView: View {
                     showDeleteConfirm = false
                     dismiss()
                 }
+            )
+        }
+
+        .sheet(isPresented: $showCollectionPicker) {
+            CollectionPickerSheet(
+                collections: collections,
+                selectedCollections: .constant(Set<Collection>()),
+                modelContext: modelContext,
+                isPresented: $showCollectionPicker,
+                recordings: [recording],
+                onMassMoveComplete: nil
             )
         }
 
@@ -224,6 +242,10 @@ struct RecordingDetailsView: View {
         }
 
         .onDisappear {
+            // Save title on navigate away
+            if isEditingTitle {
+                saveTitleEdit()
+            }
             audioPlayback.stop()
             AudioPlayerManager.shared.clearActiveRecordingDetails()
         }
@@ -239,6 +261,21 @@ struct RecordingDetailsView: View {
                 currentProgress = 1.0
             }
         }
+    }
+
+    // MARK: - Helper Functions
+
+    private func startTitleEdit() {
+        editedTitle = recording.title == "Untitled recording" ? "" : recording.title
+        isEditingTitle = true
+        isTitleFocused = true
+    }
+
+    private func saveTitleEdit() {
+        let trimmed = editedTitle.trimmed
+        recording.title = trimmed.isEmpty ? "Untitled recording" : trimmed
+        isEditingTitle = false
+        isTitleFocused = false
     }
 
     private var transcriptView: some View {
