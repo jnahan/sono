@@ -8,19 +8,7 @@ struct CollectionsRowView: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Collection Icon
-            ZStack {
-                Circle()
-                    .fill(Color.accent)
-                    .frame(width: 36, height: 36)
-                
-                Image("waveform")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.accentLight)
-            }
-            
+
             // Collection Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(collection.name)
@@ -45,11 +33,6 @@ struct CollectionsRowView: View {
                 ]
             )
         }
-        .padding(.top, 8)
+        .padding(.vertical, 8)
     }
 }
-
-
-
-
-
