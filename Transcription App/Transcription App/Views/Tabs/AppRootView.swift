@@ -1,12 +1,10 @@
 import SwiftUI
 import SwiftData
-import UIKit
 import AVFoundation
 
 struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @State private var tabBarLockedHidden = false
     @State private var showPlusButton = true
     @State private var isRecordingsRoot = true
 
@@ -28,7 +26,6 @@ struct AppRootView: View {
         ZStack {
             NavigationStack {
                 RecordingsView(
-                    tabBarLockedHidden: $tabBarLockedHidden,
                     showPlusButton: $showPlusButton,
                     isRoot: $isRecordingsRoot,
                     onAddRecording: {
@@ -44,8 +41,6 @@ struct AppRootView: View {
                                 selectedRecordingForDetails = nil
                             }
                         )
-                        .onAppear { tabBarLockedHidden = true }
-                        .onDisappear { tabBarLockedHidden = false }
                     }
                 }
             }
@@ -76,13 +71,6 @@ struct AppRootView: View {
                 )
                 .padding(.top, 8)
             }
-        }
-        .onAppear {
-            let appearance = UITabBar.appearance()
-            appearance.isHidden = true
-            appearance.backgroundImage = UIImage()
-            appearance.shadowImage = UIImage()
-            appearance.backgroundColor = .clear
         }
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView(

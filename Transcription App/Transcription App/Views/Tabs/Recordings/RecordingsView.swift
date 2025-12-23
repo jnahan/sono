@@ -8,7 +8,6 @@ import SwiftData
 struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @Binding var tabBarLockedHidden: Bool
     @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
 
@@ -49,7 +48,7 @@ struct RecordingsView: View {
     }
 
     private var shouldShowFab: Bool {
-        isRoot && showPlusButton && !tabBarLockedHidden
+        isRoot && showPlusButton
     }
 
     private var baseOffset: CGFloat { showCollectionDrawer ? drawerWidth : 0 }
@@ -226,8 +225,6 @@ struct RecordingsView: View {
 
         .navigationDestination(item: $selectedRecording) { recording in
             RecordingDetailsView(recording: recording)
-                .onAppear { tabBarLockedHidden = true }
-                .onDisappear { tabBarLockedHidden = false }
         }
 
     }

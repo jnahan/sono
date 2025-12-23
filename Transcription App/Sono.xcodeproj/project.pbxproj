@@ -76,7 +76,6 @@
 		5DD85B642EFA188A00ED6CF8 /* CollectionDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD85B632EFA188A00ED6CF8 /* CollectionDrawerView.swift */; };
 		5DDA7CC62EDD839400AFB6C0 /* Color+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */; };
 		5DDA7CC82EDD840800AFB6C0 /* Font+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */; };
-		5DDA7CCC2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DDA7CCB2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift */; };
 		5DE4CA712EDD2DAB0039A2AA /* RecordingEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */; };
 		5DE4CA752EDD37D20039A2AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DE4CA742EDD37D20039A2AA /* Assets.xcassets */; };
 		5DEC80202EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 5DEC801F2EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf */; };
@@ -155,7 +154,6 @@
 		5DD85B632EFA188A00ED6CF8 /* CollectionDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDrawerView.swift; sourceTree = "<group>"; };
 		5DDA7CC52EDD839400AFB6C0 /* Color+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+App.swift"; sourceTree = "<group>"; };
 		5DDA7CC72EDD840700AFB6C0 /* Font+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+App.swift"; sourceTree = "<group>"; };
-		5DDA7CCB2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsEmptyStateView.swift; sourceTree = "<group>"; };
 		5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEmptyStateView.swift; sourceTree = "<group>"; };
 		5DE4CA742EDD37D20039A2AA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5DEC801F2EE90A0800F1B1AB /* Llama-3.2-1B-Instruct-Q5_K_M.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Llama-3.2-1B-Instruct-Q5_K_M.gguf"; sourceTree = "<group>"; };
@@ -371,7 +369,6 @@
 			isa = PBXGroup;
 			children = (
 				5D3935303133B2EDFD1090003E775 /* SummaryEmptyStateView.swift */,
-				5DDA7CCB2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift */,
 				5DE4CA702EDD2DAB0039A2AA /* RecordingEmptyStateView.swift */,
 			);
 			path = EmptyStates;
@@ -682,7 +679,6 @@
 				5D214A3A2ED8263B0069565D /* RecordingSegment.swift in Sources */,
 				5DB579082ED8475F002DC84D /* NewRecordingSheet.swift in Sources */,
 				5D7925BD2ECD8E6C002889A6 /* Recording.swift in Sources */,
-				5DDA7CCC2EDD850300AFB6C0 /* CollectionsEmptyStateView.swift in Sources */,
 				5D92712C2EE50DC900A34B12 /* IconButton.swift in Sources */,
 				5D92712D2EE50DC900A34B13 /* Tab.swift in Sources */,
 				5D9271312EE50DC900A34B15 /* SettingsRow.swift in Sources */,
