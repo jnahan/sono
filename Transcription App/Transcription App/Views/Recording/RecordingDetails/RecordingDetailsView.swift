@@ -34,6 +34,7 @@ struct RecordingDetailsView: View {
     @State private var currentProgress: Double = 0.0
     @State private var isEditingTitle = false
     @State private var editedTitle = ""
+    @State private var showCopyToast = false
     @FocusState private var isTitleFocused: Bool
 
     var body: some View {
@@ -56,6 +57,13 @@ struct RecordingDetailsView: View {
                         ActionSheetManager.shared.show(actions: [
                             ActionItem(title: "Copy transcription", icon: "copy", action: {
                                 UIPasteboard.general.string = recording.fullText
+                                // Delay to let action sheet dismiss first
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    withAnimation { showCopyToast = true }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        withAnimation { showCopyToast = false }
+                                    }
+                                }
                             }),
                             ActionItem(title: "Share transcription", icon: "export", action: {
                                 ShareHelper.shareTranscription(recording.fullText, title: recording.title)
@@ -158,6 +166,12 @@ struct RecordingDetailsView: View {
                         audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
                         fullText: recording.fullText,
+                        onCopyPressed: {
+                            withAnimation { showCopyToast = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                withAnimation { showCopyToast = false }
+                            }
+                        },
                         onSharePressed: {
                             if let url = recording.resolvedURL {
                                 if let transcriptionFileURL = ShareHelper.createTranscriptionFile(recording.fullText, title: recording.title) {
@@ -185,6 +199,13 @@ struct RecordingDetailsView: View {
         .background(Color.warmGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
+        .overlay(alignment: .top) {
+            if showCopyToast {
+                ToastView(message: "Copied transcription")
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
 
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(

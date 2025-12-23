@@ -14,6 +14,7 @@ struct RecordingPlayerBar: View {
     @ObservedObject var audioService: AudioPlaybackService
     let audioURL: URL?
     let fullText: String
+    var onCopyPressed: () -> Void
     var onSharePressed: () -> Void
 
     // MARK: - Body
@@ -32,6 +33,7 @@ struct RecordingPlayerBar: View {
                 // Copy button
                 IconButton(icon: "copy") {
                     UIPasteboard.general.string = fullText
+                    onCopyPressed()
                 }
 
                 Spacer()
