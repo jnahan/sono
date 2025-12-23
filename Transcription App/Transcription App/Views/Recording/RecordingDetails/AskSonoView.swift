@@ -1,7 +1,8 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
-struct ChatMessage: Identifiable {
+struct ChatMessage: Identifiable, Equatable {
     let id: UUID
     let text: String
     let isUser: Bool
@@ -18,6 +19,7 @@ struct ChatMessage: Identifiable {
 struct AskSonoView: View {
     let recording: Recording
     @ObservedObject var viewModel: AskSonoViewModel
+    let activationToken: UUID
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -32,39 +34,54 @@ struct AskSonoView: View {
                                 .id(message.id)
                         }
                     }
-
-                    Color.clear.frame(height: 1).id("bottom-anchor")
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
             .scrollDismissesKeyboard(.interactively)
-            .onChange(of: viewModel.messages.count) { _, _ in scrollToBottom(proxy) }
+            .onAppear {
+                scrollToBottomIfNeeded(proxy: proxy, animated: false)
+            }
+            .onChange(of: activationToken) { _, _ in
+                // tab became active -> jump to last message
+                scrollToBottomIfNeeded(proxy: proxy, animated: false)
+            }
+            .onChange(of: viewModel.messages.count) { _, _ in
+                scrollToBottomIfNeeded(proxy: proxy, animated: true)
+            }
             .onChange(of: viewModel.isProcessing) { _, isProcessing in
-                if !isProcessing { scrollToBottom(proxy) }
+                if !isProcessing {
+                    scrollToBottomIfNeeded(proxy: proxy, animated: true)
+                }
             }
             .onChange(of: viewModel.streamingText) { _, _ in
-                if viewModel.streamingMessageId != nil {
-                    withAnimation(.easeOut(duration: 0.1)) {
-                        proxy.scrollTo("bottom-anchor", anchor: .bottom)
-                    }
-                }
+                // keep following streaming output
+                scrollToBottomIfNeeded(proxy: proxy, animated: false)
             }
         }
     }
 
-    private func scrollToBottom(_ proxy: ScrollViewProxy) {
+    private func scrollToBottomIfNeeded(proxy: ScrollViewProxy, animated: Bool) {
+        guard let last = viewModel.messages.last else { return }
         DispatchQueue.main.async {
-            withAnimation { proxy.scrollTo("bottom-anchor", anchor: .bottom) }
+            if animated {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    proxy.scrollTo(last.id, anchor: .bottom)
+                }
+            } else {
+                proxy.scrollTo(last.id, anchor: .bottom)
+            }
         }
     }
+
+    // MARK: - Message Bubble
 
     @ViewBuilder
     private func messageBubble(message: ChatMessage) -> some View {
         if message.isUser {
             HStack {
                 Spacer(minLength: 60)
+
                 Text(message.text)
                     .font(.dmSansRegular(size: 16))
                     .foregroundColor(.baseBlack)
@@ -74,7 +91,6 @@ struct AskSonoView: View {
                     .background(Color.accentLight)
                     .cornerRadius(12)
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
         } else {
             let isStreaming = viewModel.streamingMessageId != nil && message.id == viewModel.messages.last?.id
             let hasStreamingText = isStreaming && !viewModel.streamingText.isEmpty
@@ -83,10 +99,12 @@ struct AskSonoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 if showThinking {
                     VStack(alignment: .leading, spacing: 8) {
-                        PulsatingDot()
+                        AskSonoPulsatingDot()
+
                         Text("Thinking...")
                             .font(.dmSansRegular(size: 16))
                             .foregroundColor(.baseBlack)
+
                         if !viewModel.chunkProgress.isEmpty {
                             Text(viewModel.chunkProgress)
                                 .font(.dmSansRegular(size: 14))
@@ -97,7 +115,7 @@ struct AskSonoView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         if hasStreamingText && !viewModel.chunkProgress.isEmpty {
                             HStack(spacing: 8) {
-                                PulsatingDot()
+                                AskSonoPulsatingDot()
                                 Text(viewModel.chunkProgress)
                                     .font(.dmSansMedium(size: 14))
                                     .foregroundColor(.accent)
@@ -127,18 +145,23 @@ struct AskSonoView: View {
     }
 }
 
-private struct PulsatingDot: View {
+// MARK: - Unique dot name to avoid redeclaration conflicts
+
+private struct AskSonoPulsatingDot: View {
     @State private var isPulsating = false
+
     var body: some View {
         Circle()
             .fill(Color.accent)
             .frame(width: 12, height: 12)
             .scaleEffect(isPulsating ? 0.8 : 1.0)
             .onAppear {
-                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                withAnimation(
+                    Animation.easeInOut(duration: 0.8)
+                        .repeatForever(autoreverses: true)
+                ) {
                     isPulsating = true
                 }
             }
     }
 }
-

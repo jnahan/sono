@@ -1,7 +1,3 @@
-//
-//  SummaryView.swift
-//
-
 import SwiftUI
 import SwiftData
 
@@ -18,82 +14,59 @@ struct SummaryView: View {
     var body: some View {
         Group {
             if viewModel.isGeneratingSummary {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        if viewModel.streamingSummary.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                PulsatingDot()
-
-                                Text("Summarizing...")
-                                    .font(.dmSansRegular(size: 16))
-                                    .foregroundColor(.baseBlack)
-
-                                if !viewModel.chunkProgress.isEmpty {
-                                    Text(viewModel.chunkProgress)
-                                        .font(.dmSansRegular(size: 14))
-                                        .foregroundColor(.warmGray500)
-                                }
-                            }
-                        } else {
-                            VStack(alignment: .leading, spacing: 12) {
-                                if !viewModel.chunkProgress.isEmpty {
-                                    HStack(spacing: 8) {
-                                        PulsatingDot()
-                                        Text(viewModel.chunkProgress)
-                                            .font(.dmSansMedium(size: 14))
-                                            .foregroundColor(.accent)
-                                    }
-                                }
-
-                                Text(viewModel.streamingSummary)
-                                    .font(.dmSansRegular(size: 16))
-                                    .foregroundColor(.baseBlack)
-                                    .lineSpacing(4)
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
-                }
+                generatingContent
             } else if let summary = recording.summary, !summary.isEmpty {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        summaryContentView(summary: summary)
-
-                        if let error = viewModel.summaryError {
-                            Text(error)
-                                .font(.dmSansRegular(size: 14))
-                                .foregroundColor(.red)
-                                .padding(.top, 8)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
-                }
+                summaryContentView(summary: summary)
             } else if let error = viewModel.summaryError {
-                VStack(alignment: .leading, spacing: 16) {
-                    errorContentView(error: error)
-                    Spacer(minLength: 0)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                errorContentView(error: error)
             } else {
                 SummaryEmptyStateView {
-                    Task {
-                        await viewModel.generateSummary(modelContext: modelContext)
+                    Task { await viewModel.generateSummary(modelContext: modelContext) }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 24)
+    }
+
+    // MARK: - Pieces
+
+    private var generatingContent: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if viewModel.streamingSummary.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    PulsatingDot()
+
+                    Text("Summarizing...")
+                        .font(.dmSansRegular(size: 16))
+                        .foregroundColor(.baseBlack)
+
+                    if !viewModel.chunkProgress.isEmpty {
+                        Text(viewModel.chunkProgress)
+                            .font(.dmSansRegular(size: 14))
+                            .foregroundColor(.warmGray500)
                     }
                 }
-                // ensure empty state can expand
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.top, 8)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    if !viewModel.chunkProgress.isEmpty {
+                        HStack(spacing: 8) {
+                            PulsatingDot()
+                            Text(viewModel.chunkProgress)
+                                .font(.dmSansMedium(size: 14))
+                                .foregroundColor(.accent)
+                        }
+                    }
+
+                    Text(viewModel.streamingSummary)
+                        .font(.dmSansRegular(size: 16))
+                        .foregroundColor(.baseBlack)
+                        .lineSpacing(4)
+                }
             }
         }
     }
-
-    // MARK: - Subviews
 
     private func errorContentView(error: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -103,9 +76,7 @@ struct SummaryView: View {
 
             AIResponseButtons(
                 onCopy: { UIPasteboard.general.string = error },
-                onRegenerate: {
-                    Task { await viewModel.generateSummary(modelContext: modelContext) }
-                },
+                onRegenerate: { Task { await viewModel.generateSummary(modelContext: modelContext) } },
                 onExport: { ShareHelper.shareText(error) }
             )
         }
@@ -120,14 +91,21 @@ struct SummaryView: View {
 
             AIResponseButtons(
                 onCopy: { UIPasteboard.general.string = summary },
-                onRegenerate: {
-                    Task { await viewModel.generateSummary(modelContext: modelContext) }
-                },
+                onRegenerate: { Task { await viewModel.generateSummary(modelContext: modelContext) } },
                 onExport: { ShareHelper.shareText(summary) }
             )
+
+            if let error = viewModel.summaryError {
+                Text(error)
+                    .font(.dmSansRegular(size: 14))
+                    .foregroundColor(.red)
+                    .padding(.top, 8)
+            }
         }
     }
 }
+
+// MARK: - Pulsating Dot (same as yours)
 
 private struct PulsatingDot: View {
     @State private var isPulsating = false

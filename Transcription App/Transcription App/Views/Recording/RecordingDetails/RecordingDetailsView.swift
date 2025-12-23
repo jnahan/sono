@@ -16,7 +16,6 @@ struct RecordingDetailsView: View {
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var viewModel: RecordingDetailsViewModel
     @StateObject private var progressManager = TranscriptionProgressManager.shared
-
     @StateObject private var askSonoVM: AskSonoViewModel
 
     @Environment(\.modelContext) private var modelContext
@@ -40,12 +39,14 @@ struct RecordingDetailsView: View {
     @State private var showCopyToast = false
     @FocusState private var isTitleFocused: Bool
 
-    // MARK: - Measurements for top title behavior
+    // UIKit-driven scroll tracking (robust)
     @State private var headerHeight: CGFloat = 0
-    @State private var topMarkerMinY: CGFloat = 0
+    @State private var scrollY: CGFloat = 0
     @State private var showTopTitle: Bool = false
 
-    private var scrollOffset: CGFloat { max(0, -topMarkerMinY) }
+    // Control parent scroll when Ask Sono tab active
+    @State private var parentScrollView: UIScrollView? = nil
+    @State private var askSonoActivationToken: UUID = UUID()
 
     var body: some View {
         ZStack {
@@ -87,34 +88,21 @@ struct RecordingDetailsView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
 
-                        // Stable offset marker
-                        Color.clear
-                            .frame(height: 0)
-                            .background(
-                                GeometryReader { geo in
-                                    Color.clear.preference(
-                                        key: TopMarkerMinYPreferenceKey.self,
-                                        value: geo.frame(in: .named("recordingDetailsScroll")).minY
-                                    )
-                                }
-                            )
-
-                        // Header (scrolls away)
+                        // Header (scrolls away) — measure height
                         headerView
                             .background(
                                 GeometryReader { geo in
-                                    Color.clear.preference(
-                                        key: HeaderHeightPreferenceKey.self,
-                                        value: geo.size.height
-                                    )
+                                    Color.clear
+                                        .onAppear { headerHeight = geo.size.height }
+                                        .onChange(of: geo.size.height) { _, new in headerHeight = new }
                                 }
                             )
 
                         // Sticky tabs
                         Section(header: tabsHeader) {
-                            // Each tab can manage its own scrolling internally.
                             Group {
                                 switch selectedTab {
+
                                 case .transcript:
                                     TranscriptView(
                                         recording: recording,
@@ -125,32 +113,38 @@ struct RecordingDetailsView: View {
 
                                 case .summary:
                                     SummaryView(recording: recording)
-                                        .id(recording.id)
 
                                 case .askSono:
                                     AskSonoView(
                                         recording: recording,
-                                        viewModel: askSonoVM
+                                        viewModel: askSonoVM,
+                                        activationToken: askSonoActivationToken
                                     )
-                                    .id(recording.id)
                                 }
                             }
                             .padding(.top, 12)
-                            .padding(.bottom, 24) // normal breathing room; bottom bars handled by safeAreaInset
+                            .padding(.bottom, 24)
                         }
                     }
+                    // Attach UIKit scroll observer to the parent ScrollView
+                    .background(
+                        _ScrollOffsetReader(
+                            onScrollViewFound: { sv in
+                                parentScrollView = sv
+                                sv.isScrollEnabled = (selectedTab != .askSono)
+                            },
+                            onOffsetChange: { y in
+                                // Only drive top-title logic when parent scroll is enabled
+                                guard selectedTab != .askSono else { return }
+                                scrollY = y
+                                updateTopTitleVisibility()
+                            }
+                        )
+                        .frame(width: 0, height: 0)
+                    )
                 }
-                .coordinateSpace(name: "recordingDetailsScroll")
                 .onTapGesture {
                     if isEditingTitle { saveTitleEdit() }
-                }
-                .onPreferenceChange(TopMarkerMinYPreferenceKey.self) { val in
-                    topMarkerMinY = val
-                    updateTopTitleVisibility()
-                }
-                .onPreferenceChange(HeaderHeightPreferenceKey.self) { val in
-                    headerHeight = val
-                    updateTopTitleVisibility()
                 }
             }
 
@@ -174,6 +168,7 @@ struct RecordingDetailsView: View {
             }
         }
 
+        // Bottom bars stay the same
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
                 if selectedTab == .transcript {
@@ -209,6 +204,25 @@ struct RecordingDetailsView: View {
             }
         }
 
+        // Tab switching behavior
+        .onChange(of: selectedTab) { _, newTab in
+            // lock/unlock parent scroll
+            parentScrollView?.isScrollEnabled = (newTab != .askSono)
+
+            if newTab == .askSono {
+                // keep header visible, keep parent at top, activate AskSono scroll-to-bottom
+                parentScrollView?.setContentOffset(.zero, animated: false)
+                scrollY = 0
+                showTopTitle = false
+                askSonoActivationToken = UUID()
+            } else {
+                // always start Summary (and Transcript) at top for consistency
+                parentScrollView?.setContentOffset(.zero, animated: false)
+                scrollY = 0
+                updateTopTitleVisibility()
+            }
+        }
+
         .sheet(isPresented: $showDeleteConfirm) {
             ConfirmationSheet(
                 isPresented: $showDeleteConfirm,
@@ -237,6 +251,7 @@ struct RecordingDetailsView: View {
         }
 
         .onAppear {
+            showTopTitle = false
             selectedTab = .transcript
 
             let audioManager = AudioPlayerManager.shared
@@ -273,6 +288,10 @@ struct RecordingDetailsView: View {
 
         .onChange(of: recording.status) { oldStatus, newStatus in
             if oldStatus == .inProgress && newStatus == .completed { currentProgress = 1.0 }
+        }
+
+        .onChange(of: headerHeight) { _, _ in
+            updateTopTitleVisibility()
         }
     }
 
@@ -321,18 +340,15 @@ struct RecordingDetailsView: View {
     // MARK: - Helpers
 
     private func updateTopTitleVisibility() {
-        guard headerHeight > 0 else { return }
+        guard headerHeight > 1 else { return }
+        let shouldShow = scrollY >= (headerHeight - 4)
 
-        // header is gone once we've scrolled past its full height
-        let headerGone = scrollOffset >= headerHeight - 4
-
-        if headerGone != showTopTitle {
+        if shouldShow != showTopTitle {
             withAnimation(.easeInOut(duration: 0.18)) {
-                showTopTitle = headerGone
+                showTopTitle = shouldShow
             }
         }
     }
-
 
     private func startTitleEdit() {
         editedTitle = recording.title == "Untitled recording" ? "" : recording.title
@@ -348,19 +364,74 @@ struct RecordingDetailsView: View {
     }
 }
 
-// MARK: - Preference Keys
+// MARK: - UIKit Scroll Offset Reader (captures UIScrollView too)
 
-private struct TopMarkerMinYPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+private struct _ScrollOffsetReader: UIViewRepresentable {
+    var onScrollViewFound: (UIScrollView) -> Void
+    var onOffsetChange: (CGFloat) -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.isUserInteractionEnabled = false
+        context.coordinator.attach(to: view, onScrollViewFound: onScrollViewFound, onOffsetChange: onOffsetChange)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onScrollViewFound = onScrollViewFound
+        context.coordinator.onOffsetChange = onOffsetChange
+        context.coordinator.tryHookScrollView(from: uiView)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject {
+        var onScrollViewFound: ((UIScrollView) -> Void)?
+        var onOffsetChange: ((CGFloat) -> Void)?
+
+        private weak var scrollView: UIScrollView?
+        private var observation: NSKeyValueObservation?
+
+        func attach(to view: UIView,
+                    onScrollViewFound: @escaping (UIScrollView) -> Void,
+                    onOffsetChange: @escaping (CGFloat) -> Void) {
+            self.onScrollViewFound = onScrollViewFound
+            self.onOffsetChange = onOffsetChange
+        }
+
+        func tryHookScrollView(from view: UIView) {
+            guard scrollView == nil else { return }
+
+            var v: UIView? = view
+            while let current = v {
+                if let sv = current as? UIScrollView {
+                    hook(sv)
+                    return
+                }
+                v = current.superview
+            }
+
+            DispatchQueue.main.async { [weak self, weak view] in
+                guard let self, let view else { return }
+                self.tryHookScrollView(from: view)
+            }
+        }
+
+        private func hook(_ sv: UIScrollView) {
+            scrollView = sv
+            onScrollViewFound?(sv)
+
+            observation?.invalidate()
+            observation = sv.observe(\.contentOffset, options: [.initial, .new]) { [weak self] sv, _ in
+                self?.onOffsetChange?(max(0, sv.contentOffset.y))
+            }
+        }
+
+        deinit { observation?.invalidate() }
+    }
 }
 
-private struct HeaderHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
-}
-
-// MARK: - Transcription Progress Overlay
+// MARK: - Transcription Progress Overlay (unchanged)
 
 private struct TranscriptionProgressOverlay: View {
     let progress: Double

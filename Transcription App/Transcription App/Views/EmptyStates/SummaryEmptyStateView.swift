@@ -19,6 +19,7 @@ struct SummaryEmptyStateView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 24, height: 24)
+                            .foregroundColor(Color.accent)
 
                         Text("Summarize")
                             .font(.dmSansMedium(size: 16))
@@ -34,10 +35,11 @@ struct SummaryEmptyStateView: View {
                     )
                 }
             }
+            .padding(.vertical, 120)
 
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 20)
     }
 }
+
