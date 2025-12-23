@@ -17,6 +17,8 @@ struct RecordingDetailsView: View {
     @StateObject private var viewModel: RecordingDetailsViewModel
     @StateObject private var progressManager = TranscriptionProgressManager.shared
 
+    @StateObject private var askSonoVM: AskSonoViewModel
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -26,6 +28,7 @@ struct RecordingDetailsView: View {
         self.recording = recording
         self.onDismiss = onDismiss
         _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
+        _askSonoVM = StateObject(wrappedValue: AskSonoViewModel(recording: recording))
     }
 
     @State private var showDeleteConfirm = false
@@ -37,27 +40,27 @@ struct RecordingDetailsView: View {
     @State private var showCopyToast = false
     @FocusState private var isTitleFocused: Bool
 
+    // MARK: - Measurements for top title behavior
+    @State private var headerHeight: CGFloat = 0
+    @State private var topMarkerMinY: CGFloat = 0
+    @State private var showTopTitle: Bool = false
+
+    private var scrollOffset: CGFloat { max(0, -topMarkerMinY) }
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-
-                // Top bar – always empty title
                 CustomTopBar(
-                    title: "",
+                    title: showTopTitle ? recording.title : "",
                     leftIcon: "caret-left",
                     rightIcon: "dots-three-bold",
                     onLeftTap: {
-                        if let onDismiss = onDismiss {
-                            onDismiss()
-                        } else {
-                            dismiss()
-                        }
+                        if let onDismiss = onDismiss { onDismiss() } else { dismiss() }
                     },
                     onRightTap: {
                         ActionSheetManager.shared.show(actions: [
                             ActionItem(title: "Copy transcription", icon: "copy", action: {
                                 UIPasteboard.general.string = recording.fullText
-                                // Delay to let action sheet dismiss first
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     withAnimation { showCopyToast = true }
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -69,9 +72,7 @@ struct RecordingDetailsView: View {
                                 ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }),
                             ActionItem(title: "Export audio", icon: "waveform", action: {
-                                if let url = recording.resolvedURL {
-                                    ShareHelper.shareFile(at: url)
-                                }
+                                if let url = recording.resolvedURL { ShareHelper.shareFile(at: url) }
                             }),
                             ActionItem(title: "Add to collection", icon: "folder-open", action: {
                                 showCollectionPicker = true
@@ -83,93 +84,99 @@ struct RecordingDetailsView: View {
                     }
                 )
 
-                // Collapsing header + sticky tabs
                 ScrollView {
-                    LazyVStack(
-                        alignment: .leading,
-                        spacing: 0,
-                        pinnedViews: [.sectionHeaders]
-                    ) {
+                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+
+                        // Stable offset marker
+                        Color.clear
+                            .frame(height: 0)
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.preference(
+                                        key: TopMarkerMinYPreferenceKey.self,
+                                        value: geo.frame(in: .named("recordingDetailsScroll")).minY
+                                    )
+                                }
+                            )
 
                         // Header (scrolls away)
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
-                                .font(.dmSansMedium(size: 14))
-                                .foregroundColor(.warmGray400)
-
-                            if isEditingTitle {
-                                TextField("", text: $editedTitle)
-                                    .font(.dmSansSemiBold(size: 24))
-                                    .foregroundColor(.baseBlack)
-                                    .focused($isTitleFocused)
-                                    .submitLabel(.done)
-                                    .onSubmit { saveTitleEdit() }
-                            } else {
-                                Text(recording.title)
-                                    .font(.dmSansSemiBold(size: 24))
-                                    .foregroundColor(recording.title == "Untitled recording" ? .warmGray400 : .baseBlack)
-                                    .onTapGesture { startTitleEdit() }
-                            }
-
-                            CollectionTagsView(collections: recording.collections)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 8)
-
-                                // Sticky tabs
-                        Section(
-                            header:
-                                HStack(spacing: 16) {
-                                    TabButton(
-                                        title: "Transcript",
-                                        isSelected: selectedTab == .transcript,
-                                        action: { selectedTab = .transcript }
+                        headerView
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.preference(
+                                        key: HeaderHeightPreferenceKey.self,
+                                        value: geo.size.height
                                     )
-
-                                    TabButton(
-                                        title: "Summary",
-                                        isSelected: selectedTab == .summary,
-                                        action: { selectedTab = .summary }
-                                    )
-
-                                    TabButton(
-                                        title: "Ask Sono",
-                                        isSelected: selectedTab == .askSono,
-                                        action: { selectedTab = .askSono }
-                                    )
-
-                                    Spacer()
                                 }
-                                .padding(.horizontal, 20)
-                                .padding(.top, 16)
-                                .padding(.bottom, 12)
-                                .background(Color.warmGray50)
-                        ) {
-                            VStack(spacing: 0) {
-                                if selectedTab == .transcript {
-                                    transcriptView
-                                } else if selectedTab == .summary {
-                                    summaryView
-                                } else if selectedTab == .askSono {
-                                    askSonoView
+                            )
+
+                        // Sticky tabs
+                        Section(header: tabsHeader) {
+                            // Each tab can manage its own scrolling internally.
+                            Group {
+                                switch selectedTab {
+                                case .transcript:
+                                    TranscriptView(
+                                        recording: recording,
+                                        audioPlayback: audioPlayback,
+                                        viewModel: viewModel
+                                    )
+                                    .id(recording.id)
+
+                                case .summary:
+                                    SummaryView(recording: recording)
+                                        .id(recording.id)
+
+                                case .askSono:
+                                    AskSonoView(
+                                        recording: recording,
+                                        viewModel: askSonoVM
+                                    )
+                                    .id(recording.id)
                                 }
                             }
                             .padding(.top, 12)
+                            .padding(.bottom, 24) // normal breathing room; bottom bars handled by safeAreaInset
                         }
                     }
                 }
+                .coordinateSpace(name: "recordingDetailsScroll")
                 .onTapGesture {
-                    if isEditingTitle {
-                        saveTitleEdit()
-                    }
+                    if isEditingTitle { saveTitleEdit() }
+                }
+                .onPreferenceChange(TopMarkerMinYPreferenceKey.self) { val in
+                    topMarkerMinY = val
+                    updateTopTitleVisibility()
+                }
+                .onPreferenceChange(HeaderHeightPreferenceKey.self) { val in
+                    headerHeight = val
+                    updateTopTitleVisibility()
                 }
             }
 
-            // Player bar overlay (transcript only)
-            if selectedTab == .transcript {
-                VStack {
-                    Spacer()
+            // Transcription progress overlay
+            if recording.status == .inProgress {
+                TranscriptionProgressOverlay(
+                    progress: currentProgress,
+                    isQueued: progressManager.isQueued(recordingId: recording.id),
+                    queuePosition: progressManager.getOverallPosition(for: recording.id)
+                )
+            }
+        }
+        .background(Color.warmGray50.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
+        .overlay(alignment: .top) {
+            if showCopyToast {
+                ToastView(message: "Copied transcription")
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 0) {
+                if selectedTab == .transcript {
                     RecordingPlayerBar(
                         audioService: audioPlayback,
                         audioURL: recording.resolvedURL,
@@ -192,26 +199,13 @@ struct RecordingDetailsView: View {
                             }
                         }
                     )
+                    .background(Color.warmGray50)
                 }
-            }
 
-            // Transcription progress overlay
-            if recording.status == .inProgress {
-                TranscriptionProgressOverlay(
-                    progress: currentProgress,
-                    isQueued: progressManager.isQueued(recordingId: recording.id),
-                    queuePosition: progressManager.getOverallPosition(for: recording.id)
-                )
-            }
-        }
-        .background(Color.warmGray50.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .enableSwipeBack()
-        .overlay(alignment: .top) {
-            if showCopyToast {
-                ToastView(message: "Copied transcription")
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                if selectedTab == .askSono {
+                    AskSonoInputBar(viewModel: askSonoVM)
+                        .background(Color.warmGray50)
+                }
             }
         }
 
@@ -246,14 +240,11 @@ struct RecordingDetailsView: View {
             selectedTab = .transcript
 
             let audioManager = AudioPlayerManager.shared
-
-            if let currentGlobal = audioManager.currentRecording,
-               currentGlobal.id != recording.id {
+            if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
                 audioManager.stop()
             }
 
-            if let currentGlobal = audioManager.currentRecording,
-               currentGlobal.id == recording.id {
+            if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
                 let wasPlaying = audioManager.player.isPlaying
                 let currentTime = audioManager.player.currentTime
                 audioManager.stop()
@@ -271,28 +262,77 @@ struct RecordingDetailsView: View {
         }
 
         .onDisappear {
-            // Save title on navigate away
-            if isEditingTitle {
-                saveTitleEdit()
-            }
+            if isEditingTitle { saveTitleEdit() }
             audioPlayback.stop()
             AudioPlayerManager.shared.clearActiveRecordingDetails()
         }
 
         .onChange(of: progressManager.activeTranscriptions[recording.id]) { _, newProgress in
-            if let progress = newProgress {
-                currentProgress = progress
-            }
+            if let progress = newProgress { currentProgress = progress }
         }
 
         .onChange(of: recording.status) { oldStatus, newStatus in
-            if oldStatus == .inProgress && newStatus == .completed {
-                currentProgress = 1.0
+            if oldStatus == .inProgress && newStatus == .completed { currentProgress = 1.0 }
+        }
+    }
+
+    // MARK: - Views
+
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
+                .font(.dmSansMedium(size: 14))
+                .foregroundColor(.warmGray400)
+
+            if isEditingTitle {
+                TextField("", text: $editedTitle)
+                    .font(.dmSansSemiBold(size: 24))
+                    .foregroundColor(.baseBlack)
+                    .focused($isTitleFocused)
+                    .submitLabel(.done)
+                    .onSubmit { saveTitleEdit() }
+            } else {
+                Text(recording.title)
+                    .font(.dmSansSemiBold(size: 24))
+                    .foregroundColor(recording.title == "Untitled recording" ? .warmGray400 : .baseBlack)
+                    .onTapGesture { startTitleEdit() }
+            }
+
+            CollectionTagsView(collections: recording.collections)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+    }
+
+    private var tabsHeader: some View {
+        HStack(spacing: 16) {
+            TabButton(title: "Transcript", isSelected: selectedTab == .transcript) { selectedTab = .transcript }
+            TabButton(title: "Summary", isSelected: selectedTab == .summary) { selectedTab = .summary }
+            TabButton(title: "Ask Sono", isSelected: selectedTab == .askSono) { selectedTab = .askSono }
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+        .background(Color.warmGray50)
+    }
+
+    // MARK: - Helpers
+
+    private func updateTopTitleVisibility() {
+        guard headerHeight > 0 else { return }
+
+        // header is gone once we've scrolled past its full height
+        let headerGone = scrollOffset >= headerHeight - 4
+
+        if headerGone != showTopTitle {
+            withAnimation(.easeInOut(duration: 0.18)) {
+                showTopTitle = headerGone
             }
         }
     }
 
-    // MARK: - Helper Functions
 
     private func startTitleEdit() {
         editedTitle = recording.title == "Untitled recording" ? "" : recording.title
@@ -306,25 +346,18 @@ struct RecordingDetailsView: View {
         isEditingTitle = false
         isTitleFocused = false
     }
+}
 
-    private var transcriptView: some View {
-        TranscriptView(
-            recording: recording,
-            audioPlayback: audioPlayback,
-            viewModel: viewModel
-        )
-        .id(recording.id)
-    }
+// MARK: - Preference Keys
 
-    private var summaryView: some View {
-        SummaryView(recording: recording)
-            .id(recording.id)
-    }
+private struct TopMarkerMinYPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
 
-    private var askSonoView: some View {
-        AskSonoView(recording: recording)
-            .id(recording.id)
-    }
+private struct HeaderHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 // MARK: - Transcription Progress Overlay
@@ -336,9 +369,7 @@ private struct TranscriptionProgressOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.warmGray50
-                .ignoresSafeArea()
-
+            Color.warmGray50.ignoresSafeArea()
             VStack(spacing: 0) {
                 if isQueued {
                     VStack(spacing: 0) {
@@ -346,18 +377,18 @@ private struct TranscriptionProgressOverlay: View {
                             .font(.dmSansSemiBold(size: 24))
                             .foregroundColor(.baseBlack)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Spacer()
-                            .frame(height: 8)
-
+                        Spacer().frame(height: 8)
                         Text("Your recording will be transcribed when the current transcription finishes.")
                             .font(.dmSansRegular(size: 16))
                             .foregroundColor(.warmGray700)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
+
+                        if let qp = queuePosition {
+                            Spacer().frame(height: 10)
+                            Text("Queue \(qp.position) of \(qp.total)")
+                                .font(.dmSansRegular(size: 14))
+                                .foregroundColor(.warmGray500)
+                        }
                     }
                     .padding(.horizontal, 20)
                 } else {
@@ -365,26 +396,16 @@ private struct TranscriptionProgressOverlay: View {
                         Text("\(Int(progress * 100))%")
                             .font(.dmSansSemiBold(size: 64))
                             .foregroundColor(.baseBlack)
-
-                        Spacer()
-                            .frame(height: 8)
-
+                        Spacer().frame(height: 8)
                         Text("Transcribing audio")
                             .font(.dmSansSemiBold(size: 24))
                             .foregroundColor(.baseBlack)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Spacer()
-                            .frame(height: 8)
-
+                        Spacer().frame(height: 8)
                         Text("Transcription in progress. Please do not close.")
                             .font(.dmSansRegular(size: 16))
                             .foregroundColor(.warmGray700)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.horizontal, 20)
                 }

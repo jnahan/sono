@@ -132,13 +132,11 @@ struct RecordingsView: View {
             }
             .offset(x: currentOffset)
             .gesture(drawerGesture)
-            // ✅ Key: NO animation while dragging (prevents bounce/glitch)
             .transaction { tx in
                 if isDraggingDrawer {
                     tx.animation = nil
                 }
             }
-            // ✅ Only animate the snapped open/close state changes
             .animation(.spring(response: 0.36, dampingFraction: 0.92), value: showCollectionDrawer)
         }
 

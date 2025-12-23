@@ -1,3 +1,7 @@
+//
+//  SummaryView.swift
+//
+
 import SwiftUI
 import SwiftData
 
@@ -5,90 +9,90 @@ struct SummaryView: View {
     let recording: Recording
     @StateObject private var viewModel: SummaryViewModel
     @Environment(\.modelContext) private var modelContext
-    
+
     init(recording: Recording) {
         self.recording = recording
         _viewModel = StateObject(wrappedValue: SummaryViewModel(recording: recording))
     }
-    
+
     var body: some View {
-        if viewModel.isGeneratingSummary {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    if viewModel.streamingSummary.isEmpty {
-                        // Show "Summarizing..." with blue dot and chunk progress
-                        VStack(alignment: .leading, spacing: 8) {
-                            PulsatingDot()
+        Group {
+            if viewModel.isGeneratingSummary {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        if viewModel.streamingSummary.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                PulsatingDot()
 
-                            Text("Summarizing...")
-                                .font(.dmSansRegular(size: 16))
-                                .foregroundColor(.baseBlack)
+                                Text("Summarizing...")
+                                    .font(.dmSansRegular(size: 16))
+                                    .foregroundColor(.baseBlack)
 
-                            // Show chunk progress if available
-                            if !viewModel.chunkProgress.isEmpty {
-                                Text(viewModel.chunkProgress)
-                                    .font(.dmSansRegular(size: 14))
-                                    .foregroundColor(.warmGray500)
-                            }
-                        }
-                    } else {
-                        // Show streaming text with optional chunk progress above it
-                        VStack(alignment: .leading, spacing: 12) {
-                            // Show chunk progress if available
-                            if !viewModel.chunkProgress.isEmpty {
-                                HStack(spacing: 8) {
-                                    PulsatingDot()
+                                if !viewModel.chunkProgress.isEmpty {
                                     Text(viewModel.chunkProgress)
-                                        .font(.dmSansMedium(size: 14))
-                                        .foregroundColor(.accent)
+                                        .font(.dmSansRegular(size: 14))
+                                        .foregroundColor(.warmGray500)
                                 }
                             }
+                        } else {
+                            VStack(alignment: .leading, spacing: 12) {
+                                if !viewModel.chunkProgress.isEmpty {
+                                    HStack(spacing: 8) {
+                                        PulsatingDot()
+                                        Text(viewModel.chunkProgress)
+                                            .font(.dmSansMedium(size: 14))
+                                            .foregroundColor(.accent)
+                                    }
+                                }
 
-                            Text(viewModel.streamingSummary)
-                                .font(.dmSansRegular(size: 16))
-                                .foregroundColor(.baseBlack)
-                                .lineSpacing(4)
+                                Text(viewModel.streamingSummary)
+                                    .font(.dmSansRegular(size: 16))
+                                    .foregroundColor(.baseBlack)
+                                    .lineSpacing(4)
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
-            }
-        } else if let summary = recording.summary, !summary.isEmpty {
-            // Show summary even if there's an error (error might be informational)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    summaryContentView(summary: summary)
+            } else if let summary = recording.summary, !summary.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        summaryContentView(summary: summary)
 
-                    // Show error message if present
-                    if let error = viewModel.summaryError {
-                        Text(error)
-                            .font(.dmSansRegular(size: 14))
-                            .foregroundColor(.red)
-                            .padding(.top, 8)
+                        if let error = viewModel.summaryError {
+                            Text(error)
+                                .font(.dmSansRegular(size: 14))
+                                .foregroundColor(.red)
+                                .padding(.top, 8)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+                }
+            } else if let error = viewModel.summaryError {
+                VStack(alignment: .leading, spacing: 16) {
+                    errorContentView(error: error)
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            } else {
+                SummaryEmptyStateView {
+                    Task {
+                        await viewModel.generateSummary(modelContext: modelContext)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
-            }
-        } else if let error = viewModel.summaryError {
-            VStack(alignment: .leading, spacing: 16) {
-                errorContentView(error: error)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-        } else {
-            SummaryEmptyStateView {
-                Task {
-                    await viewModel.generateSummary(modelContext: modelContext)
-                }
+                // ensure empty state can expand
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.top, 8)
             }
         }
     }
-    
+
     // MARK: - Subviews
 
     private func errorContentView(error: String) -> some View {
@@ -98,17 +102,11 @@ struct SummaryView: View {
                 .foregroundColor(.baseBlack)
 
             AIResponseButtons(
-                onCopy: {
-                    UIPasteboard.general.string = error
-                },
+                onCopy: { UIPasteboard.general.string = error },
                 onRegenerate: {
-                    Task {
-                        await viewModel.generateSummary(modelContext: modelContext)
-                    }
+                    Task { await viewModel.generateSummary(modelContext: modelContext) }
                 },
-                onExport: {
-                    ShareHelper.shareText(error)
-                }
+                onExport: { ShareHelper.shareText(error) }
             )
         }
     }
@@ -121,28 +119,19 @@ struct SummaryView: View {
                 .lineSpacing(4)
 
             AIResponseButtons(
-                onCopy: {
-                    UIPasteboard.general.string = summary
-                },
+                onCopy: { UIPasteboard.general.string = summary },
                 onRegenerate: {
-                    Task {
-                        await viewModel.generateSummary(modelContext: modelContext)
-                    }
+                    Task { await viewModel.generateSummary(modelContext: modelContext) }
                 },
-                onExport: {
-                    ShareHelper.shareText(summary)
-                }
+                onExport: { ShareHelper.shareText(summary) }
             )
         }
     }
-    
 }
-
-// MARK: - Pulsating Dot
 
 private struct PulsatingDot: View {
     @State private var isPulsating = false
-    
+
     var body: some View {
         Circle()
             .fill(Color.accent)
@@ -158,4 +147,3 @@ private struct PulsatingDot: View {
             }
     }
 }
-

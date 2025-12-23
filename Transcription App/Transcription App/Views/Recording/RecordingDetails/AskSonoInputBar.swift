@@ -1,0 +1,69 @@
+import SwiftUI
+
+struct AskSonoInputBar: View {
+    @ObservedObject var viewModel: AskSonoViewModel
+    @FocusState private var isInputFocused: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ZStack(alignment: .leading) {
+                    if viewModel.userPrompt.isEmpty {
+                        Text("Ask me anything...")
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.warmGray500)
+                            .allowsHitTesting(false)
+                    }
+
+                    TextField("", text: $viewModel.userPrompt, axis: .vertical)
+                        .font(.dmSansRegular(size: 16))
+                        .foregroundColor(.baseBlack)
+                        .tint(.baseBlack)
+                        .focused($isInputFocused)
+                        .lineLimit(1...5)
+                        .id("askSonoInput-\(viewModel.inputFieldId)")
+                }
+
+                Spacer()
+
+                Button(action: {
+                    isInputFocused = false
+                    Task { await viewModel.sendPrompt() }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.accent)
+                            .frame(width: 32, height: 32)
+
+                        if viewModel.isProcessing {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
+                                .scaleEffect(0.7)
+                        } else {
+                            Image("I")
+                                .resizable()
+                                .renderingMode(.template)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 16, height: 16)
+                                .foregroundColor(.baseWhite)
+                        }
+                    }
+                }
+                .disabled(viewModel.userPrompt.isEmpty || viewModel.isProcessing)
+            }
+            .padding(.leading, 16)
+            .padding(.top, 10)
+            .padding(.trailing, 10)
+            .padding(.bottom, 10)
+            .background(Color.baseWhite)
+            .cornerRadius(32)
+            .overlay(
+                RoundedRectangle(cornerRadius: 32)
+                    .stroke(Color.warmGray200, lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+        }
+    }
+}
