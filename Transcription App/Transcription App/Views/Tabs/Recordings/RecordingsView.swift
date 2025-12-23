@@ -10,6 +10,7 @@ struct RecordingsView: View {
 
     @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
+    @Binding var currentCollectionFilter: CollectionFilter
 
     let onAddRecording: () -> Void
 
@@ -25,7 +26,6 @@ struct RecordingsView: View {
 
     // Drawer + filter
     @State private var showCollectionDrawer = false
-    @State private var selectedCollectionFilter: CollectionFilter = .all
 
     @State private var editingCollection: Collection?
     @State private var deletingCollection: Collection?
@@ -41,7 +41,7 @@ struct RecordingsView: View {
     // MARK: - Derived
 
     private var recordingsFilteredByCollection: [Recording] {
-        switch selectedCollectionFilter {
+        switch currentCollectionFilter {
         case .all:
             return recordings
         case .unorganized:
@@ -58,7 +58,7 @@ struct RecordingsView: View {
     }
 
     private var currentFilterTitle: String {
-        switch selectedCollectionFilter {
+        switch currentCollectionFilter {
         case .all:
             return "All recordings"
         case .unorganized:
@@ -88,19 +88,19 @@ struct RecordingsView: View {
             CollectionDrawerView(
                 collections: collections,
                 recordings: recordings,
-                selectedFilter: selectedCollectionFilter,
+                selectedFilter: currentCollectionFilter,
                 onSelectAll: {
-                    selectedCollectionFilter = .all
+                    currentCollectionFilter = .all
                     applyFiltersToViewModel()
                     closeDrawer()
                 },
                 onSelectUnorganized: {
-                    selectedCollectionFilter = .unorganized
+                    currentCollectionFilter = .unorganized
                     applyFiltersToViewModel()
                     closeDrawer()
                 },
                 onSelectCollection: { c in
-                    selectedCollectionFilter = .collection(c)
+                    currentCollectionFilter = .collection(c)
                     applyFiltersToViewModel()
                     closeDrawer()
                 },
@@ -145,7 +145,7 @@ struct RecordingsView: View {
         // Filtering
         .onChange(of: viewModel.searchText) { _, _ in applyFiltersToViewModel() }
         .onChange(of: recordings) { _, _ in applyFiltersToViewModel() }
-        .onChange(of: selectedCollectionFilter) { _, _ in applyFiltersToViewModel() }
+        .onChange(of: currentCollectionFilter) { _, _ in applyFiltersToViewModel() }
 
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
             showPlusButton = !isSelecting
@@ -236,9 +236,9 @@ struct RecordingsView: View {
                     onConfirm: {
                         modelContext.delete(collection)
                         deletingCollection = nil
-                        if case .collection(let selectedCollection) = selectedCollectionFilter,
+                        if case .collection(let selectedCollection) = currentCollectionFilter,
                            selectedCollection.id == collection.id {
-                            selectedCollectionFilter = .all
+                            currentCollectionFilter = .all
                             applyFiltersToViewModel()
                         }
                     }

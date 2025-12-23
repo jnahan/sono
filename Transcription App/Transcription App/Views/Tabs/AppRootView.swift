@@ -22,12 +22,15 @@ struct AppRootView: View {
     @State private var selectedRecordingForDetails: Recording?
     @State private var navigateToRecordingDetails = false
 
+    @State private var currentCollectionFilter: CollectionFilter = .all
+
     var body: some View {
         ZStack {
             NavigationStack {
                 RecordingsView(
                     showPlusButton: $showPlusButton,
                     isRoot: $isRecordingsRoot,
+                    currentCollectionFilter: $currentCollectionFilter,
                     onAddRecording: {
                         showNewRecordingSheet = true
                     }
@@ -78,7 +81,13 @@ struct AppRootView: View {
                 onSaveComplete: { recording in
                     selectedRecordingForDetails = recording
                     navigateToRecordingDetails = true
-                }
+                },
+                collection: {
+                    if case .collection(let c) = currentCollectionFilter {
+                        return c
+                    }
+                    return nil
+                }()
             )
         }
         .sheet(isPresented: $showFilePicker) {
@@ -173,6 +182,11 @@ struct AppRootView: View {
         )
 
         modelContext.insert(recording)
+
+        // Add to collection if viewing a specific collection
+        if case .collection(let collection) = currentCollectionFilter {
+            recording.collections.append(collection)
+        }
 
         do {
             try modelContext.save()

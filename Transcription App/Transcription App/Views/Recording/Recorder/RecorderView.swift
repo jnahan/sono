@@ -4,6 +4,7 @@ import SwiftData
 struct RecorderView: View {
     let onDismiss: (() -> Void)?
     let onSaveComplete: ((Recording) -> Void)?
+    let collection: Collection?
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Collection.name) private var collections: [Collection]
     @Environment(\.modelContext) private var modelContext
@@ -12,10 +13,11 @@ struct RecorderView: View {
     @State private var showExitConfirmation = false
     @State private var recorderControl: RecorderControlState = RecorderControlState()
     @State private var userCanceledRecording = false
-    
-    init(onDismiss: (() -> Void)? = nil, onSaveComplete: ((Recording) -> Void)? = nil) {
+
+    init(onDismiss: (() -> Void)? = nil, onSaveComplete: ((Recording) -> Void)? = nil, collection: Collection? = nil) {
         self.onDismiss = onDismiss
         self.onSaveComplete = onSaveComplete
+        self.collection = collection
     }
     
     var body: some View {
@@ -141,6 +143,11 @@ struct RecorderView: View {
         )
 
         modelContext.insert(recording)
+
+        // Add to collection if specified
+        if let collection = collection {
+            recording.collections.append(collection)
+        }
 
         do {
             try modelContext.save()
@@ -285,6 +292,11 @@ struct RecorderView: View {
         )
 
         modelContext.insert(recording)
+
+        // Add to collection if specified
+        if let collection = collection {
+            recording.collections.append(collection)
+        }
 
         // Perform save operation asynchronously to avoid blocking main thread
         Task { @MainActor in
