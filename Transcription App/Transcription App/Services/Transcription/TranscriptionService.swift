@@ -758,6 +758,13 @@ class TranscriptionService {
         // Get language code from parameter or settings
         let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
 
+        // Log the language setting being used
+        if let langCode = finalLanguageCode {
+            Logger.info("TranscriptionService", "Using specified language: \(langCode)")
+        } else {
+            Logger.info("TranscriptionService", "Using automatic language detection")
+        }
+
         // Perform transcription with segment-level timestamps only
         var options = DecodingOptions(wordTimestamps: false)
 
@@ -813,6 +820,9 @@ class TranscriptionService {
         guard let firstResult = results.first else {
             throw TranscriptionError.noResults
         }
+
+        // Log detected language
+        Logger.info("TranscriptionService", "Detected language: \(firstResult.language)")
         
         // Convert to our model and clean timestamp tokens
         let segments = firstResult.segments.compactMap { segment -> TranscriptionSegment? in
