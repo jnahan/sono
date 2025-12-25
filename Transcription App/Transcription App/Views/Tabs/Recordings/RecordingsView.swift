@@ -300,12 +300,10 @@ struct RecordingsView: View {
                 VStack(spacing: 0) {
                     CustomTopBar(
                         title: viewModel.isSelectionMode ? "\(viewModel.selectedRecordings.count) selected" : currentFilterTitle,
-                        leftIcon: viewModel.isSelectionMode ? "x" : "list",
-                        rightIcon: "check-circle",
+                        leftIcon: viewModel.isSelectionMode ? nil : "list",
+                        rightIcon: viewModel.isSelectionMode ? "x" : "check-circle",
                         onLeftTap: {
-                            if viewModel.isSelectionMode {
-                                viewModel.exitSelectionMode()
-                            } else {
+                            if !viewModel.isSelectionMode {
                                 toggleDrawer()
                             }
                         },
@@ -429,9 +427,11 @@ struct RecordingsView: View {
 
     private func copySelectedRecordings() {
         viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
+        viewModel.exitSelectionMode()
     }
 
     private func exportSelectedRecordings() {
         viewModel.exportRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
+        viewModel.exitSelectionMode()
     }
 }

@@ -226,6 +226,8 @@ struct CollectionPickerSheet: View {
 
             do {
                 try modelContext.save()
+                // Call completion callback if this is a mass move
+                onMassMoveComplete?()
                 // Auto-close after selection
                 isPresented = false
             } catch {
