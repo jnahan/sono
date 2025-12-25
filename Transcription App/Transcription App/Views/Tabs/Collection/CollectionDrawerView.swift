@@ -23,7 +23,7 @@ struct CollectionDrawerView: View {
             // Header - "Sono"
             Text("Sono")
                 .font(.dmSansSemiBold(size: 24))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
                 .padding(.horizontal, 20)
                 .padding(.top, 80)
                 .padding(.bottom, 24)
@@ -131,11 +131,11 @@ private struct DrawerRow: View {
             if let count = recordingCount {
                 Text("\(title) (\(count))")
                     .font(.dmSansMedium(size: 16))
-                    .foregroundColor(isDefaultFilter ? .blueGray700 : .baseBlack)
+                    .foregroundColor(isDefaultFilter ? .blueGray700 : .black)
             } else {
                 Text(title)
                     .font(.dmSansMedium(size: 16))
-                    .foregroundColor(isDefaultFilter ? .blueGray700 : .baseBlack)
+                    .foregroundColor(isDefaultFilter ? .blueGray700 : .black)
             }
 
             Spacer()

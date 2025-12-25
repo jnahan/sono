@@ -7,13 +7,13 @@ struct TranscriptionProgressOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.baseWhite.ignoresSafeArea()
+            Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
                 if isQueued {
                     VStack(spacing: 0) {
                         Text("Waiting to transcribe")
                             .font(.dmSansSemiBold(size: 24))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
                             .multilineTextAlignment(.center)
                         Spacer().frame(height: 8)
                         Text("Your recording will be transcribed when the current transcription finishes.")
@@ -33,11 +33,11 @@ struct TranscriptionProgressOverlay: View {
                     VStack(spacing: 0) {
                         Text("\(Int(progress * 100))%")
                             .font(.dmSansSemiBold(size: 64))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
                         Spacer().frame(height: 8)
                         Text("Transcribing audio")
                             .font(.dmSansSemiBold(size: 24))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
                             .multilineTextAlignment(.center)
                         Spacer().frame(height: 8)
                         Text("Transcription in progress. Please do not close.")

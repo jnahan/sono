@@ -149,13 +149,13 @@ struct ActionSheet: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
                                 .foregroundColor(
-                                    action.tintColor ?? (action.isDestructive ? .warning : .baseBlack)
+                                    action.tintColor ?? (action.isDestructive ? .warning : .black)
                                 )
                         }
 
                         Text(action.title)
                             .font(.dmSansMedium(size: 16))
-                            .foregroundColor(action.isDestructive ? .warning : .baseBlack)
+                            .foregroundColor(action.isDestructive ? .warning : .black)
 
                         Spacer()
                     }
@@ -167,7 +167,7 @@ struct ActionSheet: View {
             }
         }
         .padding(.vertical, 4)
-        .background(Color.baseWhite)
+        .background(Color.white)
         .cornerRadius(12)
         .padding(.horizontal, 20)
     }

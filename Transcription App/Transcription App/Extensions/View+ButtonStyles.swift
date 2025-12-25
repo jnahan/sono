@@ -10,10 +10,10 @@ enum ButtonVariant {
 
     var backgroundColor: Color {
         switch self {
-        case .primary: return .baseBlack
+        case .primary: return .black
         case .warning: return .warning
         case .ghost: return .clear
-        case .white: return .baseWhite
+        case .white: return .white
         }
     }
 
@@ -27,8 +27,8 @@ enum ButtonVariant {
 
     var foregroundColor: Color {
         switch self {
-        case .primary, .warning: return .baseWhite
-        case .ghost, .white: return .baseBlack
+        case .primary, .warning: return .white
+        case .ghost, .white: return .black
         }
     }
 

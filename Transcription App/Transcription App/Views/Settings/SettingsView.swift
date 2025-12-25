@@ -24,7 +24,7 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            Color.baseWhite
+            Color.white
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -89,7 +89,7 @@ struct SettingsView: View {
                 VStack(spacing: 8) {
                     Text("SONO")
                         .font(.dmSansMedium(size: 20))
-                        .foregroundColor(.baseBlack)
+                        .foregroundColor(.black)
 
                     Text("Version 1.0.0")
                         .font(.system(size: 14))

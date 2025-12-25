@@ -5,7 +5,7 @@ struct AskSonoEmptyStateView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Hi there!\nHow can I help you?")
                 .font(.dmSansMedium(size: 20))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             Text("Ideas")
@@ -56,7 +56,7 @@ private struct IdeaItem: View {
             
             Text(text)
                 .font(.dmSansMedium(size: 16))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
         }
     }
 }

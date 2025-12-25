@@ -46,7 +46,7 @@ struct AskSonoView: View {
 
                 Text(message.text)
                     .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.baseBlack)
+                    .foregroundColor(.black)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12)
@@ -66,7 +66,7 @@ struct AskSonoView: View {
 
                         Text("Thinking...")
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
 
                         if !viewModel.chunkProgress.isEmpty {
                             Text(viewModel.chunkProgress)
@@ -88,7 +88,7 @@ struct AskSonoView: View {
                         let displayText = hasStreamingText ? viewModel.streamingText : message.text
                         Text(displayText)
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
                             .lineSpacing(4)
                             .fixedSize(horizontal: false, vertical: true)
                     }

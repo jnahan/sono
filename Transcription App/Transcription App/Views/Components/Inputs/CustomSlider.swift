@@ -16,13 +16,13 @@ struct CustomSlider: View {
                 
                 // Progress track
                 Rectangle()
-                    .fill(Color.baseBlack)
+                    .fill(Color.black)
                     .frame(width: max(0, thumbPosition(in: geometry.size.width)), height: 4)
                     .cornerRadius(2)
                 
                 // Thumb
                 Circle()
-                    .fill(Color.baseBlack)
+                    .fill(Color.black)
                     .frame(width: 8, height: 8)
                     .offset(x: thumbPosition(in: geometry.size.width) - 4) // Center the thumb
                     .gesture(

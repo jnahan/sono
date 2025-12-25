@@ -24,7 +24,7 @@ struct TranscriptView: View {
 
                         Text(segment.text)
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
                             .lineSpacing(4)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -44,7 +44,7 @@ struct TranscriptView: View {
             } else {
                 Text(recording.fullText)
                     .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.baseBlack)
+                    .foregroundColor(.black)
                     .lineSpacing(4)
             }
         }

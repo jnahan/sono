@@ -40,7 +40,7 @@ struct SummaryView: View {
 
                     Text("Summarizing...")
                         .font(.dmSansRegular(size: 16))
-                        .foregroundColor(.baseBlack)
+                        .foregroundColor(.black)
 
                     if !viewModel.chunkProgress.isEmpty {
                         Text(viewModel.chunkProgress)
@@ -61,7 +61,7 @@ struct SummaryView: View {
 
                     Text(viewModel.streamingSummary)
                         .font(.dmSansRegular(size: 16))
-                        .foregroundColor(.baseBlack)
+                        .foregroundColor(.black)
                         .lineSpacing(4)
                 }
             }
@@ -72,7 +72,7 @@ struct SummaryView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(error)
                 .font(.dmSansRegular(size: 16))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
 
             AIResponseButtons(
                 onCopy: { UIPasteboard.general.string = error },
@@ -86,7 +86,7 @@ struct SummaryView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(summary)
                 .font(.dmSansRegular(size: 16))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
                 .lineSpacing(4)
 
             AIResponseButtons(

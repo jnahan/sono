@@ -67,7 +67,7 @@ struct InputField: View {
             HStack {
                 Text(text.isEmpty ? placeholder : text)
                     .font(.system(size: 16))
-                    .foregroundColor(text.isEmpty ? .blueGray400 : .baseBlack)
+                    .foregroundColor(text.isEmpty ? .blueGray400 : .black)
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer()
@@ -88,8 +88,8 @@ struct InputField: View {
         ZStack(alignment: .topLeading) {
             TextEditor(text: $text)
                 .font(.system(size: 16))
-                .foregroundColor(.baseBlack)
-                .tint(.baseBlack)
+                .foregroundColor(.black)
+                .tint(.black)
                 .scrollContentBackground(.hidden)
                 .frame(height: height ?? 200)
                 .scrollDismissesKeyboard(.interactively)
@@ -110,8 +110,8 @@ struct InputField: View {
     private var textField: some View {
         TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.blueGray400))
             .font(.system(size: 16))
-            .foregroundColor(.baseBlack)
-            .tint(.baseBlack)
+            .foregroundColor(.black)
+            .tint(.black)
             .padding(16)
     }
 }

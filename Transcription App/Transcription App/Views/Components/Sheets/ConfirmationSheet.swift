@@ -13,7 +13,7 @@ struct ConfirmationSheet: View {
             // Title
             Text(title)
                 .font(.dmSansSemiBold(size: 24))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
                 .padding(.bottom, 8)
             
             // Message
@@ -44,10 +44,10 @@ struct ConfirmationSheet: View {
             }
         }
         .padding(.top, 24)
-        .background(Color.baseWhite)
+        .background(Color.white)
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.baseWhite)
+        .presentationBackground(Color.white)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
     }

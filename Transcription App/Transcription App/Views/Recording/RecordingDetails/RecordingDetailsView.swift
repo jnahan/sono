@@ -155,7 +155,7 @@ struct RecordingDetailsView: View {
                 )
             }
         }
-        .background(Color.baseWhite.ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .overlay(alignment: .top) {
@@ -229,14 +229,14 @@ struct RecordingDetailsView: View {
             if isEditingTitle {
                 TextField("", text: $editedTitle)
                     .font(.dmSansSemiBold(size: 24))
-                    .foregroundColor(.baseBlack)
+                    .foregroundColor(.black)
                     .focused($isTitleFocused)
                     .submitLabel(.done)
                     .onSubmit { saveTitleEdit() }
             } else {
                 Text(recording.title)
                     .font(.dmSansSemiBold(size: 24))
-                    .foregroundColor(recording.title == "Untitled recording" ? .blueGray400 : .baseBlack)
+                    .foregroundColor(recording.title == "Untitled recording" ? .blueGray400 : .black)
                     .onTapGesture { startTitleEdit() }
             }
         }
@@ -288,13 +288,13 @@ struct RecordingDetailsView: View {
                         }
                     }
                 )
-                .background(Color.baseWhite)
+                .background(Color.white)
             }
 
             if selectedTab == .askSono {
                 // Keep YOUR existing input styling file; the only required change is its send action uses Task { await ... }
                 AskSonoInputBar(viewModel: askSonoVM)
-                    .background(Color.baseWhite)
+                    .background(Color.white)
             }
         }
     }
@@ -373,7 +373,7 @@ struct RecordingDetailsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 12)
-            .background(Color.baseWhite)
+            .background(Color.white)
         }
     }
 }

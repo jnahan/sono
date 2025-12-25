@@ -14,11 +14,11 @@ struct SettingsRow: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 24, height: 24)
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
 
             Text(title)
                 .font(.dmSansMedium(size: 16))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
             
             Spacer()
             

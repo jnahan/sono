@@ -11,7 +11,7 @@ struct SummaryEmptyStateView: View {
                 Text("Summarize your\nrecordings")
                     .font(.dmSansSemiBold(size: 24))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.baseBlack)
+                    .foregroundColor(.black)
 
                 Button(action: onSummarize) {
                     HStack(spacing: 8) {
@@ -27,7 +27,7 @@ struct SummaryEmptyStateView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color.baseWhite)
+                    .background(Color.white)
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()

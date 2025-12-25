@@ -43,7 +43,7 @@ struct RecordingRowView: View {
                                     .renderingMode(.template)
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 16, height: 16)
-                                    .foregroundColor(.baseWhite)
+                                    .foregroundColor(.white)
                             }
                         }
                     }
@@ -60,7 +60,7 @@ struct RecordingRowView: View {
                     // Title
                     Text(recording.title)
                         .font(.dmSansSemiBold(size: 16))
-                        .foregroundColor(.baseBlack)
+                        .foregroundColor(.black)
                         .lineLimit(1)
                     
                     // Transcript preview, progress indicator, queue status, or error message
@@ -78,7 +78,7 @@ struct RecordingRowView: View {
                             // This prevents "Preparing to transcribe..." from showing after transcription completes
                             HStack(spacing: 8) {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                     .scaleEffect(0.8)
                                 
                                 Text("Saving transcription")
@@ -101,7 +101,7 @@ struct RecordingRowView: View {
                                 // Show with queue position if available
                                 HStack(spacing: 8) {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
                                     
                                     if positionInfo.position == 1 {
@@ -118,7 +118,7 @@ struct RecordingRowView: View {
                                 // Show transcribing without position info
                                 HStack(spacing: 8) {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
                                     
                                     Text("Transcribing \(Int(progress * 100))%")
@@ -138,7 +138,7 @@ struct RecordingRowView: View {
                                 // Waiting in queue
                                 HStack(spacing: 8) {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .baseBlack))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
                                     
                                     Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")

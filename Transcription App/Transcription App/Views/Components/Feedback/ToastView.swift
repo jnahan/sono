@@ -15,13 +15,13 @@ struct ToastView: View {
         HStack(spacing: 12) {
             Text(message)
                 .font(.dmSansMedium(size: 14))
-                .foregroundColor(.baseWhite)
+                .foregroundColor(.white)
                 .multilineTextAlignment(.leading)
             
             Spacer()
         }
         .padding(12)
-        .background(isError ? Color.warning : Color.baseBlack)
+        .background(isError ? Color.warning : Color.black)
         .cornerRadius(12)
         .padding(.horizontal, 20)
         .transition(.move(edge: .top).combined(with: .opacity))

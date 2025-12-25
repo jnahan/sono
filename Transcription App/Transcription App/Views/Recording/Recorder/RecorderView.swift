@@ -24,7 +24,7 @@ struct RecorderView: View {
         NavigationStack {
             ZStack {
                 // Base color layer
-                Color.baseWhite
+                Color.white
                     .ignoresSafeArea()
 
                 // Gradient overlay at 40% opacity

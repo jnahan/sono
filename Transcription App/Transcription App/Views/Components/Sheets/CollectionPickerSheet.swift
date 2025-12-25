@@ -85,7 +85,7 @@ struct CollectionPickerSheet: View {
 
                         Text("Create collection")
                             .font(.dmSansSemiBold(size: 16))
-                            .foregroundColor(.baseBlack)
+                            .foregroundColor(.black)
 
                         Spacer()
                     }
@@ -127,7 +127,7 @@ struct CollectionPickerSheet: View {
 
                             Text(collection.name)
                                 .font(.dmSansSemiBold(size: 16))
-                                .foregroundColor(.baseBlack)
+                                .foregroundColor(.black)
 
                             Spacer()
 
@@ -161,11 +161,11 @@ struct CollectionPickerSheet: View {
             .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
-        .background(Color.baseWhite)
+        .background(Color.white)
         .presentationDetents([.height(calculateHeight())])
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.baseWhite)
+        .presentationBackground(Color.white)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
         .sheet(isPresented: $showCreateCollection) {

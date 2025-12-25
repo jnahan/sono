@@ -30,7 +30,7 @@ struct RecorderControl: View {
                             .foregroundColor(.blueGray700)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Color.baseWhite)
+                            .background(Color.white)
                             .cornerRadius(32)
                         
                         ZStack(alignment: .top) {
@@ -52,7 +52,7 @@ struct RecorderControl: View {
                             
                             // Vertical line on top - centered and fully opaque
                             Rectangle()
-                                .fill(Color.baseWhite)
+                                .fill(Color.white)
                                 .frame(width: 3, height: 240)
                         }
                     }
@@ -94,7 +94,7 @@ struct RecorderControl: View {
                     } label: {
                         ZStack {
                             Circle()
-                                .fill(Color.baseWhite)
+                                .fill(Color.white)
                                 .frame(width: 72, height: 72)
 
                             centerButtonContent
@@ -202,7 +202,7 @@ struct RecorderControl: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 32, height: 32)
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
         }
     }
 

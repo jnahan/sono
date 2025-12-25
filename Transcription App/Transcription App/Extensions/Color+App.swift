@@ -25,8 +25,8 @@ extension Color {
     static let blueGray900 = Color(red: 15/255, green: 23/255, blue: 42/255)
 
     // MARK: - Base
-    static let baseBlack = Color.black
-    static let baseWhite = Color.white
+    static let black = Color.black
+    static let white = Color.white
 }
 
 // MARK: - App Gradients

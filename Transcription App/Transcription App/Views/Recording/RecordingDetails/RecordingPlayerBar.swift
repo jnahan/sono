@@ -67,7 +67,7 @@ struct RecordingPlayerBar: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
         }
-        .background(Color.baseWhite)
+        .background(Color.white)
     }
 
     // MARK: - Subviews
@@ -111,7 +111,7 @@ struct RecordingPlayerBar: View {
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 32, height: 32)
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
         }
         .frame(width: 64, height: 64)
         .background(

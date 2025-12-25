@@ -48,7 +48,7 @@ struct CustomTopBar: View {
             // Title
             Text(title)
                 .font(.dmSansSemiBold(size: 18))
-                .foregroundColor(.baseBlack)
+                .foregroundColor(.black)
             
             Spacer()
             

@@ -21,7 +21,7 @@ struct SearchBar: View {
                 
                 TextField("", text: $text)
                     .font(.system(size: 16))
-                    .foregroundColor(.baseBlack)
+                    .foregroundColor(.black)
             }
             
             if !text.isEmpty {

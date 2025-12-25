@@ -21,8 +21,8 @@ struct AskSonoInputBar: View {
 
                     TextField("", text: $viewModel.userPrompt, axis: .vertical)
                         .font(.dmSansRegular(size: 16))
-                        .foregroundColor(.baseBlack)
-                        .tint(.baseBlack)
+                        .foregroundColor(.black)
+                        .tint(.black)
                         .focused($isInputFocused)
                         .lineLimit(1...5)
                         // Keep your rebuild behavior
@@ -50,7 +50,7 @@ struct AskSonoInputBar: View {
 
                         if viewModel.isProcessing {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .baseWhite))
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.7)
                         } else {
                             Image("I")
@@ -58,7 +58,7 @@ struct AskSonoInputBar: View {
                                 .renderingMode(.template)
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 16, height: 16)
-                                .foregroundColor(.baseWhite)
+                                .foregroundColor(.white)
                         }
                     }
                 }

@@ -99,7 +99,7 @@ struct RecordingsListView: View {
                                     .frame(height: 8)
                             }
                         }
-                        .listRowBackground(Color.baseWhite)
+                        .listRowBackground(Color.white)
                         .listRowInsets(EdgeInsets(top: 0, leading: horizontalPadding, bottom: 0, trailing: horizontalPadding))
                         .listRowSeparator(.hidden)
                     }
