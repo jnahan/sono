@@ -31,7 +31,7 @@ struct SearchBar: View {
                     Image("x-circle")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 16, height: 16)
+                        .frame(width: 20, height: 20)
                         .foregroundColor(.blueGray500)
                 }
             }

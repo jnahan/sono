@@ -56,7 +56,7 @@ struct SettingsView: View {
                             SettingsRow(title: "Timestamps", value: nil, imageName: "clock", showChevron: false, toggleBinding: $showTimestamps)
                         }
                         .padding(.vertical, 4)
-                        .background(Color.blueGray100)
+                        .background(Color.blueGray50)
                         .cornerRadius(12)
                         .padding(.horizontal, 20)
 
@@ -76,7 +76,7 @@ struct SettingsView: View {
 //                            }
 //                        }
 //                        .padding(.vertical, 4)
-//                        .background(Color.blueGray100)
+//                        .background(Color.blueGray50)
 //                        .cornerRadius(12)
 //                        .padding(.horizontal, 20)
                     }
@@ -139,29 +139,4 @@ struct SettingsView: View {
             UIApplication.shared.open(url)
         }
     }
-
-    // TODO: v2 - Uncomment when adding feedback, rate, and share functionality
-//    func rateApp() {
-//        if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID?action=write-review") {
-//            UIApplication.shared.open(url)
-//        }
-//    }
-//
-//    func shareApp() {
-//        let appURL = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
-//        let activityVC = UIActivityViewController(
-//            activityItems: ["Check out this app!", appURL],
-//            applicationActivities: nil
-//        )
-//        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-//           let rootVC = windowScene.windows.first?.rootViewController {
-//            rootVC.present(activityVC, animated: true)
-//        }
-//    }
-//
-//    func sendFeedback() {
-//        if let url = URL(string: "mailto:support@yourapp.com?subject=Feedback") {
-//            UIApplication.shared.open(url)
-//        }
-//    }
 }

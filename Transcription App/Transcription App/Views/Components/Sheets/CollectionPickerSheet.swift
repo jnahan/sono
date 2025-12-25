@@ -108,7 +108,8 @@ struct CollectionPickerSheet: View {
                             } else {
                                 selectedCollections.insert(collection)
                             }
-                            // Don't auto-close - let user click Done
+                            // Auto-close after selection
+                            isPresented = false
                         }
                     } label: {
                         HStack(spacing: 16) {
@@ -189,7 +190,8 @@ struct CollectionPickerSheet: View {
                                 } else {
                                     // Multi-select: add the new collection
                                     selectedCollections.insert(newCollection)
-                                    // Don't auto-dismiss - let user continue selecting
+                                    // Auto-close after creating and selecting new collection
+                                    isPresented = false
                                 }
                             } catch {
                                 Logger.error("CollectionPicker", "Failed to save new collection: \(error.localizedDescription)")
@@ -224,7 +226,8 @@ struct CollectionPickerSheet: View {
 
             do {
                 try modelContext.save()
-                // Don't auto-dismiss - let user continue selecting
+                // Auto-close after selection
+                isPresented = false
             } catch {
                 Logger.error("CollectionPicker", "Failed to toggle collection: \(error.localizedDescription)")
             }
