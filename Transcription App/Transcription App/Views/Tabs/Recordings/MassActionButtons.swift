@@ -58,7 +58,7 @@ struct MassActionButtons: View {
                     .frame(height: bottomSafeAreaPadding)
             }
         }
-        .background(Color.blueGray50)
+        .background(Color.baseWhite)
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

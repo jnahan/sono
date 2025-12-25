@@ -7,7 +7,7 @@ struct TranscriptionProgressOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.blueGray50.ignoresSafeArea()
+            Color.baseWhite.ignoresSafeArea()
             VStack(spacing: 0) {
                 if isQueued {
                     VStack(spacing: 0) {

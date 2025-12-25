@@ -80,7 +80,7 @@ struct SelectionListView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .listRowBackground(Color.blueGray50)
+                    .listRowBackground(Color.baseWhite)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     .listRowSeparator(.hidden)
                 }
@@ -88,7 +88,7 @@ struct SelectionListView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
-        .background(Color.blueGray50.ignoresSafeArea())
+        .background(Color.baseWhite.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
 

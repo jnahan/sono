@@ -160,11 +160,11 @@ struct CollectionPickerSheet: View {
             .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
-        .background(Color.blueGray50)
+        .background(Color.baseWhite)
         .presentationDetents([.height(calculateHeight())])
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.blueGray50)
+        .presentationBackground(Color.baseWhite)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
         .sheet(isPresented: $showCreateCollection) {

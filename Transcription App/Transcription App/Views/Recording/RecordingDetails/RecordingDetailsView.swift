@@ -155,7 +155,7 @@ struct RecordingDetailsView: View {
                 )
             }
         }
-        .background(Color.blueGray50.ignoresSafeArea())
+        .background(Color.baseWhite.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .overlay(alignment: .top) {
@@ -290,13 +290,13 @@ struct RecordingDetailsView: View {
                         }
                     }
                 )
-                .background(Color.blueGray50)
+                .background(Color.baseWhite)
             }
 
             if selectedTab == .askSono {
                 // Keep YOUR existing input styling file; the only required change is its send action uses Task { await ... }
                 AskSonoInputBar(viewModel: askSonoVM)
-                    .background(Color.blueGray50)
+                    .background(Color.baseWhite)
             }
         }
     }
@@ -375,7 +375,7 @@ struct RecordingDetailsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 12)
-            .background(Color.blueGray50)
+            .background(Color.baseWhite)
         }
     }
 }

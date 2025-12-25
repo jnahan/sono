@@ -23,7 +23,7 @@ struct Transcription_AppApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                Color.blueGray50
+                Color.baseWhite
                     .ignoresSafeArea()
 
                 AppRootView()
