@@ -24,7 +24,7 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            Color.warmGray50
+            Color.blueGray50
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -60,7 +60,7 @@ struct SettingsView: View {
                         .cornerRadius(12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.warmGray200, lineWidth: 1)
+                                .stroke(Color.blueGray200, lineWidth: 1)
                         )
                         .padding(.horizontal, 20)
 
@@ -84,7 +84,7 @@ struct SettingsView: View {
 //                        .cornerRadius(12)
 //                        .overlay(
 //                            RoundedRectangle(cornerRadius: 12)
-//                                .stroke(Color.warmGray200, lineWidth: 1)
+//                                .stroke(Color.blueGray200, lineWidth: 1)
 //                        )
 //                        .padding(.horizontal, 20)
                     }
@@ -101,23 +101,23 @@ struct SettingsView: View {
 
                     Text("Version 1.0.0")
                         .font(.system(size: 14))
-                        .foregroundColor(.warmGray500)
+                        .foregroundColor(.blueGray500)
 
                     HStack(spacing: 4) {
                         Button(action: openTerms) {
                             Text("Terms")
                                 .font(.system(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                         }
 
                         Text("•")
                             .font(.system(size: 14))
-                            .foregroundColor(.warmGray500)
+                            .foregroundColor(.blueGray500)
 
                         Button(action: openPrivacy) {
                             Text("Privacy")
                                 .font(.system(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                         }
                     }
                 }

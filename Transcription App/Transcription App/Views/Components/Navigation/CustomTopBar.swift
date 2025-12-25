@@ -33,7 +33,7 @@ struct CustomTopBar: View {
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 28, height: 28)
-                        .foregroundColor(.warmGray500)
+                        .foregroundColor(.blueGray500)
                         .frame(width: 40, height: 40)
                         .contentShape(Rectangle())
                 }
@@ -62,7 +62,7 @@ struct CustomTopBar: View {
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 28, height: 28)
-                        .foregroundColor(.warmGray500)
+                        .foregroundColor(.blueGray500)
                         .frame(width: 40, height: 40)
                         .contentShape(Rectangle())
                 }

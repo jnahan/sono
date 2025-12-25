@@ -11,7 +11,7 @@ private struct InputFieldStyle: ViewModifier {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(hasError ? Color.red : Color.warmGray200, lineWidth: 1)
+                    .stroke(hasError ? Color.red : Color.blueGray200, lineWidth: 1)
             )
     }
 }
@@ -24,7 +24,7 @@ struct InputLabel: View {
     var body: some View {
         Text(text)
             .font(.system(size: 14))
-            .foregroundColor(.warmGray700)
+            .foregroundColor(.blueGray700)
     }
 }
 
@@ -67,7 +67,7 @@ struct InputField: View {
             HStack {
                 Text(text.isEmpty ? placeholder : text)
                     .font(.system(size: 16))
-                    .foregroundColor(text.isEmpty ? .warmGray400 : .baseBlack)
+                    .foregroundColor(text.isEmpty ? .blueGray400 : .baseBlack)
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer()
@@ -77,7 +77,7 @@ struct InputField: View {
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 16, height: 16)
-                        .foregroundColor(.warmGray400)
+                        .foregroundColor(.blueGray400)
                 }
             }
             .padding(16)
@@ -99,7 +99,7 @@ struct InputField: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 16))
-                    .foregroundColor(.warmGray400)
+                    .foregroundColor(.blueGray400)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 16)
                     .allowsHitTesting(false)
@@ -108,7 +108,7 @@ struct InputField: View {
     }
 
     private var textField: some View {
-        TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.warmGray400))
+        TextField("", text: $text, prompt: Text(placeholder).foregroundColor(.blueGray400))
             .font(.system(size: 16))
             .foregroundColor(.baseBlack)
             .tint(.baseBlack)

@@ -16,7 +16,7 @@ struct AIResponseButtons: View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
-                    .foregroundColor(.warmGray500)
+                    .foregroundColor(.blueGray500)
             }
             
             // Regenerate button
@@ -26,7 +26,7 @@ struct AIResponseButtons: View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
-                    .foregroundColor(.warmGray500)
+                    .foregroundColor(.blueGray500)
             }
             
             // Export button
@@ -36,7 +36,7 @@ struct AIResponseButtons: View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
-                    .foregroundColor(.warmGray500)
+                    .foregroundColor(.blueGray500)
             }
         }
     }

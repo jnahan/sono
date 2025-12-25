@@ -19,7 +19,7 @@ struct ConfirmationSheet: View {
             // Message
             Text(message)
                 .font(.system(size: 16))
-                .foregroundColor(.warmGray600)
+                .foregroundColor(.blueGray600)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
@@ -44,10 +44,10 @@ struct ConfirmationSheet: View {
             }
         }
         .padding(.top, 24)
-        .background(Color.warmGray50)
+        .background(Color.blueGray50)
         .presentationDetents([.height(calculateHeight())])
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.warmGray50)
+        .presentationBackground(Color.blueGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
     }

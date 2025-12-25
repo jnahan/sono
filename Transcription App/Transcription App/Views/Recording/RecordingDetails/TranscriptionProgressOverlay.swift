@@ -7,7 +7,7 @@ struct TranscriptionProgressOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.warmGray50.ignoresSafeArea()
+            Color.blueGray50.ignoresSafeArea()
             VStack(spacing: 0) {
                 if isQueued {
                     VStack(spacing: 0) {
@@ -18,14 +18,14 @@ struct TranscriptionProgressOverlay: View {
                         Spacer().frame(height: 8)
                         Text("Your recording will be transcribed when the current transcription finishes.")
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.warmGray700)
+                            .foregroundColor(.blueGray700)
                             .multilineTextAlignment(.center)
 
                         if let qp = queuePosition {
                             Spacer().frame(height: 10)
                             Text("Queue \(qp.position) of \(qp.total)")
                                 .font(.dmSansRegular(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -42,7 +42,7 @@ struct TranscriptionProgressOverlay: View {
                         Spacer().frame(height: 8)
                         Text("Transcription in progress. Please do not close.")
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.warmGray700)
+                            .foregroundColor(.blueGray700)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 20)

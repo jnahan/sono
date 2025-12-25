@@ -87,7 +87,7 @@ struct RecordingsListView: View {
                                     }
                                     
                                     Rectangle()
-                                        .fill(Color.warmGray200)
+                                        .fill(Color.blueGray200)
                                         .frame(height: 1)
                                 }
                                 
@@ -99,7 +99,7 @@ struct RecordingsListView: View {
                                     .frame(height: 8)
                             }
                         }
-                        .listRowBackground(Color.warmGray50)
+                        .listRowBackground(Color.blueGray50)
                         .listRowInsets(EdgeInsets(top: 0, leading: horizontalPadding, bottom: 0, trailing: horizontalPadding))
                         .listRowSeparator(.hidden)
                     }

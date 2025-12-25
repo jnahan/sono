@@ -366,7 +366,7 @@ struct RecordingsView: View {
                     .padding(.top, 8)
             }
         }
-        .background(Color.warmGray50.ignoresSafeArea())
+        .background(Color.blueGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
     }
 

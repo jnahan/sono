@@ -21,7 +21,7 @@ struct CollectionTagsView: View {
                 if collections.count > maxVisible {
                     Text("+\(collections.count - maxVisible)")
                         .font(.system(size: 12))
-                        .foregroundColor(.warmGray700)
+                        .foregroundColor(.blueGray700)
                 }
             }
         }

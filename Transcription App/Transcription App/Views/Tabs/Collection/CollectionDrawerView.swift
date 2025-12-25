@@ -19,83 +19,133 @@ struct CollectionDrawerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
-            // Header
-            Text("Collections")
-                .font(.dmSansSemiBold(size: 18))
+            // Header - "Sono"
+            Text("Sono")
+                .font(.dmSansSemiBold(size: 24))
                 .foregroundColor(.baseBlack)
                 .padding(.horizontal, 20)
                 .padding(.top, 80)
-                .padding(.bottom, 12)
+                .padding(.bottom, 24)
 
             ScrollView {
-                VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 24) {
 
-                    Button { onSelectAll() } label: {
-                        row(
-                            title: "All recordings",
-                            isSelected: selectedFilter == .all
-                        )
-                    }
-
-                    Button { onSelectUnorganized() } label: {
-                        row(
-                            title: "Unorganized recordings",
-                            isSelected: selectedFilter == .unorganized
-                        )
-                    }
-
-                    Divider()
-                        .padding(.vertical, 8)
-
-                    ForEach(collections) { collection in
-                        Button {
-                            onSelectCollection(collection)
-                        } label: {
-                            CollectionsRowView(
-                                collection: collection,
-                                recordingCount: recordings.filter {
-                                    $0.collections.contains { $0.id == collection.id }
-                                }.count,
-                                onRename: { onRename(collection) },
-                                onDelete: { onDelete(collection) }
+                    // Group 1: Default filters
+                    VStack(spacing: 4) {
+                        Button { onSelectAll() } label: {
+                            CollectionRow(
+                                icon: "waveform",
+                                title: "All recordings",
+                                isSelected: selectedFilter == .all,
+                                isDefaultFilter: true
                             )
-                            .padding(.horizontal, 20)
-                            .background(
-                                selectedFilter == .collection(collection)
-                                ? Color.warmGray50
-                                : Color.clear
+                        }
+                        .buttonStyle(.plain)
+
+                        Button { onSelectUnorganized() } label: {
+                            CollectionRow(
+                                icon: "folder-open",
+                                title: "Unorganized recordings",
+                                isSelected: selectedFilter == .unorganized,
+                                isDefaultFilter: true
                             )
                         }
                         .buttonStyle(.plain)
                     }
+
+                    // Group 2: User collections with title
+                    if !collections.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Collections")
+                                .font(.dmSansMedium(size: 14))
+                                .foregroundColor(.blueGray500)
+                                .padding(.horizontal, 12)
+
+                            VStack(spacing: 4) {
+                                ForEach(collections) { collection in
+                                    Button {
+                                        onSelectCollection(collection)
+                                    } label: {
+                                        CollectionRow(
+                                            title: collection.name,
+                                            recordingCount: recordings.filter {
+                                                $0.collections.contains { $0.id == collection.id }
+                                            }.count,
+                                            isSelected: selectedFilter == .collection(collection),
+                                            isDefaultFilter: false,
+                                            onRename: { onRename(collection) },
+                                            onDelete: { onDelete(collection) }
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                    }
                 }
-                .padding(.vertical, 8)
+                .padding(.horizontal, 8)
             }
 
             Spacer(minLength: 0)
         }
         .frame(width: 300)
-        .background(Color.warmGray100)
+        .background(Color.blueGray100)
     }
+}
 
-    // MARK: - Shared Row
+// MARK: - Collection Row Component
 
-    private func row(title: String, isSelected: Bool) -> some View {
-        HStack {
-            Text(title)
-                .font(.dmSansMedium(size: 16))
-                .foregroundColor(.baseBlack)
+private struct CollectionRow: View {
+    var icon: String? = nil
+    let title: String
+    var recordingCount: Int? = nil
+    let isSelected: Bool
+    let isDefaultFilter: Bool
+    var onRename: (() -> Void)? = nil
+    var onDelete: (() -> Void)? = nil
+
+    var body: some View {
+        HStack(spacing: 8) {
+            // Icon for default filters
+            if let icon = icon {
+                Image(icon)
+                    .resizable()
+                    .renderingMode(.template)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.blueGray700)
+            }
+
+            // Title
+            if let count = recordingCount {
+                Text("\(title) (\(count))")
+                    .font(.dmSansMedium(size: 16))
+                    .foregroundColor(isDefaultFilter ? .blueGray700 : .baseBlack)
+            } else {
+                Text(title)
+                    .font(.dmSansMedium(size: 16))
+                    .foregroundColor(isDefaultFilter ? .blueGray700 : .baseBlack)
+            }
 
             Spacer()
 
-            if isSelected {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.baseBlack)
+            // Dots three menu for custom collections
+            if !isDefaultFilter, let onRename = onRename, let onDelete = onDelete {
+                ActionButton(
+                    icon: "dots-three-bold",
+                    iconSize: 24,
+                    frameSize: 32,
+                    actions: [
+                        ActionItem(title: "Rename", icon: "pencil-simple", action: onRename),
+                        ActionItem(title: "Delete", icon: "trash", action: onDelete, isDestructive: true)
+                    ]
+                )
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(isSelected ? Color.blueGray200 : Color.clear)
+        .cornerRadius(8)
         .contentShape(Rectangle())
     }
 }

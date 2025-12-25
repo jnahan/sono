@@ -155,7 +155,7 @@ struct RecordingDetailsView: View {
                 )
             }
         }
-        .background(Color.warmGray50.ignoresSafeArea())
+        .background(Color.blueGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .overlay(alignment: .top) {
@@ -224,7 +224,7 @@ struct RecordingDetailsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
                 .font(.dmSansMedium(size: 14))
-                .foregroundColor(.warmGray400)
+                .foregroundColor(.blueGray400)
 
             if isEditingTitle {
                 TextField("", text: $editedTitle)
@@ -236,7 +236,7 @@ struct RecordingDetailsView: View {
             } else {
                 Text(recording.title)
                     .font(.dmSansSemiBold(size: 24))
-                    .foregroundColor(recording.title == "Untitled recording" ? .warmGray400 : .baseBlack)
+                    .foregroundColor(recording.title == "Untitled recording" ? .blueGray400 : .baseBlack)
                     .onTapGesture { startTitleEdit() }
             }
 
@@ -290,13 +290,13 @@ struct RecordingDetailsView: View {
                         }
                     }
                 )
-                .background(Color.warmGray50)
+                .background(Color.blueGray50)
             }
 
             if selectedTab == .askSono {
                 // Keep YOUR existing input styling file; the only required change is its send action uses Task { await ... }
                 AskSonoInputBar(viewModel: askSonoVM)
-                    .background(Color.warmGray50)
+                    .background(Color.blueGray50)
             }
         }
     }
@@ -375,7 +375,7 @@ struct RecordingDetailsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 12)
-            .background(Color.warmGray50)
+            .background(Color.blueGray50)
         }
     }
 }

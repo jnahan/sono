@@ -27,7 +27,7 @@ struct RecorderControl: View {
                     VStack(spacing: 0) {
                         Text(TimeFormatter.formatTimestamp(elapsedTime))
                             .font(.dmSansMedium(size: 14))
-                            .foregroundColor(.warmGray700)
+                            .foregroundColor(.blueGray700)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(Color.baseWhite)

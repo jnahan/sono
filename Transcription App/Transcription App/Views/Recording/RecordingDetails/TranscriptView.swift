@@ -19,7 +19,7 @@ struct TranscriptView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(TimeFormatter.formatTimestamp(segment.start))
                             .font(.dmSansMedium(size: 14))
-                            .foregroundColor(.warmGray400)
+                            .foregroundColor(.blueGray400)
                             .monospacedDigit()
 
                         Text(segment.text)

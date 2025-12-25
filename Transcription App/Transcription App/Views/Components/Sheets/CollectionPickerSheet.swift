@@ -73,7 +73,7 @@ struct CollectionPickerSheet: View {
                                 .frame(width: 40, height: 40)
                                 .overlay(
                                     Circle()
-                                        .stroke(Color.warmGray200, lineWidth: 1)
+                                        .stroke(Color.blueGray200, lineWidth: 1)
                                 )
 
                             Image("folder")
@@ -160,11 +160,11 @@ struct CollectionPickerSheet: View {
             .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
-        .background(Color.warmGray50)
+        .background(Color.blueGray50)
         .presentationDetents([.height(calculateHeight())])
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.warmGray50)
+        .presentationBackground(Color.blueGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
         .sheet(isPresented: $showCreateCollection) {

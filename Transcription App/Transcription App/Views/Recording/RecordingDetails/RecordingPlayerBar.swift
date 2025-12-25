@@ -67,7 +67,7 @@ struct RecordingPlayerBar: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
         }
-        .background(Color.warmGray50)
+        .background(Color.blueGray50)
     }
 
     // MARK: - Subviews
@@ -86,14 +86,14 @@ struct RecordingPlayerBar: View {
         HStack {
             Text(TimeFormatter.formatTimestamp(audioService.currentTime))
                 .font(.system(size: 12))
-                .foregroundColor(.warmGray400)
+                .foregroundColor(.blueGray400)
                 .monospacedDigit()
 
             Spacer()
 
             Text(TimeFormatter.formatTimestamp(audioService.duration))
                 .font(.system(size: 12))
-                .foregroundColor(.warmGray400)
+                .foregroundColor(.blueGray400)
                 .monospacedDigit()
         }
     }
@@ -119,7 +119,7 @@ struct RecordingPlayerBar: View {
                 .fill(Color.white)
                 .overlay(
                     Circle()
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
         )
     }

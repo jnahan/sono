@@ -10,7 +10,7 @@ struct TabButton: View {
             VStack(spacing: 6) {
                 Text(title)
                     .font(.dmSansSemiBold(size: 14))
-                    .foregroundColor(isSelected ? .accent : .warmGray400)
+                    .foregroundColor(isSelected ? .accent : .blueGray400)
 
                 Rectangle()
                     .fill(isSelected ? Color.accent : .clear)

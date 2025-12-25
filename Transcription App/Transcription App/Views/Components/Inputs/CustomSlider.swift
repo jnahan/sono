@@ -10,7 +10,7 @@ struct CustomSlider: View {
             ZStack(alignment: .leading) {
                 // Background track
                 Rectangle()
-                    .fill(Color.warmGray300)
+                    .fill(Color.blueGray300)
                     .frame(height: 4)
                     .cornerRadius(2)
                 

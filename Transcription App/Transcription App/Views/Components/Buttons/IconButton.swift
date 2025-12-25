@@ -19,7 +19,7 @@ struct IconButton: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: iconSize, height: iconSize)
-                .foregroundColor(.warmGray500)
+                .foregroundColor(.blueGray500)
                 .frame(width: frameSize, height: frameSize)
                 .contentShape(Rectangle())
         }

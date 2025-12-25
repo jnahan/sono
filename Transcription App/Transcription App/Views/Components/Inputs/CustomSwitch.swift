@@ -12,12 +12,12 @@ struct CustomSwitch: View {
             ZStack {
                 // Base
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(isOn ? Color.accent : Color.warmGray300)
+                    .fill(isOn ? Color.accent : Color.blueGray300)
                     .frame(width: 48, height: 28)
                 
                 // Circle
                 Circle()
-                    .fill(isOn ? Color.baseWhite : Color.warmGray400)
+                    .fill(isOn ? Color.baseWhite : Color.blueGray400)
                     .frame(width: 24, height: 24)
                     .offset(x: isOn ? 10 : -10) // 2px from edges: ON = 48/2 - 24/2 - 2 = 10, OFF = -48/2 + 24/2 + 2 = -10
             }

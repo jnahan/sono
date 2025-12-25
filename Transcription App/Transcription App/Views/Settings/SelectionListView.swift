@@ -60,7 +60,7 @@ struct SelectionListView: View {
                                 if let description = item.description {
                                     Text(description)
                                         .font(.dmSansMedium(size: 14))
-                                        .foregroundColor(.warmGray400)
+                                        .foregroundColor(.blueGray400)
                                 }
                             }
                             
@@ -80,7 +80,7 @@ struct SelectionListView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .listRowBackground(Color.warmGray50)
+                    .listRowBackground(Color.blueGray50)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     .listRowSeparator(.hidden)
                 }
@@ -88,7 +88,7 @@ struct SelectionListView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
-        .background(Color.warmGray50.ignoresSafeArea())
+        .background(Color.blueGray50.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
 

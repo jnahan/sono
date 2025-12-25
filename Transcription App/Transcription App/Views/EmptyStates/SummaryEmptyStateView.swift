@@ -23,7 +23,7 @@ struct SummaryEmptyStateView: View {
 
                         Text("Summarize")
                             .font(.dmSansMedium(size: 16))
-                            .foregroundColor(Color.warmGray600)
+                            .foregroundColor(Color.blueGray600)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -31,7 +31,7 @@ struct SummaryEmptyStateView: View {
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()
-                            .stroke(Color.warmGray200, lineWidth: 1)
+                            .stroke(Color.blueGray200, lineWidth: 1)
                     )
                 }
             }

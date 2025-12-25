@@ -61,7 +61,7 @@ struct ActionButton: View {
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: iconSize, height: iconSize)
-                .foregroundColor(.warmGray500)
+                .foregroundColor(.blueGray500)
                 .frame(width: frameSize, height: frameSize)
                 .contentShape(Rectangle())
         }
@@ -86,7 +86,7 @@ struct ActionSheet: View {
             Color.black.opacity(0.0001)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(.ultraThinMaterial)
-                .background(Color.warmGray300.opacity(0.4))
+                .background(Color.blueGray300.opacity(0.4))
                 .edgesIgnoringSafeArea(.all)
                 .overlay {
                     VStack(spacing: 0) {

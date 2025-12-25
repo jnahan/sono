@@ -17,7 +17,7 @@ struct MassActionButtons: View {
         VStack(spacing: 0) {
             // Top stroke only
             Rectangle()
-                .fill(Color.warmGray200)
+                .fill(Color.blueGray200)
                 .frame(height: 1)
 
             // Icon buttons
@@ -58,7 +58,7 @@ struct MassActionButtons: View {
                     .frame(height: bottomSafeAreaPadding)
             }
         }
-        .background(Color.warmGray50)
+        .background(Color.blueGray50)
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

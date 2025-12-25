@@ -71,11 +71,11 @@ struct CollectionFormSheet: View {
             .buttonStyle(PrimaryButtonStyle())
         }
         .padding(.top, 8)
-        .background(Color.warmGray50)
+        .background(Color.blueGray50)
         .presentationDetents([.height(280)])
         .presentationCompactAdaptation(.none)
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.warmGray50)
+        .presentationBackground(Color.blueGray50)
         .presentationCornerRadius(16)
         .interactiveDismissDisabled(false)
         .onAppear {

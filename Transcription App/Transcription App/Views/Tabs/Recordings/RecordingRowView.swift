@@ -30,7 +30,7 @@ struct RecordingRowView: View {
                     } label: {
                         ZStack {
                             Circle()
-                                .stroke(isSelected ? Color.accent : Color.warmGray300, lineWidth: 2)
+                                .stroke(isSelected ? Color.accent : Color.blueGray300, lineWidth: 2)
                                 .frame(width: 24, height: 24)
                             
                             if isSelected {
@@ -55,7 +55,7 @@ struct RecordingRowView: View {
                     // Date with time
                     Text(TimeFormatter.dateWithTime(from: recording.recordedAt))
                         .font(.dmSansMedium(size: 12))
-                        .foregroundColor(.warmGray400)
+                        .foregroundColor(.blueGray400)
                     
                     // Title
                     Text(recording.title)
@@ -70,7 +70,7 @@ struct RecordingRowView: View {
                             // Transcription completed and status propagated - show preview
                             Text(recording.fullText)
                                 .font(.system(size: 14))
-                                .foregroundColor(.warmGray700)
+                                .foregroundColor(.blueGray700)
                                 .lineLimit(3)
                                 .lineSpacing(4)
                         } else {
@@ -83,7 +83,7 @@ struct RecordingRowView: View {
                                 
                                 Text("Saving transcription")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.warmGray500)
+                                    .foregroundColor(.blueGray500)
                             }
                         }
                     } else if recording.status == .inProgress || recording.status == .notStarted {
@@ -92,7 +92,7 @@ struct RecordingRowView: View {
                             // Show interruption message in gray (can resume)
                             Text(failureReason)
                                 .font(.system(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                                 .italic()
                         } else if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
                             // Has progress - show transcribing with percentage
@@ -107,11 +107,11 @@ struct RecordingRowView: View {
                                     if positionInfo.position == 1 {
                                         Text("Transcribing \(Int(progress * 100))% (\(positionInfo.position)/\(positionInfo.total))")
                                             .font(.system(size: 14))
-                                            .foregroundColor(.warmGray500)
+                                            .foregroundColor(.blueGray500)
                                     } else {
                                         Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                             .font(.system(size: 14))
-                                            .foregroundColor(.warmGray500)
+                                            .foregroundColor(.blueGray500)
                                     }
                                 }
                             } else {
@@ -123,7 +123,7 @@ struct RecordingRowView: View {
                                     
                                     Text("Transcribing \(Int(progress * 100))%")
                                         .font(.system(size: 14))
-                                        .foregroundColor(.warmGray500)
+                                        .foregroundColor(.blueGray500)
                                 }
                             }
                         } else if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
@@ -132,7 +132,7 @@ struct RecordingRowView: View {
                                 // Position 1 but no progress - actively preparing to start
                                 Text("Preparing to transcribe...")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.warmGray500)
+                                    .foregroundColor(.blueGray500)
                                     .italic()
                             } else {
                                 // Waiting in queue
@@ -143,14 +143,14 @@ struct RecordingRowView: View {
                                     
                                     Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                         .font(.system(size: 14))
-                                        .foregroundColor(.warmGray500)
+                                        .foregroundColor(.blueGray500)
                                 }
                             }
                         } else {
                             // In progress but not in queue and no progress - will auto-start soon
                             Text("Preparing to transcribe...")
                                 .font(.system(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                                 .italic()
                         }
                     } else if recording.status == .failed {
@@ -162,7 +162,7 @@ struct RecordingRowView: View {
                     } else {
                         Text("No transcription available")
                             .font(.system(size: 14))
-                            .foregroundColor(.warmGray500)
+                            .foregroundColor(.blueGray500)
                             .italic()
                     }
 

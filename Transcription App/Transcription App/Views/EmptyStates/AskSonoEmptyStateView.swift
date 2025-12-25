@@ -10,7 +10,7 @@ struct AskSonoEmptyStateView: View {
             
             Text("Ideas")
                 .font(.dmSansMedium(size: 16))
-                .foregroundColor(.warmGray500)
+                .foregroundColor(.blueGray500)
                 .padding(.top, 24)
             
             VStack(alignment: .leading, spacing: 16) {

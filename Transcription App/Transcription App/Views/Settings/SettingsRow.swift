@@ -25,7 +25,7 @@ struct SettingsRow: View {
             if let value = value {
                 Text(value)
                     .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.warmGray600)
+                    .foregroundColor(.blueGray600)
             }
             
             if let toggleBinding = toggleBinding {
@@ -36,7 +36,7 @@ struct SettingsRow: View {
                     .renderingMode(.template)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
-                    .foregroundColor(.warmGray400)
+                    .foregroundColor(.blueGray400)
             }
         }
         .padding(.horizontal, 16)

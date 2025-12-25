@@ -71,7 +71,7 @@ struct AskSonoView: View {
                         if !viewModel.chunkProgress.isEmpty {
                             Text(viewModel.chunkProgress)
                                 .font(.dmSansRegular(size: 14))
-                                .foregroundColor(.warmGray500)
+                                .foregroundColor(.blueGray500)
                         }
                     }
                 } else {

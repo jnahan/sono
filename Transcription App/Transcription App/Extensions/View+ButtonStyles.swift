@@ -19,9 +19,9 @@ enum ButtonVariant {
 
     var disabledBackgroundColor: Color {
         switch self {
-        case .primary, .warning: return .warmGray400
+        case .primary, .warning: return .blueGray400
         case .ghost: return .clear
-        case .white: return .warmGray200
+        case .white: return .blueGray200
         }
     }
 
@@ -33,7 +33,7 @@ enum ButtonVariant {
     }
 
     var disabledForegroundColor: Color {
-        .warmGray400
+        .blueGray400
     }
 
     var hasBorder: Bool {
@@ -62,7 +62,7 @@ struct BaseButtonStyle: ButtonStyle {
             .if(variant.hasBorder) { view in
                 view.overlay(
                     RoundedRectangle(cornerRadius: .infinity)
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
             }
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -92,7 +92,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .if(variant.hasBorder) { view in
                 view.overlay(
                     RoundedRectangle(cornerRadius: .infinity)
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
             }
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -120,7 +120,7 @@ struct WarningButtonStyle: ButtonStyle {
             .if(variant.hasBorder) { view in
                 view.overlay(
                     RoundedRectangle(cornerRadius: .infinity)
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
             }
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -148,7 +148,7 @@ struct GhostButtonStyle: ButtonStyle {
             .if(variant.hasBorder) { view in
                 view.overlay(
                     RoundedRectangle(cornerRadius: .infinity)
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
             }
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -176,7 +176,7 @@ struct WhiteButtonStyle: ButtonStyle {
             .if(variant.hasBorder) { view in
                 view.overlay(
                     RoundedRectangle(cornerRadius: .infinity)
-                        .stroke(Color.warmGray200, lineWidth: 1)
+                        .stroke(Color.blueGray200, lineWidth: 1)
                 )
             }
             .opacity(configuration.isPressed ? 0.7 : 1)

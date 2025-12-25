@@ -15,7 +15,7 @@ struct AskSonoInputBar: View {
                     if viewModel.userPrompt.isEmpty {
                         Text("Ask me anything...")
                             .font(.dmSansRegular(size: 16))
-                            .foregroundColor(.warmGray500)
+                            .foregroundColor(.blueGray500)
                             .allowsHitTesting(false)
                     }
 
@@ -73,7 +73,7 @@ struct AskSonoInputBar: View {
             .cornerRadius(32)
             .overlay(
                 RoundedRectangle(cornerRadius: 32)
-                    .stroke(Color.warmGray200, lineWidth: 1)
+                    .stroke(Color.blueGray200, lineWidth: 1)
             )
             .padding(.horizontal, 20)
             .padding(.top, 8)

@@ -10,12 +10,12 @@ struct SearchBar: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 16, height: 16)
-                .foregroundColor(.warmGray500)
+                .foregroundColor(.blueGray500)
             
             ZStack(alignment: .leading) {
                 if text.isEmpty {
                     Text(placeholder)
-                        .foregroundColor(.warmGray400)
+                        .foregroundColor(.blueGray400)
                         .font(.system(size: 16))
                 }
                 
@@ -32,7 +32,7 @@ struct SearchBar: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 16, height: 16)
-                        .foregroundColor(.warmGray500)
+                        .foregroundColor(.blueGray500)
                 }
             }
         }
@@ -42,7 +42,7 @@ struct SearchBar: View {
         .cornerRadius(32)
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.warmGray200, lineWidth: 1)
+                .stroke(Color.blueGray200, lineWidth: 1)
         )
         .zIndex(1)
         
