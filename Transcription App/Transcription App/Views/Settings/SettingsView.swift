@@ -24,22 +24,22 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            Color.blueGray50
+            Color.baseWhite
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 CustomTopBar(
                     title: "Settings",
                     leftIcon: "caret-left",
                     onLeftTap: { dismiss() }
                 )
-                
+
                 ScrollView {
                     VStack(spacing: 16) {
                         // Settings Section: Transcription Model, Audio Language, Timestamps
                         VStack(spacing: 0) {
                             SettingsRow(title: "Transcription model", value: "Tiny", imageName: "sparkle", showChevron: false)
-                            
+
                             NavigationLink(destination: SelectionListView(
                                 title: "Audio Language",
                                 items: audioLanguages,
@@ -52,16 +52,12 @@ struct SettingsView: View {
                             )) {
                                 SettingsRow(title: "Audio language", value: LanguageMapper.localizedName(for: audioLanguage), imageName: "text-aa")
                             }
-                            
+
                             SettingsRow(title: "Timestamps", value: nil, imageName: "clock", showChevron: false, toggleBinding: $showTimestamps)
                         }
                         .padding(.vertical, 4)
-                        .background(Color.baseWhite)
+                        .background(Color.blueGray100)
                         .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blueGray200, lineWidth: 1)
-                        )
                         .padding(.horizontal, 20)
 
                         // TODO: v2 - Add feedback, rate, and share functionality
@@ -80,12 +76,8 @@ struct SettingsView: View {
 //                            }
 //                        }
 //                        .padding(.vertical, 4)
-//                        .background(Color.baseWhite)
+//                        .background(Color.blueGray100)
 //                        .cornerRadius(12)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 12)
-//                                .stroke(Color.blueGray200, lineWidth: 1)
-//                        )
 //                        .padding(.horizontal, 20)
                     }
                     .padding(.top, 8)

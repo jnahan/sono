@@ -15,6 +15,7 @@ struct CollectionDrawerView: View {
     let onSelectCollection: (Collection) -> Void
     let onRename: (Collection) -> Void
     let onDelete: (Collection) -> Void
+    let onSettingsTap: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -33,7 +34,7 @@ struct CollectionDrawerView: View {
                     // Group 1: Default filters
                     VStack(spacing: 4) {
                         Button { onSelectAll() } label: {
-                            CollectionRow(
+                            DrawerRow(
                                 icon: "waveform",
                                 title: "All recordings",
                                 isSelected: selectedFilter == .all,
@@ -43,10 +44,20 @@ struct CollectionDrawerView: View {
                         .buttonStyle(.plain)
 
                         Button { onSelectUnorganized() } label: {
-                            CollectionRow(
+                            DrawerRow(
                                 icon: "folder-open",
                                 title: "Unorganized recordings",
                                 isSelected: selectedFilter == .unorganized,
+                                isDefaultFilter: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Button { onSettingsTap() } label: {
+                            DrawerRow(
+                                icon: "gear-six",
+                                title: "Settings",
+                                isSelected: false,
                                 isDefaultFilter: true
                             )
                         }
@@ -66,7 +77,7 @@ struct CollectionDrawerView: View {
                                     Button {
                                         onSelectCollection(collection)
                                     } label: {
-                                        CollectionRow(
+                                        DrawerRow(
                                             title: collection.name,
                                             recordingCount: recordings.filter {
                                                 $0.collections.contains { $0.id == collection.id }
@@ -93,9 +104,9 @@ struct CollectionDrawerView: View {
     }
 }
 
-// MARK: - Collection Row Component
+// MARK: - Drawer Row Component
 
-private struct CollectionRow: View {
+private struct DrawerRow: View {
     var icon: String? = nil
     let title: String
     var recordingCount: Int? = nil

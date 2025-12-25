@@ -112,6 +112,10 @@ struct RecordingsView: View {
                 onDelete: { c in
                     deletingCollection = c
                     closeDrawer()
+                },
+                onSettingsTap: {
+                    showSettings = true
+                    closeDrawer()
                 }
             )
             .frame(width: drawerWidth)
