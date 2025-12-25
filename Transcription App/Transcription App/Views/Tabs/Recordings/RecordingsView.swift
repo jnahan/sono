@@ -62,7 +62,7 @@ struct RecordingsView: View {
         case .all:
             return "All recordings"
         case .unorganized:
-            return "Unorganized recordings"
+            return "Unorganized"
         case .collection(let collection):
             return collection.name
         }

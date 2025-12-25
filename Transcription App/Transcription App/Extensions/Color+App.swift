@@ -23,8 +23,21 @@ extension Color {
     static let blueGray700 = Color(red: 51/255, green: 65/255, blue: 85/255)
     static let blueGray800 = Color(red: 30/255, green: 41/255, blue: 59/255)
     static let blueGray900 = Color(red: 15/255, green: 23/255, blue: 42/255)
-    
+
     // MARK: - Base
     static let baseBlack = Color.black
     static let baseWhite = Color.white
+}
+
+// MARK: - App Gradients
+
+struct AppGradient {
+    static let primary = LinearGradient(
+        gradient: Gradient(colors: [
+            Color(red: 77/255, green: 128/255, blue: 230/255),
+            Color(red: 233/255, green: 223/255, blue: 229/255)
+        ]),
+        startPoint: .top,
+        endPoint: .bottom
+    )
 }

@@ -24,9 +24,14 @@ struct RecorderView: View {
         NavigationStack {
             ZStack {
                 // Base color layer
-                Color.accentLight
+                Color.baseWhite
                     .ignoresSafeArea()
-                
+
+                // Gradient overlay at 40% opacity
+                AppGradient.primary
+                    .opacity(0.4)
+                    .ignoresSafeArea()
+
                 // Content
                 VStack(spacing: 0) {
                     CustomTopBar(
