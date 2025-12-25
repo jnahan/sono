@@ -7,11 +7,11 @@ private struct InputFieldStyle: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background(Color.baseWhite)
+            .background(Color.blueGray50)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(hasError ? Color.red : Color.blueGray200, lineWidth: 1)
+                    .stroke(hasError ? Color.red : Color.clear, lineWidth: 1)
             )
     }
 }

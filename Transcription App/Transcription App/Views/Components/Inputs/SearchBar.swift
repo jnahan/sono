@@ -38,12 +38,8 @@ struct SearchBar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.baseWhite)
+        .background(Color.blueGray50)
         .cornerRadius(32)
-        .overlay(
-            RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.blueGray200, lineWidth: 1)
-        )
         .zIndex(1)
         
     }

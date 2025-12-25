@@ -69,12 +69,8 @@ struct AskSonoInputBar: View {
             .padding(.top, 10)
             .padding(.trailing, 10)
             .padding(.bottom, 10)
-            .background(Color.baseWhite)
+            .background(Color.blueGray50)
             .cornerRadius(32)
-            .overlay(
-                RoundedRectangle(cornerRadius: 32)
-                    .stroke(Color.blueGray200, lineWidth: 1)
-            )
             .padding(.horizontal, 20)
             .padding(.top, 8)
             .padding(.bottom, 8)
