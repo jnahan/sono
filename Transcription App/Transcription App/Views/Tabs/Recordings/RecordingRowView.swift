@@ -165,10 +165,6 @@ struct RecordingRowView: View {
                             .foregroundColor(.blueGray500)
                             .italic()
                     }
-
-                    // Collection tags
-                    CollectionTagsView(collections: recording.collections)
-                        .padding(.top, 4)
                 }
 
                 Spacer()

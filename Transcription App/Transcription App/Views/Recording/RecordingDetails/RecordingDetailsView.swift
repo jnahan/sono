@@ -239,8 +239,6 @@ struct RecordingDetailsView: View {
                     .foregroundColor(recording.title == "Untitled recording" ? .blueGray400 : .baseBlack)
                     .onTapGesture { startTitleEdit() }
             }
-
-            CollectionTagsView(collections: recording.collections)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)

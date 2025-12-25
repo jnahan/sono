@@ -8,16 +8,9 @@ struct CollectionFormSheet: View {
     let onSave: () -> Void
     let existingCollections: [Collection]
     let currentCollection: Collection?
-    
+
     @FocusState private var isTextFieldFocused: Bool
-    
-    @State private var collectionNameError: String? = nil
-    @State private var hasAttemptedSubmit = false
-    
-    private var isFormValid: Bool {
-        validateCollectionName()
-    }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Top bar
@@ -36,19 +29,14 @@ struct CollectionFormSheet: View {
 
                 InputField(
                     text: $collectionName,
-                    placeholder: "Collection name",
-                    error: collectionNameError
+                    placeholder: "Collection name"
                 )
                 .padding(.horizontal, 24)
                 .focused($isTextFieldFocused)
                 .submitLabel(.done)
                 .onSubmit {
-                    hasAttemptedSubmit = true
-                    validateCollectionNameWithError()
-                    if isFormValid {
-                        onSave()
-                        isPresented = false
-                    }
+                    onSave()
+                    isPresented = false
                 }
             }
             .padding(.top, 16)
@@ -58,12 +46,8 @@ struct CollectionFormSheet: View {
 
             // Save button
             Button {
-                hasAttemptedSubmit = true
-                validateCollectionNameWithError()
-                if isFormValid {
-                    onSave()
-                    isPresented = false
-                }
+                onSave()
+                isPresented = false
             } label: {
                 Text(isEditing ? "Save changes" : "Create collection")
                     .frame(maxWidth: .infinity)
@@ -84,70 +68,6 @@ struct CollectionFormSheet: View {
                 isTextFieldFocused = true
             }
             #endif
-        }
-    }
-    
-    // MARK: - Validation Functions
-    
-    private func validateCollectionName() -> Bool {
-        let trimmed = collectionName.trimmed
-        
-        if trimmed.isEmpty {
-            return false
-        }
-        
-        if trimmed.count > AppConstants.Validation.maxCollectionNameLength {
-            return false
-        }
-        
-        // Get existing names, excluding current collection if editing
-        let existingNames = existingCollections.compactMap { collection -> String? in
-            if isEditing, let currentCollection = currentCollection, collection.id == currentCollection.id {
-                return nil
-            }
-            return collection.name
-        }
-        
-        return FormValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") == nil
-    }
-    
-    @discardableResult
-    private func validateCollectionNameWithError() -> Bool {
-        if hasAttemptedSubmit {
-            let trimmed = collectionName.trimmed
-            
-            // Validate not empty
-            if let error = FormValidationHelper.validateNotEmpty(trimmed, fieldName: "Collection name") {
-                collectionNameError = error
-                return false
-            }
-            
-            // Validate length
-            if let error = FormValidationHelper.validateLength(trimmed, max: AppConstants.Validation.maxCollectionNameLength, fieldName: "Collection name") {
-                collectionNameError = error
-                return false
-            }
-            
-            // Get existing names, excluding current collection if editing
-            let existingNames = existingCollections.compactMap { collection -> String? in
-                if isEditing, let currentCollection = currentCollection, collection.id == currentCollection.id {
-                    return nil
-                }
-                return collection.name
-            }
-            
-            // Validate uniqueness
-            if let error = FormValidationHelper.validateUnique(trimmed, against: existingNames, fieldName: "collection") {
-                collectionNameError = error
-                return false
-            }
-            
-            collectionNameError = nil
-            return true
-        } else {
-            // Don't show errors until submit is attempted
-            collectionNameError = nil
-            return validateCollectionName()
         }
     }
 }
