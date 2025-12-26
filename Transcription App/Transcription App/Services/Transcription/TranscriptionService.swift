@@ -653,8 +653,13 @@ class TranscriptionService {
 
     /// Internal method that performs the actual transcription
     private func performTranscription(audioURL: URL, languageCode: String? = nil, progressCallback: ((Double) -> Void)? = nil) async throws -> TranscriptionResult {
-        let settings = SettingsManager.shared
+        try await ensureModelReady(progressCallback: progressCallback)
+        let whisperKit = try await getReadyWhisperKit()
+        let whisperResult = try await executeWhisperTranscription(audioURL: audioURL, languageCode: languageCode, whisperKit: whisperKit, progressCallback: progressCallback)
+        return processTranscriptionResult(whisperResult, progressCallback: progressCallback)
+    }
 
+    private func ensureModelReady(progressCallback: ((Double) -> Void)?) async throws {
         // Wait for preload to complete
         if let task = preloadTask {
             Logger.info("TranscriptionService", "Waiting for preload to complete...")
@@ -671,82 +676,139 @@ class TranscriptionService {
 
         // Initialize WhisperKit if needed
         if whisperKit == nil || !isModelReady {
-            // Only create new instance if we don't have one
             if whisperKit == nil {
-                Logger.info("TranscriptionService", "Loading model '\(modelName)' for transcription...")
-                
-                if let callback = progressCallback {
-                    Task { @MainActor in
-                        callback(0.0)
-                    }
-                }
-
-                isLoadingModel = true
-                isModelReady = false
-                defer { isLoadingModel = false }
-
-                do {
-                    whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
-
-                    if let whisperKit = whisperKit {
-                        let warmupSuccess = await warmUpModel(whisperKit)
-                        isModelReady = true
-
-                        if warmupSuccess {
-                            Logger.success("TranscriptionService", "Model warmed up successfully")
-                        } else {
-                            Logger.warning("TranscriptionService", "Warm-up failed, continuing anyway...")
-                        }
-                    } else {
-                        isModelReady = false
-                    }
-                    
-                    Logger.success("TranscriptionService", "Model '\(modelName)' loaded and ready")
-                } catch {
-                    Logger.error("TranscriptionService", "Failed to load model: \(error.localizedDescription)")
-                    whisperKit = nil
-                    isModelReady = false
-                    throw TranscriptionError.initializationFailed
-                }
+                try await loadAndWarmUpModel(progressCallback: progressCallback)
             } else if !isModelReady {
-                // Model exists but not ready - wait for warm-up with timeout
-                let maxWaitTime = AppConstants.Transcription.modelLoadTimeout
-                let waitInterval = AppConstants.Transcription.modelWarmupWaitInterval
-                let maxChecks = Int(maxWaitTime * 1_000_000_000 / Double(waitInterval))
-                var checkCount = 0
-
-                while !isModelReady && whisperKit != nil && checkCount < maxChecks {
-                    try Task.checkCancellation()
-                    try? await Task.sleep(nanoseconds: waitInterval)
-                    checkCount += 1
-                }
-
-                try Task.checkCancellation()
-
-                if !isModelReady {
-                    Logger.warning("TranscriptionService", "Timeout waiting for model warm-up, marking ready anyway")
-                    isModelReady = true
-                }
+                try await waitForModelWarmup()
             }
         }
-        
+
         try Task.checkCancellation()
-        
+    }
+
+    private func loadAndWarmUpModel(progressCallback: ((Double) -> Void)?) async throws {
+        Logger.info("TranscriptionService", "Loading model '\(modelName)' for transcription...")
+
+        if let callback = progressCallback {
+            Task { @MainActor in callback(0.0) }
+        }
+
+        isLoadingModel = true
+        isModelReady = false
+        defer { isLoadingModel = false }
+
+        do {
+            whisperKit = try await WhisperKit(WhisperKitConfig(model: modelName))
+
+            if let whisperKit = whisperKit {
+                let warmupSuccess = await warmUpModel(whisperKit)
+                isModelReady = true
+
+                if warmupSuccess {
+                    Logger.success("TranscriptionService", "Model warmed up successfully")
+                } else {
+                    Logger.warning("TranscriptionService", "Warm-up failed, continuing anyway...")
+                }
+            } else {
+                isModelReady = false
+            }
+
+            Logger.success("TranscriptionService", "Model '\(modelName)' loaded and ready")
+        } catch {
+            Logger.error("TranscriptionService", "Failed to load model: \(error.localizedDescription)")
+            whisperKit = nil
+            isModelReady = false
+            throw TranscriptionError.initializationFailed
+        }
+    }
+
+    private func waitForModelWarmup() async throws {
+        let maxWaitTime = AppConstants.Transcription.modelLoadTimeout
+        let waitInterval = AppConstants.Transcription.modelWarmupWaitInterval
+        let maxChecks = Int(maxWaitTime * 1_000_000_000 / Double(waitInterval))
+        var checkCount = 0
+
+        while !isModelReady && whisperKit != nil && checkCount < maxChecks {
+            try Task.checkCancellation()
+            try? await Task.sleep(nanoseconds: waitInterval)
+            checkCount += 1
+        }
+
+        try Task.checkCancellation()
+
+        if !isModelReady {
+            Logger.warning("TranscriptionService", "Timeout waiting for model warm-up, marking ready anyway")
+            isModelReady = true
+        }
+    }
+
+    private func getReadyWhisperKit() async throws -> WhisperKit {
         guard let whisperKit = whisperKit else {
             throw TranscriptionError.initializationFailed
         }
-        
-        // Double-check: If we think the model is ready but WhisperKit still needs to load,
-        // we might need to verify the model is actually initialized
-        // Note: WhisperKit doesn't expose a public "isReady" property, so we rely on our flag
-        
-        // Check if file exists and has content
+        return whisperKit
+    }
+
+    private func executeWhisperTranscription(audioURL: URL, languageCode: String?, whisperKit: WhisperKit, progressCallback: ((Double) -> Void)?) async throws -> TranscriptionResult {
+        try validateAudioFile(audioURL)
+
+        let settings = SettingsManager.shared
+        let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
+
+        if let langCode = finalLanguageCode {
+            Logger.info("TranscriptionService", "Using specified language: \(langCode)")
+        } else {
+            Logger.info("TranscriptionService", "Using automatic language detection")
+        }
+
+        var options = DecodingOptions(wordTimestamps: false)
+        if let langCode = finalLanguageCode {
+            options.language = langCode
+        }
+
+        let asset = AVAsset(url: audioURL)
+        let duration = try await asset.load(.duration)
+        let totalSeconds = CMTimeGetSeconds(duration)
+        let estimatedTranscriptionTime = totalSeconds * 0.1
+        let timeoutSeconds = max(totalSeconds * AppConstants.Transcription.timeoutMultiplier, AppConstants.Transcription.minTranscriptionTimeout)
+        let startTime = Date()
+
+        let results = try await whisperKit.transcribe(
+            audioPath: audioURL.path,
+            decodeOptions: options,
+            callback: { progress in
+                if Task.isCancelled { return false }
+
+                let elapsed = Date().timeIntervalSince(startTime)
+                if elapsed > timeoutSeconds {
+                    Logger.error("TranscriptionService", "Transcription timed out after \(Int(elapsed))s")
+                    return false
+                }
+
+                if let callback = progressCallback {
+                    let progressPercentage = min(max(elapsed / estimatedTranscriptionTime, 0.0), 0.99)
+                    Task { @MainActor in
+                        if !Task.isCancelled { callback(progressPercentage) }
+                    }
+                }
+                return !Task.isCancelled
+            }
+        )
+
+        guard let firstResult = results.first else {
+            throw TranscriptionError.noResults
+        }
+
+        Logger.info("TranscriptionService", "Detected language: \(firstResult.language)")
+        return TranscriptionResult(text: firstResult.text, language: firstResult.language, segments: firstResult.segments.map { TranscriptionSegment(start: Double($0.start), end: Double($0.end), text: $0.text) })
+    }
+
+    private func validateAudioFile(_ audioURL: URL) throws {
         guard FileManager.default.fileExists(atPath: audioURL.path) else {
             Logger.error("TranscriptionService", "Audio file not found at: \(audioURL.path)")
             throw TranscriptionError.fileNotFound
         }
 
-        // Verify file has valid content (must be at least WAV header size)
         let fileSize = (try? FileManager.default.attributesOfItem(atPath: audioURL.path)[.size] as? UInt64) ?? 0
         guard fileSize >= AppConstants.Transcription.minValidWAVSize else {
             Logger.error("TranscriptionService", "Audio file too small or empty (\(fileSize) bytes, min \(AppConstants.Transcription.minValidWAVSize)): \(audioURL.lastPathComponent)")
@@ -754,134 +816,39 @@ class TranscriptionService {
         }
 
         Logger.info("TranscriptionService", "Starting transcription of: \(audioURL.lastPathComponent) (\(fileSize) bytes)")
+    }
 
-        // Get language code from parameter or settings
-        let finalLanguageCode = languageCode ?? settings.languageCode(for: settings.audioLanguage)
-
-        // Log the language setting being used
-        if let langCode = finalLanguageCode {
-            Logger.info("TranscriptionService", "Using specified language: \(langCode)")
-        } else {
-            Logger.info("TranscriptionService", "Using automatic language detection")
-        }
-
-        // Perform transcription with segment-level timestamps only
-        var options = DecodingOptions(wordTimestamps: false)
-
-        if let langCode = finalLanguageCode {
-            options.language = langCode
-        }
-
-        // Get audio duration for accurate progress calculation
-        let asset = AVAsset(url: audioURL)
-        let duration = try await asset.load(.duration)
-        let totalSeconds = CMTimeGetSeconds(duration)
-
-        // Track start time for timeout and progress
-        let startTime = Date()
-        let timeoutSeconds: TimeInterval = max(
-            totalSeconds * AppConstants.Transcription.timeoutMultiplier,
-            AppConstants.Transcription.minTranscriptionTimeout
-        )
-
-        // Estimate transcription time
-        let estimatedTranscriptionTime = totalSeconds * 0.1
-
-        let results = try await whisperKit.transcribe(
-            audioPath: audioURL.path,
-            decodeOptions: options,
-            callback: { progress in
-                // Check for cancellation
-                if Task.isCancelled {
-                    return false // Stop transcription
-                }
-
-                // Check for timeout (fail if taking too long)
-                let elapsed = Date().timeIntervalSince(startTime)
-                if elapsed > timeoutSeconds {
-                    Logger.error("TranscriptionService", "Transcription timed out after \(Int(elapsed))s")
-                    return false // Stop transcription
-                }
-
-                // Calculate progress based on elapsed time vs estimated completion time
-                if let callback = progressCallback {
-                    let progressPercentage = min(max(elapsed / estimatedTranscriptionTime, 0.0), 0.99)
-
-                    Task { @MainActor in
-                        if !Task.isCancelled {
-                            callback(progressPercentage)
-                        }
-                    }
-                }
-                return !Task.isCancelled // Continue transcription unless cancelled
-            }
-        )
-        
-        guard let firstResult = results.first else {
-            throw TranscriptionError.noResults
-        }
-
-        // Log detected language
-        Logger.info("TranscriptionService", "Detected language: \(firstResult.language)")
-        
-        // Convert to our model and clean timestamp tokens
-        let segments = firstResult.segments.compactMap { segment -> TranscriptionSegment? in
-            guard segment.start >= 0 && segment.end >= segment.start else {
-                return nil
-            }
+    private func processTranscriptionResult(_ result: TranscriptionResult, progressCallback: ((Double) -> Void)?) -> TranscriptionResult {
+        let segments = result.segments.compactMap { segment -> TranscriptionSegment? in
+            guard segment.start >= 0 && segment.end >= segment.start else { return nil }
 
             let cleanedText = cleanTimestampTokens(from: segment.text)
-            let trimmed = cleanedText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            let trimmed = cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty && isValidTranscription(trimmed) else { return nil }
 
-            guard !trimmed.isEmpty && isValidTranscription(trimmed) else {
-                return nil
-            }
-
-            return TranscriptionSegment(
-                start: Double(segment.start),
-                end: Double(segment.end),
-                text: trimmed
-            )
+            return TranscriptionSegment(start: segment.start, end: segment.end, text: trimmed)
         }
-        
-        let cleanedFullText = cleanTimestampTokens(from: firstResult.text)
-        let trimmedFullText = cleanedFullText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+
+        let cleanedFullText = cleanTimestampTokens(from: result.text)
+        let trimmedFullText = cleanedFullText.trimmingCharacters(in: .whitespacesAndNewlines)
         let isValidFullText = isValidTranscription(trimmedFullText)
 
-        // If we have no valid segments but have valid full text, create a single segment
         var finalSegments = segments
         if finalSegments.isEmpty && isValidFullText {
-            finalSegments = [
-                TranscriptionSegment(
-                    start: 0.0,
-                    end: Double(firstResult.segments.last?.end ?? 0.0),
-                    text: trimmedFullText
-                )
-            ]
+            finalSegments = [TranscriptionSegment(start: 0.0, end: result.segments.last?.end ?? 0.0, text: trimmedFullText)]
         }
 
-        // For very short or silent recordings, empty results are valid and expected
-        // Return empty result instead of throwing error - user may have been silent
         let finalText = isValidFullText ? trimmedFullText : ""
 
-        // Log if we got empty results (user may have been silent - this is fine)
         if finalSegments.isEmpty && !isValidFullText {
             Logger.info("TranscriptionService", "Transcription returned empty results - recording may have been silent or very short (this is normal)")
         }
 
-        // Report 100% completion after all post-processing is done
-        // This ensures progress shows 100% only when transcription is truly complete
         if let callback = progressCallback {
-            Task { @MainActor in
-                callback(1.0)
-            }
+            Task { @MainActor in callback(1.0) }
         }
 
-        return TranscriptionResult(
-            text: finalText,
-            language: firstResult.language,
-            segments: finalSegments
-        )
+        return TranscriptionResult(text: finalText, language: result.language, segments: finalSegments)
     }
 }
 

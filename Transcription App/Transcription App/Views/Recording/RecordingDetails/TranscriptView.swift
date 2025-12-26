@@ -3,7 +3,6 @@ import SwiftUI
 struct TranscriptView: View {
     let recording: Recording
     let audioPlayback: AudioPlaybackService
-    @ObservedObject var viewModel: RecordingDetailsViewModel
 
     var bottomContentPadding: CGFloat = 24
 

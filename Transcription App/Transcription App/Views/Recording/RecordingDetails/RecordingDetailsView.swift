@@ -16,7 +16,6 @@ struct RecordingDetailsView: View {
     var onDismiss: (() -> Void)? = nil
 
     @StateObject private var audioPlayback = AudioPlaybackService()
-    @StateObject private var viewModel: RecordingDetailsViewModel
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     @StateObject private var askSonoVM: AskSonoViewModel
 
@@ -27,7 +26,6 @@ struct RecordingDetailsView: View {
     init(recording: Recording, onDismiss: (() -> Void)? = nil) {
         self.recording = recording
         self.onDismiss = onDismiss
-        _viewModel = StateObject(wrappedValue: RecordingDetailsViewModel(recording: recording))
         _askSonoVM = StateObject(wrappedValue: AskSonoViewModel(recording: recording))
     }
 
@@ -74,6 +72,7 @@ struct RecordingDetailsView: View {
                         LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
 
                             headerView
+                                .id("header")
                                 .background(
                                     GeometryReader { geo in
                                         Color.clear
@@ -137,6 +136,21 @@ struct RecordingDetailsView: View {
                     .onChange(of: askSonoVM.streamingText) { _, _ in
                         if selectedTab == .askSono {
                             scrollAskSonoToBottom(proxy, animated: false)
+                        }
+                    }
+                    .onChange(of: selectedTab) { _, newTab in
+                        // Reset scroll position when switching tabs
+                        switch newTab {
+                        case .transcript, .summary:
+                            // Scroll to top for transcript and summary
+                            proxy.scrollTo("header", anchor: .top)
+                        case .askSono:
+                            // Scroll to bottom if messages exist, otherwise scroll to top
+                            if askSonoVM.messages.isEmpty {
+                                proxy.scrollTo("header", anchor: .top)
+                            } else {
+                                scrollAskSonoToBottom(proxy, animated: false)
+                            }
                         }
                     }
                 }
@@ -246,12 +260,12 @@ struct RecordingDetailsView: View {
         Group {
             switch selectedTab {
             case .transcript:
-                TranscriptView(recording: recording, audioPlayback: audioPlayback, viewModel: viewModel)
+                TranscriptView(recording: recording, audioPlayback: audioPlayback)
                     .id(recording.id)
             case .summary:
                 SummaryView(recording: recording)
             case .askSono:
-                AskSonoView(recording: recording, viewModel: askSonoVM) // no ScrollView inside
+                AskSonoView(recording: recording, viewModel: askSonoVM)
             }
         }
     }
@@ -309,7 +323,9 @@ struct RecordingDetailsView: View {
         guard headerHeight > 1 else { return }
         let shouldShow = scrollY >= (headerHeight - 4)
         if shouldShow != showTopTitle {
-            withAnimation(.easeInOut(duration: 0.18)) { showTopTitle = shouldShow }
+            Task { @MainActor in
+                withAnimation(.easeInOut(duration: 0.18)) { showTopTitle = shouldShow }
+            }
         }
     }
 

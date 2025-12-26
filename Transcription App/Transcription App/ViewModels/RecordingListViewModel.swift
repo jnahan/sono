@@ -205,83 +205,91 @@ class RecordingListViewModel: ObservableObject {
 
         let recordingId = recording.id
 
-        // Create transcription task
         let transcriptionTask = Task { @MainActor in
             do {
-                Logger.info("Auto-Start", "Starting transcription for: \(url.lastPathComponent)")
-                let result = try await TranscriptionService.shared.transcribe(audioURL: url, recordingId: recordingId) { progress in
-                    Task { @MainActor in
-                        if Task.isCancelled { return }
-                        TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
-                    }
-                }
-
-                // Check if task was cancelled
-                try Task.checkCancellation()
-
-                // Verify recording still exists before updating
-                let descriptor = FetchDescriptor<Recording>(
-                    predicate: #Predicate { r in r.id == recordingId }
-                )
-
-                guard let existingRecordings = try? modelContext.fetch(descriptor),
-                      let existingRecording = existingRecordings.first else {
-                    Logger.info("Auto-Start", ErrorMessages.Transcription.recordingDeleted)
-                    TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                    return
-                }
-
-                // Update recording with results
-                Logger.info("Auto-Start", "Transcription result - text length: \(result.text.count), segments: \(result.segments.count)")
-                existingRecording.fullText = result.text
-                existingRecording.language = result.language
-                existingRecording.status = .completed
-                existingRecording.failureReason = nil
-
-                // Clear existing segments and add new ones
-                existingRecording.segments.removeAll()
-                for segment in result.segments {
-                    let recordingSegment = RecordingSegment(
-                        start: segment.start,
-                        end: segment.end,
-                        text: segment.text
-                    )
-                    modelContext.insert(recordingSegment)
-                    existingRecording.segments.append(recordingSegment)
-                }
-
-                try modelContext.save()
-                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
-                Logger.success("Auto-Start", "Transcription completed for: \(existingRecording.title)")
-
+                let result = try await performTranscription(for: recordingId, audioURL: url)
+                try await updateRecordingWithResult(recordingId: recordingId, result: result, modelContext: modelContext)
             } catch is CancellationError {
                 Logger.info("Auto-Start", "Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
             } catch {
-                Logger.error("Auto-Start", "Transcription error: \(error.localizedDescription)")
-
-                // Check if recording still exists before updating error state
-                let errorDescriptor = FetchDescriptor<Recording>(
-                    predicate: #Predicate { r in r.id == recordingId }
-                )
-
-                if let errorRecordings = try? modelContext.fetch(errorDescriptor),
-                   let errorRecording = errorRecordings.first {
-                    errorRecording.status = .failed
-                    errorRecording.failureReason = ErrorMessages.Transcription.failed
-
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        Logger.error("RecordingListViewModel", "Failed to save transcription error state: \(error.localizedDescription)")
-                    }
-                }
-
-                TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                await handleTranscriptionFailure(recordingId: recordingId, error: error, modelContext: modelContext)
             }
         }
 
-        // Register the task for cancellation
         TranscriptionProgressManager.shared.registerTask(for: recordingId, task: transcriptionTask)
+    }
+
+    @MainActor
+    private func performTranscription(for recordingId: UUID, audioURL: URL) async throws -> TranscriptionResult {
+        Logger.info("Auto-Start", "Starting transcription for: \(audioURL.lastPathComponent)")
+
+        let result = try await TranscriptionService.shared.transcribe(audioURL: audioURL, recordingId: recordingId) { progress in
+            Task { @MainActor in
+                if Task.isCancelled { return }
+                TranscriptionProgressManager.shared.updateProgress(for: recordingId, progress: progress)
+            }
+        }
+
+        try Task.checkCancellation()
+        return result
+    }
+
+    @MainActor
+    private func updateRecordingWithResult(recordingId: UUID, result: TranscriptionResult, modelContext: ModelContext) async throws {
+        let descriptor = FetchDescriptor<Recording>(
+            predicate: #Predicate { r in r.id == recordingId }
+        )
+
+        guard let existingRecordings = try? modelContext.fetch(descriptor),
+              let existingRecording = existingRecordings.first else {
+            Logger.info("Auto-Start", ErrorMessages.Transcription.recordingDeleted)
+            TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            return
+        }
+
+        Logger.info("Auto-Start", "Transcription result - text length: \(result.text.count), segments: \(result.segments.count)")
+        existingRecording.fullText = result.text
+        existingRecording.language = result.language
+        existingRecording.status = .completed
+        existingRecording.failureReason = nil
+
+        existingRecording.segments.removeAll()
+        for segment in result.segments {
+            let recordingSegment = RecordingSegment(
+                start: segment.start,
+                end: segment.end,
+                text: segment.text
+            )
+            modelContext.insert(recordingSegment)
+            existingRecording.segments.append(recordingSegment)
+        }
+
+        try modelContext.save()
+        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+        Logger.success("Auto-Start", "Transcription completed for: \(existingRecording.title)")
+    }
+
+    @MainActor
+    private func handleTranscriptionFailure(recordingId: UUID, error: Error, modelContext: ModelContext) async {
+        Logger.error("Auto-Start", "Transcription error: \(error.localizedDescription)")
+
+        let errorDescriptor = FetchDescriptor<Recording>(
+            predicate: #Predicate { r in r.id == recordingId }
+        )
+
+        if let errorRecordings = try? modelContext.fetch(errorDescriptor),
+           let errorRecording = errorRecordings.first {
+            errorRecording.status = .failed
+            errorRecording.failureReason = ErrorMessages.Transcription.failed
+
+            do {
+                try modelContext.save()
+            } catch {
+                Logger.error("RecordingListViewModel", "Failed to save transcription error state: \(error.localizedDescription)")
+            }
+        }
+
+        TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
     }
 }
