@@ -260,7 +260,7 @@ struct RecordingDetailsView: View {
 
     private var bottomBars: some View {
         VStack(spacing: 0) {
-            if selectedTab == .transcript {
+            if selectedTab == .transcript && recording.status != .inProgress {
                 RecordingPlayerBar(
                     audioService: audioPlayback,
                     audioURL: recording.resolvedURL,

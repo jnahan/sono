@@ -109,57 +109,55 @@ class SummaryViewModel: ObservableObject {
 
     /// Chunked summarization for longer transcriptions using Map-Reduce pattern
     private func generateChunkedSummary(fullText: String, modelContext: ModelContext) async throws {
-        // Maximum chunk size - leave room for prompts
         let maxChunkSize = 12000
-
-        // Step 1: Split text into chunks
         let chunks = TextChunker.split(fullText, maxChunkSize: maxChunkSize)
         Logger.info("SummaryViewModel", "Split into \(chunks.count) chunks")
 
-        // Step 2: Summarize each chunk (Map phase)
+        // Summarize each chunk
         var chunkSummaries: [String] = []
-
         for (index, chunk) in chunks.enumerated() {
-            // Update progress
-            chunkProgress = "Summarizing part \(index + 1) of \(chunks.count)..."
-            Logger.info("SummaryViewModel", "Processing chunk \(index + 1)/\(chunks.count), size: \(chunk.count) chars")
-
-            // Reset streaming for this chunk
-            streamingSummary = ""
-
-            let chunkPrompt: String
-            if chunks.count == 1 {
-                // Only one chunk (shouldn't happen, but handle gracefully)
-                chunkPrompt = "Please summarize the following text:\n\n\(chunk)"
-            } else {
-                // Multiple chunks - provide context
-                chunkPrompt = "This is part \(index + 1) of \(chunks.count) from a longer transcription. Please provide a detailed summary of this section:\n\n\(chunk)"
-            }
-
-            let chunkSummary = try await LLMService.shared.getStreamingCompletion(
-                from: chunkPrompt,
-                systemPrompt: LLMPrompts.summarization
-            ) { [weak self] streamChunk in
-                guard let self = self else { return }
-                Task { @MainActor in
-                    self.streamingSummary += streamChunk
-                }
-            }
-
-            // Validate chunk summary
-            guard LLMResponseValidator.isValid(chunkSummary) else {
-                throw NSError(domain: "SummaryViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
-            }
-
-            chunkSummaries.append(chunkSummary.trimmingCharacters(in: .whitespacesAndNewlines))
-            Logger.info("SummaryViewModel", "Chunk \(index + 1) summary: \(chunkSummary.count) chars")
+            let summary = try await summarizeChunk(chunk, index: index, total: chunks.count)
+            chunkSummaries.append(summary)
         }
 
-        // Step 3: Combine chunk summaries
+        // Synthesize final summary
+        try await synthesizeFinalSummary(chunkSummaries: chunkSummaries, modelContext: modelContext)
+    }
+
+    private func summarizeChunk(_ chunk: String, index: Int, total: Int) async throws -> String {
+        chunkProgress = "Summarizing part \(index + 1) of \(total)..."
+        Logger.info("SummaryViewModel", "Processing chunk \(index + 1)/\(total), size: \(chunk.count) chars")
+        streamingSummary = ""
+
+        let chunkPrompt: String
+        if total == 1 {
+            chunkPrompt = "Please summarize the following text:\n\n\(chunk)"
+        } else {
+            chunkPrompt = "This is part \(index + 1) of \(total) from a longer transcription. Please provide a detailed summary of this section:\n\n\(chunk)"
+        }
+
+        let chunkSummary = try await LLMService.shared.getStreamingCompletion(
+            from: chunkPrompt,
+            systemPrompt: LLMPrompts.summarization
+        ) { [weak self] streamChunk in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.streamingSummary += streamChunk
+            }
+        }
+
+        guard LLMResponseValidator.isValid(chunkSummary) else {
+            throw NSError(domain: "SummaryViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
+        }
+
+        Logger.info("SummaryViewModel", "Chunk \(index + 1) summary: \(chunkSummary.count) chars")
+        return chunkSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func synthesizeFinalSummary(chunkSummaries: [String], modelContext: ModelContext) async throws {
         let combinedSummaries = chunkSummaries.joined(separator: "\n\n")
         Logger.info("SummaryViewModel", "Combined summaries: \(combinedSummaries.count) chars")
 
-        // Step 4: Generate final summary from chunk summaries (Reduce phase)
         chunkProgress = "Creating final summary..."
         streamingSummary = ""
 
@@ -175,20 +173,15 @@ class SummaryViewModel: ObservableObject {
             }
         }
 
-        // Validate final summary
         guard LLMResponseValidator.isValid(finalSummary) else {
             summaryError = ErrorMessages.Summary.invalidResponse
             return
         }
 
-        // Save final summary
         recording.summary = finalSummary.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Clear UI state
         streamingSummary = ""
         chunkProgress = ""
 
-        // Save to database
         do {
             try modelContext.save()
             Logger.info("SummaryViewModel", "Final summary saved: \(finalSummary.count) chars")

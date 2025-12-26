@@ -146,52 +146,62 @@ final class AskSonoViewModel: ObservableObject {
         let chunks = TextChunker.split(transcription, maxChunkSize: maxChunkSize)
         Logger.info("AskSonoViewModel", "Split into \(chunks.count) chunks")
 
+        // Process each chunk
         var chunkAnswers: [String] = []
-
         for (index, chunk) in chunks.enumerated() {
-            chunkProgress = "Searching part \(index + 1) of \(chunks.count)..."
-            streamingText = ""
-
-            let chunkPrompt: String
-            if chunks.count == 1 {
-                chunkPrompt = """
-                Transcription:
-                \(chunk)
-
-                Question: \(question)
-                """
-            } else {
-                chunkPrompt = """
-                This is part \(index + 1) of \(chunks.count) from a longer transcription.
-
-                Transcription excerpt:
-                \(chunk)
-
-                Question: \(question)
-
-                Please answer based on this section. If the answer is not in this section, say "Not found in this section."
-                """
-            }
-
-            let chunkAnswer = try await LLMService.shared.getStreamingCompletion(
-                from: chunkPrompt,
-                systemPrompt: LLMPrompts.transcriptionQA
-            ) { [weak self] streamChunk in
-                guard let self else { return }
-                Task { @MainActor in
-                    guard self.streamingMessageId == streamingId else { return }
-                    self.streamingText += streamChunk
-                    self.updateStreamingMessage()
-                }
-            }
-
-            guard LLMResponseValidator.isValid(chunkAnswer) else {
-                throw NSError(domain: "AskSonoViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
-            }
-
-            chunkAnswers.append(chunkAnswer.trimmingCharacters(in: .whitespacesAndNewlines))
+            let answer = try await processChunk(chunk, index: index, total: chunks.count, question: question, streamingId: streamingId)
+            chunkAnswers.append(answer)
         }
 
+        // Synthesize final answer
+        try await synthesizeFinalAnswer(chunkAnswers: chunkAnswers, question: question, streamingId: streamingId)
+    }
+
+    private func processChunk(_ chunk: String, index: Int, total: Int, question: String, streamingId: UUID) async throws -> String {
+        chunkProgress = "Searching part \(index + 1) of \(total)..."
+        streamingText = ""
+
+        let chunkPrompt: String
+        if total == 1 {
+            chunkPrompt = """
+            Transcription:
+            \(chunk)
+
+            Question: \(question)
+            """
+        } else {
+            chunkPrompt = """
+            This is part \(index + 1) of \(total) from a longer transcription.
+
+            Transcription excerpt:
+            \(chunk)
+
+            Question: \(question)
+
+            Please answer based on this section. If the answer is not in this section, say "Not found in this section."
+            """
+        }
+
+        let chunkAnswer = try await LLMService.shared.getStreamingCompletion(
+            from: chunkPrompt,
+            systemPrompt: LLMPrompts.transcriptionQA
+        ) { [weak self] streamChunk in
+            guard let self else { return }
+            Task { @MainActor in
+                guard self.streamingMessageId == streamingId else { return }
+                self.streamingText += streamChunk
+                self.updateStreamingMessage()
+            }
+        }
+
+        guard LLMResponseValidator.isValid(chunkAnswer) else {
+            throw NSError(domain: "AskSonoViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
+        }
+
+        return chunkAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func synthesizeFinalAnswer(chunkAnswers: [String], question: String, streamingId: UUID) async throws {
         chunkProgress = "Creating final answer..."
         streamingText = ""
 
