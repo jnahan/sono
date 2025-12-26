@@ -95,9 +95,15 @@ struct AskSonoView: View {
 
                 if !isStreaming {
                     AIResponseButtons(
-                        onCopy: { UIPasteboard.general.string = message.text },
+                        onCopy: {
+                            HapticFeedback.success()
+                            UIPasteboard.general.string = message.text
+                        },
                         onRegenerate: { viewModel.resendLastMessage() },
-                        onExport: { ShareHelper.shareText(message.text) }
+                        onExport: {
+                            HapticFeedback.light()
+                            ShareHelper.shareText(message.text)
+                        }
                     )
                     .padding(.leading, 4)
                     .padding(.top, 8)

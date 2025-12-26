@@ -190,6 +190,7 @@ struct AppRootView: View {
             try modelContext.save()
 
             recording.status = .inProgress
+            recording.failureReason = nil  // Clear any old failure reasons
             recording.transcriptionStartedAt = Date()
             try modelContext.save()
 

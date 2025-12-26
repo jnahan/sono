@@ -5,17 +5,20 @@ import SwiftData
 class RecordingListViewModel: ObservableObject {
     // MARK: - Toast State
     @Published var showCopyToast = false
-    
+
     // MARK: - Selection Mode State
     @Published var isSelectionMode = false
     @Published var selectedRecordings: Set<UUID> = []
-    
+
     // MARK: - Filtering State
     @Published var searchText = ""
     @Published var filteredRecordings: [Recording] = []
-    
+
     // MARK: - Model Context
     private var modelContext: ModelContext?
+
+    // MARK: - Recovery State
+    private static var hasRecoveredThisSession = false
     
     // MARK: - Initialization
     
@@ -31,6 +34,7 @@ class RecordingListViewModel: ObservableObject {
     /// - Parameter recording: The recording to copy
     func copyRecording(_ recording: Recording) {
         UIPasteboard.general.string = recording.fullText
+        HapticFeedback.success()
         withAnimation { showCopyToast = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation { self.showCopyToast = false }
@@ -66,6 +70,7 @@ class RecordingListViewModel: ObservableObject {
     func copyRecordings(_ recordings: [Recording]) {
         let combinedText = recordings.map { $0.fullText }.joined(separator: "\n\n")
         UIPasteboard.general.string = combinedText
+        HapticFeedback.success()
         displayCopyToast()
     }
     
@@ -73,7 +78,9 @@ class RecordingListViewModel: ObservableObject {
     /// - Parameter recordings: The recordings to export
     func exportRecordings(_ recordings: [Recording]) {
         guard !recordings.isEmpty else { return }
-        
+
+        HapticFeedback.light()
+
         if recordings.count == 1 {
             // Single recording - use the recording title
             let recording = recordings[0]
@@ -148,13 +155,22 @@ class RecordingListViewModel: ObservableObject {
     
     /// Detect and recover incomplete recordings on app launch
     /// Auto-starts transcriptions for any recordings that need it
+    /// Only runs ONCE per app session to avoid duplicate transcription attempts
     @MainActor
     func recoverIncompleteRecordings(_ recordings: [Recording]) {
+        // Only recover once per app session - don't re-run on every view appear
+        guard !Self.hasRecoveredThisSession else {
+            return
+        }
+
         guard let modelContext = modelContext else {
             Logger.warning("RecordingListViewModel", ErrorMessages.Transcription.noModelContext)
             return
         }
-        
+
+        // Mark as recovered for this session
+        Self.hasRecoveredThisSession = true
+
         // Auto-start transcriptions for any recordings that need it
         // Exclude .failed recordings - they cannot be retried
         let pendingRecordings = recordings.filter { recording in
@@ -218,6 +234,8 @@ class RecordingListViewModel: ObservableObject {
         }
 
         TranscriptionProgressManager.shared.registerTask(for: recordingId, task: transcriptionTask)
+        // Initialize progress tracking so UI can display progress
+        TranscriptionProgressManager.shared.setActiveTranscription(recordingId: recordingId)
     }
 
     @MainActor

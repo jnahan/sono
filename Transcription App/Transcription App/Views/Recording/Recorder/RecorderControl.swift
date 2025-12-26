@@ -264,10 +264,7 @@ struct RecorderControl: View {
     }
     
     private func playTapHaptic() {
-        #if canImport(UIKit)
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-        #endif
+        HapticFeedback.medium()
     }
 
     // MARK: - Lifecycle Handlers

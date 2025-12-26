@@ -341,7 +341,10 @@ struct RecordingsView: View {
                     // Empty state: centered larger button
                     VStack {
                         Spacer()
-                        Button { onAddRecording() } label: {
+                        Button {
+                            HapticFeedback.medium()
+                            onAddRecording()
+                        } label: {
                             HStack(spacing: 8) {
                                 Image("plus-bold")
                                     .resizable()
@@ -365,7 +368,10 @@ struct RecordingsView: View {
                         Spacer()
                         HStack {
                             Spacer()
-                            Button { onAddRecording() } label: {
+                            Button {
+                                HapticFeedback.medium()
+                                onAddRecording()
+                            } label: {
                                 Image("plus-bold")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
@@ -403,21 +409,17 @@ struct RecordingsView: View {
     }
 
     private func openDrawer() {
-        let gen = UIImpactFeedbackGenerator(style: .soft)
-        gen.prepare()
+        HapticFeedback.soft()
         withAnimation(.spring(response: 0.36, dampingFraction: 0.92)) {
             showCollectionDrawer = true
         }
-        gen.impactOccurred()
     }
 
     private func closeDrawer() {
-        let gen = UIImpactFeedbackGenerator(style: .soft)
-        gen.prepare()
+        HapticFeedback.soft()
         withAnimation(.spring(response: 0.36, dampingFraction: 0.92)) {
             showCollectionDrawer = false
         }
-        gen.impactOccurred()
     }
 
     private func updateRootState() {
@@ -439,7 +441,7 @@ struct RecordingsView: View {
             onRecordingTap: { selectedRecording = $0 },
             onDelete: nil,
             horizontalPadding: 20,
-            bottomContentMargin: 20,
+            bottomContentMargin: viewModel.isSelectionMode ? 80 : 20,
             collections: collections,
             modelContext: modelContext
         )
@@ -451,11 +453,15 @@ struct RecordingsView: View {
 
     private func copySelectedRecordings() {
         viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
-        viewModel.exitSelectionMode()
+        withAnimation(.none) {
+            viewModel.exitSelectionMode()
+        }
     }
 
     private func exportSelectedRecordings() {
         viewModel.exportRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
-        viewModel.exitSelectionMode()
+        withAnimation(.none) {
+            viewModel.exitSelectionMode()
+        }
     }
 }

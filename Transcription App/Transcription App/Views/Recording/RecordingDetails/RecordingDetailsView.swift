@@ -59,6 +59,7 @@ struct RecordingDetailsView: View {
                     rightIcon: "dots-three-bold",
                     onLeftTap: { if let onDismiss { onDismiss() } else { dismiss() } },
                     onRightTap: {
+                        HapticFeedback.light()
                         RecordingDetailsActionMenu.show(
                             recording: recording,
                             onShowCollectionPicker: { showCollectionPicker = true },
@@ -241,6 +242,9 @@ struct RecordingDetailsView: View {
         .onChange(of: recording.status) { oldStatus, newStatus in
             if oldStatus == .inProgress && newStatus == .completed {
                 currentProgress = 1.0
+                HapticFeedback.success()
+            } else if newStatus == .failed {
+                HapticFeedback.error()
             }
 
             #if canImport(UIKit)
@@ -309,9 +313,11 @@ struct RecordingDetailsView: View {
                     audioURL: recording.resolvedURL,
                     fullText: recording.fullText,
                     onCopyPressed: {
+                        HapticFeedback.success()
                         ToastHelper.show($showCopyToast)
                     },
                     onSharePressed: {
+                        HapticFeedback.light()
                         if let url = recording.resolvedURL {
                             if let transcriptionFileURL = ShareHelper.createTranscriptionFile(recording.fullText, title: recording.title) {
                                 ShareHelper.shareItems([transcriptionFileURL, url])

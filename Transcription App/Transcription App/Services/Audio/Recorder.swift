@@ -173,16 +173,12 @@ final class Recorder: ObservableObject {
     }
     
     private func playStartFeedback() {
-        #if canImport(UIKit)
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
-        #endif
+        HapticFeedback.success()
         // Audio sound disabled
     }
-    
+
     private func playStopFeedback() {
-        #if canImport(UIKit)
-        UINotificationFeedbackGenerator().notificationOccurred(.warning)
-        #endif
+        HapticFeedback.warning()
         // Audio sound disabled
     }
     

@@ -160,6 +160,7 @@ struct RecorderView: View {
 
             // Mark transcription as started
             recording.status = .inProgress
+            recording.failureReason = nil  // Clear any old failure reasons
             recording.transcriptionStartedAt = Date()
             try modelContext.save()
 

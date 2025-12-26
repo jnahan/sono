@@ -75,9 +75,15 @@ struct SummaryView: View {
                 .foregroundColor(.black)
 
             AIResponseButtons(
-                onCopy: { UIPasteboard.general.string = error },
+                onCopy: {
+                    HapticFeedback.success()
+                    UIPasteboard.general.string = error
+                },
                 onRegenerate: { Task { await viewModel.generateSummary(modelContext: modelContext) } },
-                onExport: { ShareHelper.shareText(error) }
+                onExport: {
+                    HapticFeedback.light()
+                    ShareHelper.shareText(error)
+                }
             )
         }
     }
@@ -90,9 +96,15 @@ struct SummaryView: View {
                 .lineSpacing(4)
 
             AIResponseButtons(
-                onCopy: { UIPasteboard.general.string = summary },
+                onCopy: {
+                    HapticFeedback.success()
+                    UIPasteboard.general.string = summary
+                },
                 onRegenerate: { Task { await viewModel.generateSummary(modelContext: modelContext) } },
-                onExport: { ShareHelper.shareText(summary) }
+                onExport: {
+                    HapticFeedback.light()
+                    ShareHelper.shareText(summary)
+                }
             )
 
             if let error = viewModel.summaryError {

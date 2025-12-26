@@ -87,15 +87,10 @@ struct RecordingRowView: View {
                             }
                         }
                     } else if recording.status == .inProgress || recording.status == .notStarted {
-                        // Check if there's a failure reason (interrupted transcription)
-                        if let failureReason = recording.failureReason, !failureReason.isEmpty {
-                            // Show interruption message in gray (can resume)
-                            Text(failureReason)
-                                .font(.system(size: 14))
-                                .foregroundColor(.blueGray500)
-                                .italic()
-                        } else if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
-                            // Has progress - show transcribing with percentage
+                        // ✅ FIX: Check for active transcription/queue FIRST, then failureReason
+                        // This prevents showing stale failure messages during active transcription
+                        if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
+                            // Has progress - show transcribing with percentage (FIRST PRIORITY)
                             // This ensures we show "Transcribing X%" instead of "Preparing" when transcription is active
                             if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
                                 // Show with queue position if available
@@ -103,7 +98,7 @@ struct RecordingRowView: View {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
-                                    
+
                                     if positionInfo.position == 1 {
                                         Text("Transcribing \(Int(progress * 100))% (\(positionInfo.position)/\(positionInfo.total))")
                                             .font(.system(size: 14))
@@ -120,14 +115,14 @@ struct RecordingRowView: View {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
-                                    
+
                                     Text("Transcribing \(Int(progress * 100))%")
                                         .font(.system(size: 14))
                                         .foregroundColor(.blueGray500)
                                 }
                             }
                         } else if let positionInfo = progressManager.getOverallPosition(for: recording.id) {
-                            // Has position info but no progress yet
+                            // Has position info but no progress yet (SECOND PRIORITY)
                             if positionInfo.position == 1 {
                                 // Position 1 but no progress - actively preparing to start
                                 Text("Preparing to transcribe...")
@@ -140,14 +135,20 @@ struct RecordingRowView: View {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                         .scaleEffect(0.8)
-                                    
+
                                     Text("Waiting to transcribe (\(positionInfo.position)/\(positionInfo.total))")
                                         .font(.system(size: 14))
                                         .foregroundColor(.blueGray500)
                                 }
                             }
+                        } else if let failureReason = recording.failureReason, !failureReason.isEmpty {
+                            // Show interruption message only if NOT actively transcribing (THIRD PRIORITY)
+                            Text(failureReason)
+                                .font(.system(size: 14))
+                                .foregroundColor(.blueGray500)
+                                .italic()
                         } else {
-                            // In progress but not in queue and no progress - will auto-start soon
+                            // In progress but not in queue and no progress - will auto-start soon (FALLBACK)
                             Text("Preparing to transcribe...")
                                 .font(.system(size: 14))
                                 .foregroundColor(.blueGray500)
@@ -186,9 +187,11 @@ struct RecordingRowView: View {
                         actions: [
                             ActionItem(title: "Copy transcription", icon: "copy", action: onCopy),
                             ActionItem(title: "Share transcription", icon: "export", action: {
+                                HapticFeedback.light()
                                 ShareHelper.shareTranscription(recording.fullText, title: recording.title)
                             }),
                             ActionItem(title: "Export audio", icon: "waveform", action: {
+                                HapticFeedback.light()
                                 if let url = recording.resolvedURL {
                                     ShareHelper.shareFile(at: url)
                                 }
