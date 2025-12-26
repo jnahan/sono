@@ -478,9 +478,7 @@ struct RecordingsView: View {
 
     private func copySelectedRecordings() {
         viewModel.copyRecordings(viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings))
-        withAnimation(.none) {
-            viewModel.exitSelectionMode()
-        }
+        viewModel.exitSelectionMode()
     }
 
     private func exportSelectedRecordings() {
