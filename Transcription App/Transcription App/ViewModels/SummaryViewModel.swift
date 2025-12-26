@@ -71,7 +71,7 @@ class SummaryViewModel: ObservableObject {
     /// Standard summarization for shorter transcriptions
     private func generateStandardSummary(fullText: String, modelContext: ModelContext) async throws {
         // Format prompt to explicitly request summarization
-        let prompt = "Please summarize the following text:\n\n\(fullText)"
+        let prompt = "Please summarize the following transcription:\n\n\(fullText)"
 
         // Reset streaming text
         streamingSummary = ""
@@ -131,9 +131,17 @@ class SummaryViewModel: ObservableObject {
 
         let chunkPrompt: String
         if total == 1 {
-            chunkPrompt = "Please summarize the following text:\n\n\(chunk)"
+            chunkPrompt = "Please summarize the following transcription:\n\n\(chunk)"
         } else {
-            chunkPrompt = "This is part \(index + 1) of \(total) from a longer transcription. Please provide a detailed summary of this section:\n\n\(chunk)"
+            chunkPrompt = """
+            This is part \(index + 1) of \(total) from a longer transcription.
+
+            Please summarize the content in this section.
+            The summary may be a few sentences or less, depending on how much information is present.
+            Do not reference other sections.
+
+            \(chunk)
+            """
         }
 
         let chunkSummary = try await LLMService.shared.getStreamingCompletion(
@@ -161,7 +169,18 @@ class SummaryViewModel: ObservableObject {
         chunkProgress = "Creating final summary..."
         streamingSummary = ""
 
-        let finalPrompt = "The following are summaries of different sections from a longer transcription. Please create a single cohesive summary that captures the main points:\n\n\(combinedSummaries)"
+        let finalPrompt = """
+        The following are summaries of different sections from a longer transcription.
+
+        Please create a single, concise summary that:
+        - Merges overlapping ideas
+        - Removes repetition
+        - Reflects the overall intent of the transcription
+
+        The final result should be no longer than one short paragraph.
+
+        \(combinedSummaries)
+        """
 
         let finalSummary = try await LLMService.shared.getStreamingCompletion(
             from: finalPrompt,

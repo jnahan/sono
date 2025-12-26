@@ -19,24 +19,26 @@ struct SettingsRow: View {
             Text(title)
                 .font(.dmSansMedium(size: 16))
                 .foregroundColor(.black)
-            
+
             Spacer()
-            
-            if let value = value {
-                Text(value)
-                    .font(.dmSansRegular(size: 16))
-                    .foregroundColor(.blueGray600)
-            }
-            
-            if let toggleBinding = toggleBinding {
-                CustomSwitch(isOn: toggleBinding)
-            } else if showChevron {
-                Image("caret-right")
-                    .resizable()
-                    .renderingMode(.template)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 16, height: 16)
-                    .foregroundColor(.blueGray400)
+
+            HStack(spacing: 4) {
+                if let value = value {
+                    Text(value)
+                        .font(.dmSansRegular(size: 16))
+                        .foregroundColor(.blueGray600)
+                }
+
+                if let toggleBinding = toggleBinding {
+                    CustomSwitch(isOn: toggleBinding)
+                } else if showChevron {
+                    Image("caret-right")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.blueGray400)
+                }
             }
         }
         .padding(.horizontal, 16)

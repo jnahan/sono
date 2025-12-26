@@ -112,7 +112,8 @@ final class AskSonoViewModel: ObservableObject {
         Transcription:
         \(transcription)
 
-        Question: \(question)
+        Question:
+        \(question)
         """
 
         let llmResponse = try await LLMService.shared.getStreamingCompletion(
@@ -167,7 +168,8 @@ final class AskSonoViewModel: ObservableObject {
             Transcription:
             \(chunk)
 
-            Question: \(question)
+            Question:
+            \(question)
             """
         } else {
             chunkPrompt = """
@@ -176,9 +178,12 @@ final class AskSonoViewModel: ObservableObject {
             Transcription excerpt:
             \(chunk)
 
-            Question: \(question)
+            Question:
+            \(question)
 
-            Please answer based on this section. If the answer is not in this section, say "Not found in this section."
+            Answer using only this section.
+            If the answer is not present here, respond only with:
+            "Not found in this section."
             """
         }
 
@@ -207,12 +212,14 @@ final class AskSonoViewModel: ObservableObject {
 
         let combinedAnswers = chunkAnswers.joined(separator: "\n\n---\n\n")
         let finalPrompt = """
-        The following are answers from different sections of a transcription to the question: "\(question)"
+        The following are answers from different sections of a transcription to the question:
+        "\(question)"
 
-        Answers from sections:
+        Combine all relevant information into a single, clear answer.
+        If all sections indicate the answer was not found, respond with:
+        "The answer is not present in the transcription."
+
         \(combinedAnswers)
-
-        Please create a single comprehensive answer that combines all relevant information. If all sections say the information was not found, say that the answer is not in the transcription.
         """
 
         let finalAnswer = try await LLMService.shared.getStreamingCompletion(
