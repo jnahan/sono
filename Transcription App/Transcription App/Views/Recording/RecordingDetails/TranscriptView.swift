@@ -49,7 +49,6 @@ struct TranscriptView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
-        .padding(.top, 12)
         .padding(.bottom, bottomContentPadding)
     }
 }

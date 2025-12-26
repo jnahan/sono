@@ -31,7 +31,6 @@ struct AskSonoView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
-        .padding(.top, 12)
         .padding(.bottom, 24)
     }
 
