@@ -59,9 +59,7 @@ struct CollectionFormSheet: View {
         .compactSheetStyle(height: 280)
         .onAppear {
             #if !os(macOS)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isTextFieldFocused = true
-            }
+            isTextFieldFocused = true
             #endif
         }
     }

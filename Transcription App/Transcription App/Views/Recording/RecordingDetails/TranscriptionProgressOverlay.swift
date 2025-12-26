@@ -41,7 +41,7 @@ struct TranscriptionProgressOverlay: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 64)
+                        .padding(.bottom, 80)
                     } else {
                         VStack(spacing: 0) {
                             Text("\(Int(progress * 100))%")

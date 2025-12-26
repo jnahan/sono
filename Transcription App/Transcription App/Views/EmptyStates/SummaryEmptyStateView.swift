@@ -8,7 +8,7 @@ struct SummaryEmptyStateView: View {
             Spacer()
 
             VStack(spacing: 24) {
-                Text("Summarize your\nrecordings")
+                Text("Summarize your\nrecording")
                     .font(.dmSansSemiBold(size: 24))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)

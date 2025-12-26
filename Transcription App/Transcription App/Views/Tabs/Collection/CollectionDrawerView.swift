@@ -16,6 +16,7 @@ struct CollectionDrawerView: View {
     let onRename: (Collection) -> Void
     let onDelete: (Collection) -> Void
     let onSettingsTap: () -> Void
+    let onAddCollection: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -65,31 +66,56 @@ struct CollectionDrawerView: View {
                     }
 
                     // Group 2: User collections with title
-                    if !collections.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Collections")
-                                .font(.dmSansMedium(size: 14))
-                                .foregroundColor(.blueGray500)
-                                .padding(.horizontal, 12)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Collections")
+                            .font(.dmSansMedium(size: 14))
+                            .foregroundColor(.blueGray700)
+                            .padding(.horizontal, 12)
 
-                            VStack(spacing: 4) {
-                                ForEach(collections) { collection in
-                                    Button {
-                                        onSelectCollection(collection)
-                                    } label: {
-                                        DrawerRow(
-                                            title: collection.name,
-                                            recordingCount: recordings.filter {
-                                                $0.collections.contains { $0.id == collection.id }
-                                            }.count,
-                                            isSelected: selectedFilter == .collection(collection),
-                                            isDefaultFilter: false,
-                                            onRename: { onRename(collection) },
-                                            onDelete: { onDelete(collection) }
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
+                        VStack(spacing: 4) {
+                            // Add collection button - always visible
+                            Button {
+                                onAddCollection()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image("folder-plus")
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.blueGray700)
+
+                                    Text("Add collection")
+                                        .font(.dmSansMedium(size: 16))
+                                        .foregroundColor(.blueGray700)
+
+                                    Spacer()
                                 }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.clear)
+                                .cornerRadius(8)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+
+                            // Existing collections
+                            ForEach(collections) { collection in
+                                Button {
+                                    onSelectCollection(collection)
+                                } label: {
+                                    DrawerRow(
+                                        title: collection.name,
+                                        recordingCount: recordings.filter {
+                                            $0.collections.contains { $0.id == collection.id }
+                                        }.count,
+                                        isSelected: selectedFilter == .collection(collection),
+                                        isDefaultFilter: false,
+                                        onRename: { onRename(collection) },
+                                        onDelete: { onDelete(collection) }
+                                    )
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }

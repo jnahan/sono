@@ -29,6 +29,8 @@ struct RecordingsView: View {
     @State private var editingCollection: Collection?
     @State private var deletingCollection: Collection?
     @State private var editCollectionName = ""
+    @State private var showCreateCollection = false
+    @State private var newCollectionName = ""
 
     // Drawer interaction
     @GestureState private var dragTranslation: CGFloat = 0
@@ -114,6 +116,10 @@ struct RecordingsView: View {
                 },
                 onSettingsTap: {
                     showSettings = true
+                    closeDrawer()
+                },
+                onAddCollection: {
+                    showCreateCollection = true
                     closeDrawer()
                 }
             )
@@ -214,6 +220,25 @@ struct RecordingsView: View {
                 },
                 existingCollections: collections,
                 currentCollection: editingCollection
+            )
+        }
+
+        .sheet(isPresented: $showCreateCollection) {
+            CollectionFormSheet(
+                isPresented: $showCreateCollection,
+                collectionName: $newCollectionName,
+                isEditing: false,
+                onSave: {
+                    if !newCollectionName.isEmpty {
+                        let newCollection = Collection(name: newCollectionName)
+                        modelContext.insert(newCollection)
+                        try? modelContext.save()
+                        newCollectionName = ""
+                        showCreateCollection = false
+                    }
+                },
+                existingCollections: collections,
+                currentCollection: nil
             )
         }
 

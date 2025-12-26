@@ -219,6 +219,11 @@ struct RecordingDetailsView: View {
             selectedTab = .transcript
             setupAudioOnAppear()
 
+            // Initialize current progress from progress manager
+            if let progress = progressManager.getProgress(for: recording.id) {
+                currentProgress = progress
+            }
+
             #if canImport(UIKit)
             // Prevent display from turning off during transcription
             if recording.status == .inProgress {

@@ -283,7 +283,7 @@ struct LanguageMapper {
             "Czech": "🇨🇿",
             "Danish": "🇩🇰",
             "Dutch": "🇳🇱",
-            "English": "🇬🇧",
+            "English": "🇺🇸",
             "Estonian": "🇪🇪",
             "Faroese": "🇫🇴",
             "Finnish": "🇫🇮",
