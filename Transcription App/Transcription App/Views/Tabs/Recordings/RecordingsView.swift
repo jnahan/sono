@@ -353,6 +353,7 @@ struct RecordingsView: View {
                             .frame(width: 120, height: 48)
                             .background(Color.black)
                             .cornerRadius(32)
+                            .contentShape(Rectangle())
                         }
                         .padding(.bottom, 16)
                     }
@@ -371,10 +372,11 @@ struct RecordingsView: View {
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
                                     .foregroundColor(.white)
+                                    .frame(width: 64, height: 64)
+                                    .background(Color.black)
+                                    .cornerRadius(32)
+                                    .contentShape(Rectangle())
                             }
-                            .frame(width: 64, height: 64)
-                            .background(Color.black)
-                            .cornerRadius(32)
                             .padding(.trailing, 20)
                             .padding(.bottom, 16)
                         }

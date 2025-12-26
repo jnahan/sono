@@ -4,6 +4,13 @@ struct SelectionItem: Identifiable {
     let id = UUID()
     let title: String
     let description: String?  // Optional description text
+    let emoji: String?  // Optional emoji
+
+    init(title: String, description: String? = nil, emoji: String? = nil) {
+        self.title = title
+        self.description = description
+        self.emoji = emoji
+    }
 }
 
 struct SelectionListView: View {
@@ -46,40 +53,60 @@ struct SelectionListView: View {
             }
             
             List {
-                ForEach(filteredItems) { item in
-                    Button(action: {
-                        selectedItem = item.title
-                        dismiss()
-                    }) {
-                        HStack(spacing: 0) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(item.title)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.black)
-                                
-                                if let description = item.description {
-                                    Text(description)
-                                        .font(.dmSansMedium(size: 14))
-                                        .foregroundColor(.blueGray400)
+                ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
+                    VStack(spacing: 0) {
+                        Button(action: {
+                            selectedItem = item.title
+                            dismiss()
+                        }) {
+                            HStack(spacing: 0) {
+                                if let emoji = item.emoji {
+                                    Text(emoji)
+                                        .font(.system(size: 24))
+                                        .padding(.trailing, 16)
+                                }
+
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(item.title)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.black)
+
+                                    if let description = item.description {
+                                        Text(description)
+                                            .font(.dmSansMedium(size: 14))
+                                            .foregroundColor(.blueGray400)
+                                    }
+                                }
+
+                                Spacer()
+
+                                if selectedItem == item.title {
+                                    Image("check-bold")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.accent)
                                 }
                             }
-                            
-                            Spacer()
-                            
-                            if selectedItem == item.title {
-                                Image("check-bold")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.accent)
-                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 20)
+                            .contentShape(Rectangle())
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 20)
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+
+                        if index < filteredItems.count - 1 {
+                            HStack(spacing: 0) {
+                                Spacer()
+                                    .frame(width: 60) // 20 (padding) + 24 (emoji) + 16 (spacing)
+
+                                Rectangle()
+                                    .fill(Color.blueGray200)
+                                    .frame(height: 1)
+                            }
+                            .padding(.trailing, 20)
+                        }
                     }
-                    .buttonStyle(.plain)
                     .listRowBackground(Color.white)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     .listRowSeparator(.hidden)

@@ -6,7 +6,7 @@ struct SettingsRow: View {
     let imageName: String
     var showChevron: Bool = true
     var toggleBinding: Binding<Bool>? = nil
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(imageName)

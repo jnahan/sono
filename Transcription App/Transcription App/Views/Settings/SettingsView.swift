@@ -17,7 +17,8 @@ struct SettingsView: View {
         return LanguageMapper.allLanguages.map { englishName in
             SelectionItem(
                 title: LanguageMapper.localizedName(for: englishName),
-                description: englishName
+                description: englishName,
+                emoji: LanguageMapper.flagEmoji(for: englishName)
             )
         }
     }
