@@ -4,7 +4,6 @@
 
 import SwiftUI
 import SwiftData
-import UIKit
 
 struct AskSonoView: View {
     let recording: Recording
@@ -62,7 +61,7 @@ struct AskSonoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 if showThinking {
                     VStack(alignment: .leading, spacing: 8) {
-                        AskSonoPulsatingDot()
+                        PulsatingDot()
 
                         Text("Thinking...")
                             .font(.dmSansRegular(size: 16))
@@ -78,7 +77,7 @@ struct AskSonoView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         if hasStreamingText && !viewModel.chunkProgress.isEmpty {
                             HStack(spacing: 8) {
-                                AskSonoPulsatingDot()
+                                PulsatingDot()
                                 Text(viewModel.chunkProgress)
                                     .font(.dmSansMedium(size: 14))
                                     .foregroundColor(.accent)
@@ -109,20 +108,3 @@ struct AskSonoView: View {
     }
 }
 
-private struct AskSonoPulsatingDot: View {
-    @State private var isPulsating = false
-
-    var body: some View {
-        Circle()
-            .fill(Color.accent)
-            .frame(width: 12, height: 12)
-            .scaleEffect(isPulsating ? 0.8 : 1.0)
-            .onAppear {
-                withAnimation(
-                    Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)
-                ) {
-                    isPulsating = true
-                }
-            }
-    }
-}

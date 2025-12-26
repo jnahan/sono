@@ -53,7 +53,7 @@ struct RecordingsView: View {
     }
 
     private var shouldShowFab: Bool {
-        isRoot
+        isRoot && !viewModel.isSelectionMode
     }
 
     private var currentFilterTitle: String {

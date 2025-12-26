@@ -4,8 +4,6 @@
 
 import SwiftUI
 import SwiftData
-import AVFoundation
-import UIKit
 
 enum RecordingDetailTab {
     case transcript
@@ -65,10 +63,7 @@ struct RecordingDetailsView: View {
                             onShowCollectionPicker: { showCollectionPicker = true },
                             onShowDeleteConfirm: { showDeleteConfirm = true },
                             onShowCopyToast: {
-                                withAnimation { showCopyToast = true }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    withAnimation { showCopyToast = false }
-                                }
+                                ToastHelper.show($showCopyToast)
                             }
                         )
                     }
@@ -271,10 +266,7 @@ struct RecordingDetailsView: View {
                     audioURL: recording.resolvedURL,
                     fullText: recording.fullText,
                     onCopyPressed: {
-                        withAnimation { showCopyToast = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation { showCopyToast = false }
-                        }
+                        ToastHelper.show($showCopyToast)
                     },
                     onSharePressed: {
                         if let url = recording.resolvedURL {

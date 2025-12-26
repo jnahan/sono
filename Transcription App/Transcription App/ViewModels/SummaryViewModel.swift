@@ -29,53 +29,6 @@ class SummaryViewModel: ObservableObject {
     ///   - text: The text to split
     ///   - maxChunkSize: Maximum size of each chunk in characters
     /// - Returns: Array of text chunks
-    private func splitIntoChunks(_ text: String, maxChunkSize: Int) -> [String] {
-        var chunks: [String] = []
-        var currentChunk = ""
-
-        // Split by sentences (periods followed by space or newline)
-        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?\n"))
-
-        for sentence in sentences {
-            let trimmedSentence = sentence.trimmingCharacters(in: .whitespaces)
-            if trimmedSentence.isEmpty { continue }
-
-            let sentenceWithPunctuation = trimmedSentence + "."
-
-            // If adding this sentence would exceed max size, save current chunk and start new one
-            if currentChunk.count + sentenceWithPunctuation.count > maxChunkSize && !currentChunk.isEmpty {
-                chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
-                currentChunk = sentenceWithPunctuation + " "
-            } else {
-                currentChunk += sentenceWithPunctuation + " "
-            }
-        }
-
-        // Add remaining chunk if not empty
-        if !currentChunk.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            chunks.append(currentChunk.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-
-        // Fallback: If we still have a chunk that's too large (single sentence > maxChunkSize),
-        // split it by character count
-        var finalChunks: [String] = []
-        for chunk in chunks {
-            if chunk.count <= maxChunkSize {
-                finalChunks.append(chunk)
-            } else {
-                // Split oversized chunk into smaller pieces
-                var remaining = chunk
-                while !remaining.isEmpty {
-                    let endIndex = remaining.index(remaining.startIndex, offsetBy: min(maxChunkSize, remaining.count))
-                    let piece = String(remaining[..<endIndex])
-                    finalChunks.append(piece)
-                    remaining = String(remaining[endIndex...])
-                }
-            }
-        }
-
-        return finalChunks
-    }
 
     // MARK: - Public Methods
     
@@ -160,7 +113,7 @@ class SummaryViewModel: ObservableObject {
         let maxChunkSize = 12000
 
         // Step 1: Split text into chunks
-        let chunks = splitIntoChunks(fullText, maxChunkSize: maxChunkSize)
+        let chunks = TextChunker.split(fullText, maxChunkSize: maxChunkSize)
         Logger.info("SummaryViewModel", "Split into \(chunks.count) chunks")
 
         // Step 2: Summarize each chunk (Map phase)

@@ -88,6 +88,9 @@
 		C899B6D0F8BAFC4A29C09615 /* LLMPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EEB64612AFEDCE986F8B87 /* LLMPrompts.swift */; };
 		D635E99F9E1C4AC78CB5DF0B /* NavigationBarAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B684D39831974B6AAFC255FF /* NavigationBarAppearance.swift */; };
 		E805026C9245257B5A76A46D /* AudioPlaybackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */; };
+		7B8BC7A839424E0B9D44F342 /* TextChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */; };
+		DA5E6087D5644D3A882A255A /* ToastHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */; };
+		5605D3C316C04CEDBB855145 /* PulsatingDot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C69FA4308C4050A4DE40E1 /* PulsatingDot.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -172,6 +175,9 @@
 		B684D39831974B6AAFC255FF /* NavigationBarAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearance.swift; sourceTree = "<group>"; };
 		F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlaybackService.swift; sourceTree = "<group>"; };
 		FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecordingPlayerBar.swift; path = "Transcription App/Views/Recording/RecordingDetails/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
+		E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextChunker.swift; sourceTree = "<group>"; };
+		E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastHelper.swift; sourceTree = "<group>"; };
+		D7C69FA4308C4050A4DE40E1 /* PulsatingDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulsatingDot.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +209,8 @@
 				B684D39831974B6AAFC255FF /* NavigationBarAppearance.swift */,
 				5D0ED1362EE150000003E775 /* LanguageMapper.swift */,
 				5D92713C2EE50DC900A34B20 /* Logger.swift */,
+				E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */,
+				E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -482,6 +490,7 @@
 			children = (
 				5D0ED1182EE0040C0003E775 /* ErrorToastView.swift */,
 				5D8C14CE2EEE0C7F00BFFEFF /* ToastView.swift */,
+				D7C69FA4308C4050A4DE40E1 /* PulsatingDot.swift */,
 			);
 			path = Feedback;
 			sourceTree = "<group>";
@@ -656,6 +665,9 @@
 				D635E99F9E1C4AC78CB5DF0B /* NavigationBarAppearance.swift in Sources */,
 				5DDE4F782EFABD1200EABFB2 /* AskSonoInputBar.swift in Sources */,
 				5D92713B2EE50DC900A34B20 /* Logger.swift in Sources */,
+				7B8BC7A839424E0B9D44F342 /* TextChunker.swift in Sources */,
+				DA5E6087D5644D3A882A255A /* ToastHelper.swift in Sources */,
+				5605D3C316C04CEDBB855145 /* PulsatingDot.swift in Sources */,
 				5D214A372ED8238B0069565D /* Collection.swift in Sources */,
 				5D968B862EDEBB2D00E6BC5E /* CustomSlider.swift in Sources */,
 				5D0ED11B2EE1317D0003E775 /* TimeFormatter.swift in Sources */,
