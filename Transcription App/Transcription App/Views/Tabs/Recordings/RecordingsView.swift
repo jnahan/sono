@@ -314,7 +314,7 @@ struct RecordingsView: View {
                     )
 
                     VStack(alignment: .leading, spacing: 12) {
-                        if !recordings.isEmpty {
+                        if !viewModel.filteredRecordings.isEmpty {
                             SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                                 .padding(.horizontal, 20)
                         }
@@ -338,25 +338,51 @@ struct RecordingsView: View {
             }
 
             if shouldShowFab {
-                VStack {
-                    Spacer()
-                    Button { onAddRecording() } label: {
-                        HStack(spacing: 8) {
-                            Image("plus-bold")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.white)
+                if viewModel.filteredRecordings.isEmpty {
+                    // Empty state: centered larger button
+                    VStack {
+                        Spacer()
+                        Button { onAddRecording() } label: {
+                            HStack(spacing: 8) {
+                                Image("plus-bold")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 120, height: 48)
+                            .background(Color.black)
+                            .cornerRadius(32)
                         }
-                        .frame(width: 120, height: 48)
-                        .background(Color.black)
-                        .cornerRadius(32)
+                        .padding(.bottom, 16)
                     }
-                    .padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeOut(duration: 0.12), value: shouldShowFab)
+                    .zIndex(900)
+                } else {
+                    // Has recordings: smaller circular button on right
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button { onAddRecording() } label: {
+                                Image("plus-bold")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(width: 64, height: 64)
+                            .background(Color.black)
+                            .cornerRadius(32)
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 16)
+                        }
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeOut(duration: 0.12), value: shouldShowFab)
+                    .zIndex(900)
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.easeOut(duration: 0.12), value: shouldShowFab)
-                .zIndex(900)
             }
         }
         .overlay(alignment: .top) {
