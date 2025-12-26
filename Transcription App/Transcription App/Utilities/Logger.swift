@@ -47,7 +47,7 @@ enum Logger {
         line: Int = #line
     ) {
         #if DEBUG
-        let fileName = (file as NSString).lastPathComponent
+        _ = (file as NSString).lastPathComponent // fileName available for debugging
         let prefix = level.rawValue
         let logMessage = "[\(category)] \(message)"
         print("\(prefix) \(logMessage)")

@@ -48,120 +48,110 @@ struct RecordingDetailsView: View {
     @State private var askSonoActivationToken = UUID()
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                CustomTopBar(
-                    title: showTopTitle ? recording.title : "",
-                    leftIcon: "caret-left",
-                    rightIcon: "dots-three-bold",
-                    onLeftTap: { if let onDismiss { onDismiss() } else { dismiss() } },
-                    onRightTap: {
-                        RecordingDetailsActionMenu.show(
-                            recording: recording,
-                            onShowCollectionPicker: { showCollectionPicker = true },
-                            onShowDeleteConfirm: { showDeleteConfirm = true },
-                            onShowCopyToast: {
-                                ToastHelper.show($showCopyToast)
-                            }
-                        )
-                    }
-                )
-
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-
-                            headerView
-                                .id("header")
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear
-                                            .onAppear {
-                                                headerHeight = geo.size.height
-                                                updateTopTitleVisibility()
-                                            }
-                                            .onChange(of: geo.size.height) { _, h in
-                                                headerHeight = h
-                                                updateTopTitleVisibility()
-                                            }
-                                    }
-                                )
-
-                            Section(
-                                header: RecordingDetailsTabsHeader(
-                                    selectedTab: selectedTab,
-                                    onSelect: { selectedTab = $0 }
-                                )
-                            ) {
-                                contentForSelectedTab
-                                    .padding(.top, 12)
-                                    .padding(.bottom, 24)
-                            }
+        VStack(spacing: 0) {
+            CustomTopBar(
+                title: showTopTitle ? recording.title : "",
+                leftIcon: "caret-left",
+                rightIcon: "dots-three-bold",
+                onLeftTap: { if let onDismiss { onDismiss() } else { dismiss() } },
+                onRightTap: {
+                    RecordingDetailsActionMenu.show(
+                        recording: recording,
+                        onShowCollectionPicker: { showCollectionPicker = true },
+                        onShowDeleteConfirm: { showDeleteConfirm = true },
+                        onShowCopyToast: {
+                            ToastHelper.show($showCopyToast)
                         }
-                        .background(
-                            ScrollOffsetReader(
-                                onScrollViewFound: { _ in },
-                                onOffsetChange: { y in
-                                    scrollY = y
-                                    updateTopTitleVisibility()
+                    )
+                }
+            )
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+
+                        headerView
+                            .id("header")
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear
+                                        .onAppear {
+                                            headerHeight = geo.size.height
+                                            updateTopTitleVisibility()
+                                        }
+                                        .onChange(of: geo.size.height) { _, h in
+                                            headerHeight = h
+                                            updateTopTitleVisibility()
+                                        }
                                 }
                             )
-                            .frame(width: 0, height: 0)
-                        )
-                    }
-                    .scrollDismissesKeyboard(.interactively)
-                    .onTapGesture { if isEditingTitle { saveTitleEdit() } }
 
-                    // Ask Sono auto-scroll (parent-owned)
-                    .onAppear {
-                        if selectedTab == .askSono {
-                            scrollAskSonoToBottom(proxy, animated: false)
+                        Section(
+                            header: RecordingDetailsTabsHeader(
+                                selectedTab: selectedTab,
+                                onSelect: { selectedTab = $0 }
+                            )
+                        ) {
+                            contentForSelectedTab
+                                .padding(.top, 12)
+                                .padding(.bottom, 24)
                         }
                     }
-                    .onChange(of: askSonoActivationToken) { _, _ in
-                        if selectedTab == .askSono {
-                            scrollAskSonoToBottom(proxy, animated: false)
-                        }
-                    }
-                    .onChange(of: askSonoVM.messages.count) { _, _ in
-                        if selectedTab == .askSono {
-                            scrollAskSonoToBottom(proxy, animated: true)
-                        }
-                    }
-                    .onChange(of: askSonoVM.isProcessing) { _, processing in
-                        if selectedTab == .askSono, !processing {
-                            scrollAskSonoToBottom(proxy, animated: true)
-                        }
-                    }
-                    .onChange(of: askSonoVM.streamingText) { _, _ in
-                        if selectedTab == .askSono {
-                            scrollAskSonoToBottom(proxy, animated: false)
-                        }
-                    }
-                    .onChange(of: selectedTab) { _, newTab in
-                        // Reset scroll position when switching tabs
-                        switch newTab {
-                        case .transcript, .summary:
-                            // Scroll to top for transcript and summary
-                            proxy.scrollTo("header", anchor: .top)
-                        case .askSono:
-                            // Scroll to bottom if messages exist, otherwise scroll to top
-                            if askSonoVM.messages.isEmpty {
-                                proxy.scrollTo("header", anchor: .top)
-                            } else {
-                                scrollAskSonoToBottom(proxy, animated: false)
+                    .background(
+                        ScrollOffsetReader(
+                            onScrollViewFound: { _ in },
+                            onOffsetChange: { y in
+                                scrollY = y
+                                updateTopTitleVisibility()
                             }
+                        )
+                        .frame(width: 0, height: 0)
+                    )
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .onTapGesture { if isEditingTitle { saveTitleEdit() } }
+
+                // Ask Sono auto-scroll (parent-owned)
+                .onAppear {
+                    if selectedTab == .askSono {
+                        scrollAskSonoToBottom(proxy, animated: false)
+                    }
+                }
+                .onChange(of: askSonoActivationToken) { _, _ in
+                    if selectedTab == .askSono {
+                        scrollAskSonoToBottom(proxy, animated: false)
+                    }
+                }
+                .onChange(of: askSonoVM.messages.count) { _, _ in
+                    if selectedTab == .askSono {
+                        scrollAskSonoToBottom(proxy, animated: true)
+                    }
+                }
+                .onChange(of: askSonoVM.isProcessing) { _, processing in
+                    if selectedTab == .askSono, !processing {
+                        scrollAskSonoToBottom(proxy, animated: true)
+                    }
+                }
+                .onChange(of: askSonoVM.streamingText) { _, _ in
+                    if selectedTab == .askSono {
+                        scrollAskSonoToBottom(proxy, animated: false)
+                    }
+                }
+                .onChange(of: selectedTab) { _, newTab in
+                    // Reset scroll position when switching tabs
+                    switch newTab {
+                    case .transcript, .summary:
+                        // Scroll to top for transcript and summary
+                        proxy.scrollTo("header", anchor: .top)
+                    case .askSono:
+                        // Scroll to bottom if messages exist, otherwise scroll to top
+                        if askSonoVM.messages.isEmpty {
+                            proxy.scrollTo("header", anchor: .top)
+                        } else {
+                            scrollAskSonoToBottom(proxy, animated: false)
                         }
                     }
                 }
-            }
-
-            if recording.status == .inProgress {
-                TranscriptionProgressOverlay(
-                    progress: currentProgress,
-                    isQueued: progressManager.isQueued(recordingId: recording.id),
-                    queuePosition: progressManager.getOverallPosition(for: recording.id)
-                )
             }
         }
         .background(Color.white.ignoresSafeArea())
@@ -199,6 +189,17 @@ struct RecordingDetailsView: View {
                 recordings: [recording],
                 onMassMoveComplete: nil
             )
+        }
+        .sheet(isPresented: .constant(recording.status == .inProgress)) {
+            TranscriptionProgressOverlay(
+                progress: currentProgress,
+                isQueued: progressManager.isQueued(recordingId: recording.id),
+                queuePosition: progressManager.getOverallPosition(for: recording.id)
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(Color.white)
+            .presentationCornerRadius(16)
         }
         .onChange(of: selectedTab) { _, newTab in
             scrollY = 0
