@@ -163,7 +163,8 @@ struct RecordingDetailsView: View {
                 TranscriptionProgressOverlay(
                     progress: currentProgress,
                     isQueued: progressManager.isQueued(recordingId: recording.id),
-                    queuePosition: progressManager.getOverallPosition(for: recording.id)
+                    queuePosition: progressManager.getOverallPosition(for: recording.id),
+                    onDismiss: { if let onDismiss { onDismiss() } else { dismiss() } }
                 )
             }
         }

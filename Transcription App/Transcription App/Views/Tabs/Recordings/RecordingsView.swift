@@ -120,12 +120,11 @@ struct RecordingsView: View {
             .frame(width: drawerWidth)
             .ignoresSafeArea(edges: .vertical)
 
-            // Main content pushed right (and dimmed slightly when open)
+            // Main content pushed right
             ZStack {
                 mainContent
-                    .opacity(1.0 - (0.10 * openProgress)) // dims to 0.90 at full open
 
-                // Tap-to-close overlay ON TOP when open (no visible dim layer; dim is via opacity above)
+                // Tap-to-close overlay ON TOP when open
                 if openProgress > 0.01 {
                     Color.black
                         .opacity(0.001)

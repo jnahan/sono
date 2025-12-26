@@ -34,6 +34,8 @@ struct AskSonoInputBar: View {
                             Task { await viewModel.sendPrompt() }
                         }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
 
                 Spacer()
 

@@ -81,6 +81,8 @@ struct InputField: View {
                 }
             }
             .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
     }
 
@@ -95,6 +97,8 @@ struct InputField: View {
                 .scrollDismissesKeyboard(.interactively)
                 .padding(.horizontal, 4)
                 .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
 
             if text.isEmpty {
                 Text(placeholder)
@@ -113,5 +117,7 @@ struct InputField: View {
             .foregroundColor(.black)
             .tint(.black)
             .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
     }
 }

@@ -17,12 +17,15 @@ struct SearchBar: View {
                     Text(placeholder)
                         .foregroundColor(.blueGray400)
                         .font(.system(size: 16))
+                        .allowsHitTesting(false)
                 }
-                
+
                 TextField("", text: $text)
                     .font(.system(size: 16))
                     .foregroundColor(.black)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
             
             if !text.isEmpty {
                 Button {
