@@ -6,8 +6,9 @@ struct TranscriptionProgressOverlay: View {
     let queuePosition: (position: Int, total: Int)?
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack {
+            Color.white.ignoresSafeArea()
+            VStack(spacing: 0) {
                 if isQueued {
                     VStack(spacing: 0) {
                         Text("Waiting to transcribe")
@@ -46,9 +47,7 @@ struct TranscriptionProgressOverlay: View {
                     }
                     .padding(.horizontal, 20)
                 }
-
-            Spacer()
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
