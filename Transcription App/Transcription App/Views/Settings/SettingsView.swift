@@ -87,8 +87,8 @@ struct SettingsView: View {
                 
                 // Footer
                 VStack(spacing: 8) {
-                    Text("SONO")
-                        .font(.dmSansMedium(size: 20))
+                    Text("Sono")
+                        .font(.dmSansSemiBold(size: 20))
                         .foregroundColor(.black)
 
                     Text("Version 1.0.0")

@@ -41,13 +41,13 @@ class LLMService {
         // Create a fresh LLM instance for each request to avoid state issues
         // The LLM library may have internal state that needs to be reset
         // All LLM operations MUST run on main thread for Metal/GPU access on physical devices
-        // Configure with explicit parameters for reliable generation on physical devices
+        // Configure with parameters optimized for quality (matching Enclave defaults)
         let llm = LLM(
             from: modelURL,
             stopSequence: "<|eot_id|>",   // Llama 3.2 end-of-turn token
-            topK: 40,                      // Top-K sampling
-            topP: 0.9,                     // Nucleus sampling
-            temp: 0.7,                     // Lower temp for more focused responses
+            topK: 80,                      // Higher top-K for better quality (was 40)
+            topP: 0.95,                    // Higher nucleus sampling (was 0.9)
+            temp: 0.8,                     // Balanced temperature for quality
             maxTokenCount: AppConstants.LLM.maxTokenCount
         )
 
@@ -55,7 +55,7 @@ class LLMService {
             throw LLMError.modelNotLoaded
         }
 
-        Logger.info("LLMService", "LLM created with temp=0.7, topP=0.9, topK=40, maxTokenCount: \(AppConstants.LLM.maxTokenCount)")
+        Logger.info("LLMService", "LLM created with temp=0.8, topP=0.95, topK=80, maxTokenCount: \(AppConstants.LLM.maxTokenCount)")
 
         // Manually format the prompt for Llama 3.2 chat template
         // Format: system message, then user message, then assistant response
@@ -68,9 +68,6 @@ class LLMService {
         \(input)<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
         """
-
-        // Increase temperature slightly if needed for better generation
-        llm.temp = 0.9  // Higher temp for more diverse token generation
 
         // Estimate token count (rough: 1 token ≈ 4 characters for English)
         let estimatedTokens = formattedPrompt.count / 4
@@ -115,7 +112,7 @@ class LLMService {
         let rawOutput = llm.output
 
         // Remove any leading/trailing whitespace and newlines
-        let cleanedOutput = rawOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedOutput = rawOutput.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
 
         // Log for debugging
         Logger.info("LLMService", "Raw output length: \(rawOutput.count), cleaned length: \(cleanedOutput.count)")
