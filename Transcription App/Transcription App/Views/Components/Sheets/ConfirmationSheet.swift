@@ -45,11 +45,7 @@ struct ConfirmationSheet: View {
         }
         .padding(.top, 24)
         .background(Color.white)
-        .presentationDetents([.height(calculateHeight())])
-        .presentationDragIndicator(.visible)
-        .presentationBackground(Color.white)
-        .presentationCornerRadius(16)
-        .interactiveDismissDisabled(false)
+        .compactSheetStyle(height: calculateHeight())
     }
     
     private func calculateHeight() -> CGFloat {

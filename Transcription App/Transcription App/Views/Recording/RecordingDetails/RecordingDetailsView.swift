@@ -328,25 +328,42 @@ struct RecordingDetailsView: View {
 
     private func setupAudioOnAppear() {
         let audioManager = AudioPlayerManager.shared
-        if let currentGlobal = audioManager.currentRecording, currentGlobal.id != recording.id {
+        let currentGlobal = audioManager.currentRecording
+
+        // Stop playback if different recording
+        if let currentGlobal, currentGlobal.id != recording.id {
             audioManager.stop()
+            preloadCurrentRecording()
+            audioManager.activeRecordingDetailsId = recording.id
+            return
         }
 
-        if let currentGlobal = audioManager.currentRecording, currentGlobal.id == recording.id {
-            let wasPlaying = audioManager.player.isPlaying
-            let currentTime = audioManager.player.currentTime
-            audioManager.stop()
-
-            if let url = recording.resolvedURL {
-                audioPlayback.preload(url: url)
-                audioPlayback.seek(to: currentTime)
-                if wasPlaying { audioPlayback.play() }
-            }
-        } else if let url = recording.resolvedURL {
-            audioPlayback.preload(url: url)
+        // Transfer state if same recording
+        if let currentGlobal, currentGlobal.id == recording.id {
+            transferPlaybackState(from: audioManager)
+            audioManager.activeRecordingDetailsId = recording.id
+            return
         }
 
+        // Default: just preload
+        preloadCurrentRecording()
         audioManager.activeRecordingDetailsId = recording.id
+    }
+
+    private func preloadCurrentRecording() {
+        guard let url = recording.resolvedURL else { return }
+        audioPlayback.preload(url: url)
+    }
+
+    private func transferPlaybackState(from manager: AudioPlayerManager) {
+        let wasPlaying = manager.player.isPlaying
+        let currentTime = manager.player.currentTime
+        manager.stop()
+
+        guard let url = recording.resolvedURL else { return }
+        audioPlayback.preload(url: url)
+        audioPlayback.seek(to: currentTime)
+        if wasPlaying { audioPlayback.play() }
     }
 
     // MARK: - Tabs Header

@@ -73,26 +73,9 @@ final class AudioPlaybackService: ObservableObject {
             // Create the player first (this doesn't require audio session)
             player = try AVAudioPlayer(contentsOf: fileURL)
             currentURL = fileURL
-            
+
             // Configure audio session for playback - do this AFTER creating the player
-            let session = AVAudioSession.sharedInstance()
-            
-            // Only change category if it's different
-            if session.category != .playback {
-                // Deactivate first
-                try? session.setActive(false, options: .notifyOthersOnDeactivation)
-                
-                // Set category
-                try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
-            }
-            
-            // Try to activate - if it fails, that's okay, player might still work
-            do {
-                try session.setActive(true)
-            } catch {
-                // Log but don't fail - player might still work
-                Logger.warning("AudioPlayback", "Could not activate audio session: \(error.localizedDescription)")
-            }
+            try configureAudioSession()
             
             // Enable rate and enable metering if needed
             player?.enableRate = false
@@ -148,26 +131,7 @@ final class AudioPlaybackService: ObservableObject {
         }
 
         do {
-            let session = AVAudioSession.sharedInstance()
-            
-            // Only change category if it's different
-            if session.category != .playback {
-                // Deactivate session first
-                try? session.setActive(false, options: .notifyOthersOnDeactivation)
-                
-                // Configure audio session for playback
-                try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
-            }
-            
-            // Try to activate - if it fails, that's okay
-            do {
-                try session.setActive(true)
-            } catch {
-                Logger.warning("AudioPlayback", "Could not activate audio session in play(): \(error.localizedDescription)")
-                // Continue anyway - player might still work
-            }
-            
-            Logger.success("AudioPlayback", "Audio session configured and activated")
+            try configureAudioSession()
         } catch {
             Logger.warning("AudioPlayback", "Failed to configure audio session: \(error.localizedDescription)")
             return
@@ -226,6 +190,25 @@ final class AudioPlaybackService: ObservableObject {
     }
 
     // MARK: - Private Methods
+
+    private func configureAudioSession() throws {
+        let session = AVAudioSession.sharedInstance()
+
+        // Only change category if different
+        if session.category != .playback {
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            try session.setCategory(.playback, mode: .default, options: [.allowBluetooth])
+        }
+
+        // Activate session
+        do {
+            try session.setActive(true)
+            Logger.success("AudioPlayback", "Audio session configured")
+        } catch {
+            Logger.warning("AudioPlayback", "Could not activate audio session: \(error.localizedDescription)")
+            throw error
+        }
+    }
 
     private func startProgressTracking() {
         stopProgressTracking()

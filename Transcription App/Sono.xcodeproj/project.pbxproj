@@ -91,6 +91,7 @@
 		7B8BC7A839424E0B9D44F342 /* TextChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */; };
 		DA5E6087D5644D3A882A255A /* ToastHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */; };
 		5605D3C316C04CEDBB855145 /* PulsatingDot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C69FA4308C4050A4DE40E1 /* PulsatingDot.swift */; };
+		8039F274CE22463585593A45 /* View+SheetStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F22D8124947F4B7EA83FD23D /* View+SheetStyle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -178,6 +179,7 @@
 		E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextChunker.swift; sourceTree = "<group>"; };
 		E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastHelper.swift; sourceTree = "<group>"; };
 		D7C69FA4308C4050A4DE40E1 /* PulsatingDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulsatingDot.swift; sourceTree = "<group>"; };
+		F22D8124947F4B7EA83FD23D /* View+SheetStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyle.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -521,6 +523,7 @@
 				5D0ED1242EE131F50003E775 /* String+Validation.swift */,
 				5D3045433635B2EDFD1090003E775 /* View+ButtonStyles.swift */,
 				5D3731384131B2EDFD1090003E775 /* View+ConditionalModifiers.swift */,
+				F22D8124947F4B7EA83FD23D /* View+SheetStyle.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -711,6 +714,7 @@
 				5D9271392EE50DC900A34B19 /* RecordingsListView.swift in Sources */,
 				5D3045433635A2EDFD1090003E775 /* View+ButtonStyles.swift in Sources */,
 				5D3731384131A2EDFD1090003E775 /* View+ConditionalModifiers.swift in Sources */,
+				8039F274CE22463585593A45 /* View+SheetStyle.swift in Sources */,
 				5D3935303133A2EDFD1090003E775 /* SummaryEmptyStateView.swift in Sources */,
 				5D3935313133A2EDFD1090003E775 /* AskSonoEmptyStateView.swift in Sources */,
 				5D0ED12F2EE26FE20003E775 /* SettingsManager.swift in Sources */,

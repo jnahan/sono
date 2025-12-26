@@ -162,12 +162,7 @@ struct CollectionPickerSheet: View {
         }
         .padding(.top, 8)
         .background(Color.white)
-        .presentationDetents([.height(calculateHeight())])
-        .presentationCompactAdaptation(.none)
-        .presentationDragIndicator(.visible)
-        .presentationBackground(Color.white)
-        .presentationCornerRadius(16)
-        .interactiveDismissDisabled(false)
+        .compactSheetStyle(height: calculateHeight())
         .sheet(isPresented: $showCreateCollection) {
             CollectionFormSheet(
                 isPresented: $showCreateCollection,

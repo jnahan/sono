@@ -56,12 +56,7 @@ struct CollectionFormSheet: View {
         }
         .padding(.top, 8)
         .background(Color.white)
-        .presentationDetents([.height(280)])
-        .presentationCompactAdaptation(.none)
-        .presentationDragIndicator(.visible)
-        .presentationBackground(Color.white)
-        .presentationCornerRadius(16)
-        .interactiveDismissDisabled(false)
+        .compactSheetStyle(height: 280)
         .onAppear {
             #if !os(macOS)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
