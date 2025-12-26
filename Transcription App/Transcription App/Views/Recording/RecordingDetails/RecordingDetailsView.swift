@@ -4,6 +4,9 @@
 
 import SwiftUI
 import SwiftData
+#if canImport(UIKit)
+import UIKit
+#endif
 
 enum RecordingDetailTab {
     case transcript
@@ -213,17 +216,42 @@ struct RecordingDetailsView: View {
             showTopTitle = false
             selectedTab = .transcript
             setupAudioOnAppear()
+
+            #if canImport(UIKit)
+            // Prevent display from turning off during transcription
+            if recording.status == .inProgress {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            #endif
         }
         .onDisappear {
             if isEditingTitle { saveTitleEdit() }
             audioPlayback.stop()
             AudioPlayerManager.shared.clearActiveRecordingDetails()
+
+            #if canImport(UIKit)
+            // Ensure idle timer is always restored when view disappears
+            UIApplication.shared.isIdleTimerDisabled = false
+            #endif
         }
         .onChange(of: progressManager.activeTranscriptions[recording.id]) { _, newProgress in
             if let progress = newProgress { currentProgress = progress }
         }
         .onChange(of: recording.status) { oldStatus, newStatus in
-            if oldStatus == .inProgress && newStatus == .completed { currentProgress = 1.0 }
+            if oldStatus == .inProgress && newStatus == .completed {
+                currentProgress = 1.0
+            }
+
+            #if canImport(UIKit)
+            // Disable idle timer when transcription starts
+            if oldStatus != .inProgress && newStatus == .inProgress {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            // Re-enable display auto-lock when transcription ends (completed or failed)
+            else if oldStatus == .inProgress && newStatus != .inProgress {
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+            #endif
         }
     }
 

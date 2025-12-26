@@ -313,7 +313,7 @@ struct RecordingsView: View {
                         }
                     )
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
                         if !viewModel.filteredRecordings.isEmpty {
                             SearchBar(text: $viewModel.searchText, placeholder: "Search recordings...")
                                 .padding(.horizontal, 20)
