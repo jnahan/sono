@@ -5,7 +5,6 @@ import AVFoundation
 struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @State private var showPlusButton = true
     @State private var isRecordingsRoot = true
 
     @ObservedObject private var actionSheetManager = ActionSheetManager.shared
@@ -28,7 +27,6 @@ struct AppRootView: View {
         ZStack {
             NavigationStack {
                 RecordingsView(
-                    showPlusButton: $showPlusButton,
                     isRoot: $isRecordingsRoot,
                     currentCollectionFilter: $currentCollectionFilter,
                     onAddRecording: {

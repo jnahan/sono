@@ -8,7 +8,6 @@ import SwiftData
 struct RecordingsView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @Binding var showPlusButton: Bool
     @Binding var isRoot: Bool
     @Binding var currentCollectionFilter: CollectionFilter
 
@@ -54,7 +53,7 @@ struct RecordingsView: View {
     }
 
     private var shouldShowFab: Bool {
-        isRoot && showPlusButton
+        isRoot
     }
 
     private var currentFilterTitle: String {
@@ -150,7 +149,6 @@ struct RecordingsView: View {
         .onChange(of: currentCollectionFilter) { _, _ in applyFiltersToViewModel() }
 
         .onChange(of: viewModel.isSelectionMode) { _, isSelecting in
-            showPlusButton = !isSelecting
             if isSelecting { showCollectionDrawer = false }
         }
 
@@ -159,7 +157,6 @@ struct RecordingsView: View {
             viewModel.recoverIncompleteRecordings(recordings)
 
             selectedRecording = nil
-            showPlusButton = !viewModel.isSelectionMode
             applyFiltersToViewModel()
             updateRootState()
         }
