@@ -19,7 +19,7 @@ struct RecordingRowView: View {
 
     @State private var showDeleteConfirm = false
     @State private var showCollectionPicker = false
-    @StateObject private var progressManager = TranscriptionProgressManager.shared
+    @ObservedObject private var progressManager = TranscriptionProgressManager.shared
     
     // MARK: - Body
     var body: some View {

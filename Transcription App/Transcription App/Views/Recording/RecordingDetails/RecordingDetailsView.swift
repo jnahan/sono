@@ -19,7 +19,7 @@ struct RecordingDetailsView: View {
     var onDismiss: (() -> Void)? = nil
 
     @StateObject private var audioPlayback = AudioPlaybackService()
-    @StateObject private var progressManager = TranscriptionProgressManager.shared
+    @ObservedObject private var progressManager = TranscriptionProgressManager.shared
     @StateObject private var askSonoVM: AskSonoViewModel
     @StateObject private var viewModel = RecordingActionsViewModel()
 
