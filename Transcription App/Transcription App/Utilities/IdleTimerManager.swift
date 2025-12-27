@@ -21,10 +21,11 @@ class IdleTimerManager: ObservableObject {
     // Track active states
     @Published private(set) var isRecording = false
     @Published private(set) var hasActiveTranscriptions = false
+    @Published private(set) var isExtractingAudio = false
 
     // Computed: should idle timer be disabled?
     private var shouldDisableIdleTimer: Bool {
-        isRecording || hasActiveTranscriptions
+        isRecording || hasActiveTranscriptions || isExtractingAudio
     }
 
     private init() {
@@ -45,6 +46,12 @@ class IdleTimerManager: ObservableObject {
         updateIdleTimer()
     }
 
+    /// Call this when audio extraction starts/ends
+    func setExtracting(_ extracting: Bool) {
+        isExtractingAudio = extracting
+        updateIdleTimer()
+    }
+
     /// Updates the system idle timer based on current state
     private func updateIdleTimer() {
         #if canImport(UIKit)
@@ -55,7 +62,7 @@ class IdleTimerManager: ObservableObject {
             UIApplication.shared.isIdleTimerDisabled = shouldDisable
 
             if shouldDisable {
-                Logger.info("IdleTimerManager", "Screen auto-lock disabled (recording: \(isRecording), transcriptions: \(hasActiveTranscriptions))")
+                Logger.info("IdleTimerManager", "Screen auto-lock disabled (recording: \(isRecording), transcriptions: \(hasActiveTranscriptions), extracting: \(isExtractingAudio))")
             } else {
                 Logger.info("IdleTimerManager", "Screen auto-lock re-enabled")
             }

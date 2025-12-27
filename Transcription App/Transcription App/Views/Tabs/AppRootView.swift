@@ -14,7 +14,6 @@ struct AppRootView: View {
     @State private var showFilePicker = false
     @State private var showVideoPicker = false
 
-    @State private var isExtractingAudio = false
     @State private var showExtractionError = false
     @State private var extractionErrorMessage = ""
 
@@ -111,31 +110,52 @@ struct AppRootView: View {
                     guard !isProcessingFileImport else { return }
                     isProcessingFileImport = true
 
-                    showFilePicker = false
-
                     if mediaType == .video {
+                        // Disable auto-lock IMMEDIATELY (before any async work)
+                        IdleTimerManager.shared.setExtracting(true)
+
+                        // Create recording IMMEDIATELY
+                        let recording = createRecordingForExtraction(videoURL: url)
+
+                        // Set initial progress to 0 so TranscriptionProgressOverlay shows "Preparing audio"
+                        TranscriptionProgressManager.shared.updateProgress(for: recording.id, progress: 0.0)
+
+                        // Navigate immediately to details view (which shows the overlay)
+                        selectedRecordingForDetails = recording
+                        navigateToRecordingDetails = true
+
+                        // Extract audio in background
                         Task {
-                            isExtractingAudio = true
                             do {
                                 let audioURL = try await AudioExtractor.extractAudio(from: url)
                                 try? FileManager.default.removeItem(at: url)
 
                                 await MainActor.run {
-                                    isExtractingAudio = false
-                                    handleMediaSave(audioURL: audioURL)
+                                    IdleTimerManager.shared.setExtracting(false)
+
+                                    // Update recording with extracted audio file path
+                                    updateRecordingFilePath(recording: recording, audioURL: audioURL)
+                                    try? modelContext.save()
+
+                                    // Start transcription
+                                    startTranscription(for: recording, audioURL: audioURL)
                                     isProcessingFileImport = false
                                 }
                             } catch {
                                 try? FileManager.default.removeItem(at: url)
                                 await MainActor.run {
-                                    isExtractingAudio = false
-                                    extractionErrorMessage = error.localizedDescription
-                                    showExtractionError = true
+                                    IdleTimerManager.shared.setExtracting(false)
+
+                                    recording.status = .failed
+                                    recording.failureReason = "Audio extraction failed: \(error.localizedDescription)"
+                                    try? modelContext.save()
+
                                     isProcessingFileImport = false
                                 }
                             }
                         }
                     } else {
+                        // Audio file - sheet already dismissed by UIDocumentPicker
                         handleMediaSave(audioURL: url)
                         isProcessingFileImport = false
                     }
@@ -153,25 +173,46 @@ struct AppRootView: View {
                     guard !isProcessingFileImport else { return }
                     isProcessingFileImport = true
 
+                    // Disable auto-lock IMMEDIATELY (before any async work)
+                    IdleTimerManager.shared.setExtracting(true)
+
+                    // Create recording IMMEDIATELY
+                    let recording = createRecordingForExtraction(videoURL: url)
+
+                    // Set initial progress to 0 so TranscriptionProgressOverlay shows "Preparing audio"
+                    TranscriptionProgressManager.shared.updateProgress(for: recording.id, progress: 0.0)
+
+                    // Dismiss sheet and navigate
                     showVideoPicker = false
+                    selectedRecordingForDetails = recording
+                    navigateToRecordingDetails = true
 
                     Task {
-                        isExtractingAudio = true
+
                         do {
                             let audioURL = try await AudioExtractor.extractAudio(from: url)
                             try? FileManager.default.removeItem(at: url)
 
                             await MainActor.run {
-                                isExtractingAudio = false
-                                handleMediaSave(audioURL: audioURL)
+                                IdleTimerManager.shared.setExtracting(false)
+
+                                // Update recording with extracted audio file path
+                                updateRecordingFilePath(recording: recording, audioURL: audioURL)
+                                try? modelContext.save()
+
+                                // Start transcription
+                                startTranscription(for: recording, audioURL: audioURL)
                                 isProcessingFileImport = false
                             }
                         } catch {
                             try? FileManager.default.removeItem(at: url)
                             await MainActor.run {
-                                isExtractingAudio = false
-                                extractionErrorMessage = error.localizedDescription
-                                showExtractionError = true
+                                IdleTimerManager.shared.setExtracting(false)
+
+                                recording.status = .failed
+                                recording.failureReason = "Audio extraction failed: \(error.localizedDescription)"
+                                try? modelContext.save()
+
                                 isProcessingFileImport = false
                             }
                         }
@@ -185,7 +226,66 @@ struct AppRootView: View {
         }
     }
 
-    // MARK: - Same helpers you already had
+    // MARK: - Helper Methods
+
+    /// Update a recording's file path after audio extraction
+    /// Follows the same logic as Recording's initializer
+    private func updateRecordingFilePath(recording: Recording, audioURL: URL) {
+        // Store relative path from Application Support directory
+        if let appSupportDir = try? FileManager.default
+            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false),
+           audioURL.path.hasPrefix(appSupportDir.path) {
+            // Extract relative path
+            recording.filePath = String(audioURL.path.dropFirst(appSupportDir.path.count + 1))
+        } else {
+            // Fallback to absolute path if we can't determine relative path
+            recording.filePath = audioURL.path
+        }
+    }
+
+    /// Create a recording immediately when video is selected (before extraction)
+    /// This allows us to show the transcription overlay immediately
+    private func createRecordingForExtraction(videoURL: URL) -> Recording {
+        let filename = videoURL.deletingPathExtension().lastPathComponent
+
+        var cleanFilename = filename
+        if filename.contains("-audio-") {
+            if let videoName = filename.components(separatedBy: "-audio-").first, !videoName.isEmpty {
+                cleanFilename = videoName
+            }
+        }
+
+        let title = cleanFilename
+
+        let recording = Recording(
+            title: title,
+            fileURL: videoURL, // Temporarily store video URL, will be updated after extraction
+            fullText: "",
+            language: "",
+            summary: nil,
+            segments: [],
+            collections: [],
+            recordedAt: Date(),
+            transcriptionStatus: .inProgress, // Set to inProgress immediately
+            failureReason: nil,
+            transcriptionStartedAt: Date()
+        )
+
+        modelContext.insert(recording)
+
+        // Add to collection if viewing a specific collection
+        if case .collection(let collection) = currentCollectionFilter {
+            recording.collections.append(collection)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            Logger.error("AppRootView", "Failed to save recording for extraction: \(error.localizedDescription)")
+        }
+
+        return recording
+    }
 
     private func handleMediaSave(audioURL: URL) {
         let filename = audioURL.deletingPathExtension().lastPathComponent

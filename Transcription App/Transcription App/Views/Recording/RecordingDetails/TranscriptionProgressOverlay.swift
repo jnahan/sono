@@ -44,19 +44,37 @@ struct TranscriptionProgressOverlay: View {
                         .padding(.bottom, 80)
                     } else {
                         VStack(spacing: 0) {
-                            Text("\(Int(progress * 100))%")
-                                .font(.dmSansSemiBold(size: 64))
-                                .foregroundColor(.black)
-                            Spacer().frame(height: 16)
-                            Text("Transcribing audio")
-                                .font(.dmSansSemiBold(size: 24))
-                                .foregroundColor(.black)
-                                .multilineTextAlignment(.center)
-                            Spacer().frame(height: 8)
-                            Text("Please do not close the app or turn off your display until transcription is complete.")
-                                .font(.dmSansRegular(size: 16))
-                                .foregroundColor(.blueGray700)
-                                .multilineTextAlignment(.center)
+                            if progress == 0 {
+                                // Show extraction/preparation state when progress is 0
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .padding(.bottom, 24)
+
+                                Text("Extracting audio from video")
+                                    .font(.dmSansSemiBold(size: 24))
+                                    .foregroundColor(.black)
+                                    .multilineTextAlignment(.center)
+                                Spacer().frame(height: 8)
+                                Text("Please do not close the app or turn off your display until transcription is complete.")
+                                    .font(.dmSansRegular(size: 16))
+                                    .foregroundColor(.blueGray700)
+                                    .multilineTextAlignment(.center)
+                            } else {
+                                // Show normal transcription progress
+                                Text("\(Int(progress * 100))%")
+                                    .font(.dmSansSemiBold(size: 64))
+                                    .foregroundColor(.black)
+                                Spacer().frame(height: 16)
+                                Text("Transcribing audio")
+                                    .font(.dmSansSemiBold(size: 24))
+                                    .foregroundColor(.black)
+                                    .multilineTextAlignment(.center)
+                                Spacer().frame(height: 8)
+                                Text("Please do not close the app or turn off your display until transcription is complete.")
+                                    .font(.dmSansRegular(size: 16))
+                                    .foregroundColor(.blueGray700)
+                                    .multilineTextAlignment(.center)
+                            }
                         }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 64)
