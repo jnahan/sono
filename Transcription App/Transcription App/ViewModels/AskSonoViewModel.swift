@@ -37,12 +37,32 @@ final class AskSonoViewModel: ObservableObject {
     // MARK: - Private
 
     private let recording: Recording
+    private var recordingId: UUID
 
     init(recording: Recording) {
         self.recording = recording
+        self.recordingId = recording.id
     }
 
     // MARK: - Public
+
+    /// Reset all state - call when switching recordings
+    func reset(for newRecording: Recording) {
+        guard newRecording.id != recordingId else { return }
+
+        // Clear all messages and state
+        messages = []
+        userPrompt = ""
+        state = .idle
+        error = nil
+        streamingMessageId = nil
+        streamingText = ""
+        chunkProgress = ""
+        inputFieldId = 0
+        recordingId = newRecording.id
+
+        Logger.info("AskSonoViewModel", "Reset chat for new recording")
+    }
 
     /// Keep this async API if your existing UI already calls it.
     func sendPrompt() async {

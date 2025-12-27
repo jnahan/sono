@@ -242,6 +242,9 @@ struct RecordingDetailsView: View {
             if let progress = progressManager.getProgress(for: recording.id) {
                 currentProgress = progress
             }
+
+            // Reset Ask Sono to ensure clean state for this recording
+            askSonoVM.reset(for: recording)
         }
         .onDisappear {
             if isEditingTitle { saveTitleEdit() }
@@ -258,6 +261,10 @@ struct RecordingDetailsView: View {
             } else if newStatus == .failed {
                 HapticFeedback.error()
             }
+        }
+        .onChange(of: recording.id) { _, _ in
+            // Reset Ask Sono chat history when switching to a different recording
+            askSonoVM.reset(for: recording)
         }
     }
 
