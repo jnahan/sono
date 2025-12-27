@@ -43,7 +43,7 @@ struct CollectionDrawerView: View {
 
                 Button { onSelectUnorganized() } label: {
                     DrawerRow(
-                        icon: "folder-open",
+                        icon: "folder-dashed",
                         title: "Unorganized recordings",
                         isSelected: selectedFilter == .unorganized,
                         isDefaultFilter: true
