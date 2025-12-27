@@ -282,6 +282,7 @@ struct AppRootView: View {
 
                 try modelContext.save()
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
 
             } catch {
                 let descriptor = FetchDescriptor<Recording>(
@@ -296,6 +297,7 @@ struct AppRootView: View {
                 }
 
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
             }
         }
     }

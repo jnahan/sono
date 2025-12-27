@@ -120,16 +120,10 @@ struct RecorderControl: View {
             if isRecording {
                 startTimer()
                 frozenMeterHistory = []  // Clear frozen history when starting new recording
-                #if canImport(UIKit)
-                // Prevent display from turning off during recording
-                UIApplication.shared.isIdleTimerDisabled = true
-                #endif
+                IdleTimerManager.shared.setRecording(true)
             } else {
                 stopTimer()
-                #if canImport(UIKit)
-                // Re-enable display auto-lock when not recording
-                UIApplication.shared.isIdleTimerDisabled = false
-                #endif
+                IdleTimerManager.shared.setRecording(false)
             }
         }
         .onChange(of: rec.fileURL) { _, newURL in
@@ -162,12 +156,6 @@ struct RecorderControl: View {
             #endif
         } message: {
             Text("Please allow microphone access in Settings to record audio.")
-        }
-        .onDisappear {
-            #if canImport(UIKit)
-            // Ensure idle timer is always restored when view disappears
-            UIApplication.shared.isIdleTimerDisabled = false
-            #endif
         }
     }
 

@@ -44,6 +44,13 @@ class TranscriptionProgressManager: ObservableObject {
         }
     }
 
+    /// Clear progress after recording status becomes .completed
+    /// This should be called when the recording is fully saved to database
+    func clearCompletedProgress(for recordingId: UUID) {
+        activeTranscriptions.removeValue(forKey: recordingId)
+        Logger.info("ProgressManager", "Cleared completed progress for \(recordingId.uuidString.prefix(8))")
+    }
+
     func getProgress(for recordingId: UUID) -> Double? {
         return activeTranscriptions[recordingId]
     }

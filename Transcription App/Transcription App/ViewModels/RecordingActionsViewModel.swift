@@ -267,6 +267,7 @@ class RecordingActionsViewModel: ObservableObject {
             } catch is CancellationError {
                 Logger.info("Auto-Start", "Transcription cancelled for recording: \(recordingId.uuidString.prefix(8))")
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
             } catch {
                 await handleTranscriptionFailure(recordingId: recordingId, error: error, modelContext: modelContext)
             }
@@ -302,6 +303,7 @@ class RecordingActionsViewModel: ObservableObject {
               let existingRecording = existingRecordings.first else {
             Logger.info("Auto-Start", ErrorMessages.Transcription.recordingDeleted)
             TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+            TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
             return
         }
 
@@ -324,6 +326,11 @@ class RecordingActionsViewModel: ObservableObject {
 
         try modelContext.save()
         TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+
+        // Clear progress from active transcriptions after status is saved
+        // This allows idle timer to re-enable when all transcriptions complete
+        TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
+
         Logger.success("Auto-Start", "Transcription completed for: \(existingRecording.title)")
     }
 
@@ -348,5 +355,9 @@ class RecordingActionsViewModel: ObservableObject {
         }
 
         TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+
+        // Clear progress from active transcriptions after failure
+        // This allows idle timer to re-enable when all transcriptions complete
+        TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
     }
 }

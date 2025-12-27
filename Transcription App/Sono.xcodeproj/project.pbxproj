@@ -92,6 +92,7 @@
 		D635E99F9E1C4AC78CB5DF0B /* NavigationBarAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B684D39831974B6AAFC255FF /* NavigationBarAppearance.swift */; };
 		DA5E6087D5644D3A882A255A /* ToastHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */; };
 		E805026C9245257B5A76A46D /* AudioPlaybackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */; };
+		5ED4F636E23043A9A1B22F60 /* IdleTimerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED4F636E23043A9A1B22F61 /* IdleTimerManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -180,6 +181,7 @@
 		F1DD7070084FE596219F56F0 /* AudioPlaybackService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioPlaybackService.swift; sourceTree = "<group>"; };
 		F22D8124947F4B7EA83FD23D /* View+SheetStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+SheetStyle.swift"; sourceTree = "<group>"; };
 		FF905E43954BC600CC2F1B07 /* RecordingPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecordingPlayerBar.swift; path = "Transcription App/Views/Recording/RecordingDetails/RecordingPlayerBar.swift"; sourceTree = SOURCE_ROOT; };
+		5ED4F636E23043A9A1B22F61 /* IdleTimerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleTimerManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +216,7 @@
 				E3C791A9F0DE47DE96F39EB1 /* TextChunker.swift */,
 				E3F6CCE7EC184B55AFCB194B /* ToastHelper.swift */,
 				5DEA6D922EFEE15900EA1909 /* HapticFeedback.swift */,
+				5ED4F636E23043A9A1B22F61 /* IdleTimerManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -733,6 +736,7 @@
 				5DDE4F7E2EFAC97800EABFB2 /* RecordingDetailsActionMenu.swift in Sources */,
 				52F11FFC6686B1A707651C26 /* RecordingPlayerBar.swift in Sources */,
 				8D902EC4EA9C314DA855042A /* TranscriptionProgressManager.swift in Sources */,
+				5ED4F636E23043A9A1B22F60 /* IdleTimerManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

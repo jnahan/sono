@@ -211,6 +211,7 @@ struct RecorderView: View {
                       let rec = recordings.first else {
                     Logger.info("RecorderView", "Recording deleted during transcription")
                     TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                    TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
                     return
                 }
 
@@ -233,6 +234,7 @@ struct RecorderView: View {
 
                 try modelContext.save()
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
                 Logger.success("RecorderView", "Transcription completed successfully")
 
             } catch {
@@ -251,6 +253,7 @@ struct RecorderView: View {
                 }
 
                 TranscriptionProgressManager.shared.completeTranscription(for: recordingId)
+                TranscriptionProgressManager.shared.clearCompletedProgress(for: recordingId)
             }
         }
     }
