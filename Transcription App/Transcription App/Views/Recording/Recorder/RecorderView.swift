@@ -64,6 +64,9 @@ struct RecorderView: View {
                         if let fileURL = recorderControl.currentFileURL {
                             try? FileManager.default.removeItem(at: fileURL)
                             Logger.info("RecorderView", "Deleted recording file after user cancellation")
+
+                            // Also delete from database if it was auto-saved
+                            deleteRecordingFromDatabase(fileURL: fileURL)
                         }
 
                         dismiss()
@@ -315,6 +318,28 @@ struct RecorderView: View {
             } catch {
                 Logger.error("RecorderView", "Failed to auto-save recording: \(error.localizedDescription)")
             }
+        }
+    }
+
+    /// Delete recording from database if it was auto-saved
+    @MainActor private func deleteRecordingFromDatabase(fileURL: URL) {
+        let descriptor = FetchDescriptor<Recording>(
+            predicate: #Predicate { recording in
+                recording.filePath.contains(fileURL.lastPathComponent)
+            }
+        )
+
+        if let existingRecordings = try? modelContext.fetch(descriptor) {
+            for recording in existingRecordings {
+                // Cancel any pending transcription in the queue
+                TranscriptionProgressManager.shared.cancelTranscription(for: recording.id)
+
+                // Delete from database
+                modelContext.delete(recording)
+                Logger.info("RecorderView", "Deleted auto-saved recording from database after user cancellation")
+            }
+
+            try? modelContext.save()
         }
     }
 }

@@ -58,32 +58,45 @@ struct TranscriptView: View {
     // MARK: - Failed State
 
     private var failedStateView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(recording.failureReason ?? "Transcription failed")
-                .font(.dmSansRegular(size: 16))
-                .foregroundColor(.black)
+        VStack {
+            Spacer()
 
-            Button(action: {
-                HapticFeedback.light()
-                onRetryTranscription?()
-            }) {
-                HStack(spacing: 8) {
-                    Image("arrow-clockwise")
-                        .resizable()
-                        .renderingMode(.template)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.accent)
+            VStack(spacing: 24) {
+                Text("Transcription failed")
+                    .font(.dmSansSemiBold(size: 24))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.black)
 
-                    Text("Re-transcribe")
-                        .font(.dmSansMedium(size: 16))
-                        .foregroundColor(.accent)
+                Button(action: {
+                    HapticFeedback.light()
+                    onRetryTranscription?()
+                }) {
+                    HStack(spacing: 8) {
+                        Image("arrow-clockwise")
+                            .resizable()
+                            .renderingMode(.template)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(Color.warning)
+
+                        Text("Re-transcribe")
+                            .font(.dmSansMedium(size: 16))
+                            .foregroundColor(Color.blueGray600)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.white)
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.blueGray200, lineWidth: 1)
+                    )
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.accentLight)
-                .cornerRadius(8)
             }
+            .padding(.vertical, 120)
+
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
