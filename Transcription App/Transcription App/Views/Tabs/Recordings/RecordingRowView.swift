@@ -196,6 +196,11 @@ struct RecordingRowView: View {
                             onDelete: { showDeleteConfirm = true }
                         )
                     )
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            HapticFeedback.light()
+                        }
+                    )
                     
                     Spacer()
                 }

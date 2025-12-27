@@ -177,6 +177,11 @@ private struct DrawerRow: View {
                         ActionItem(title: "Delete", icon: "trash", action: onDelete, isDestructive: true)
                     ]
                 )
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        HapticFeedback.light()
+                    }
+                )
             }
         }
         .padding(.horizontal, 12)
