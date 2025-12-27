@@ -18,6 +18,8 @@ struct AppRootView: View {
     @State private var showExtractionError = false
     @State private var extractionErrorMessage = ""
 
+    @State private var isProcessingFileImport = false
+
     @State private var selectedRecordingForDetails: Recording?
     @State private var navigateToRecordingDetails = false
 
@@ -105,6 +107,10 @@ struct AppRootView: View {
         .sheet(isPresented: $showFilePicker) {
             MediaFilePicker(
                 onFilePicked: { url, mediaType in
+                    // Prevent duplicate imports
+                    guard !isProcessingFileImport else { return }
+                    isProcessingFileImport = true
+
                     showFilePicker = false
 
                     if mediaType == .video {
@@ -117,6 +123,7 @@ struct AppRootView: View {
                                 await MainActor.run {
                                     isExtractingAudio = false
                                     handleMediaSave(audioURL: audioURL)
+                                    isProcessingFileImport = false
                                 }
                             } catch {
                                 try? FileManager.default.removeItem(at: url)
@@ -124,19 +131,28 @@ struct AppRootView: View {
                                     isExtractingAudio = false
                                     extractionErrorMessage = error.localizedDescription
                                     showExtractionError = true
+                                    isProcessingFileImport = false
                                 }
                             }
                         }
                     } else {
                         handleMediaSave(audioURL: url)
+                        isProcessingFileImport = false
                     }
                 },
-                onCancel: { showFilePicker = false }
+                onCancel: {
+                    showFilePicker = false
+                    isProcessingFileImport = false
+                }
             )
         }
         .sheet(isPresented: $showVideoPicker) {
             PhotoVideoPicker(
                 onMediaPicked: { url in
+                    // Prevent duplicate imports
+                    guard !isProcessingFileImport else { return }
+                    isProcessingFileImport = true
+
                     showVideoPicker = false
 
                     Task {
@@ -148,6 +164,7 @@ struct AppRootView: View {
                             await MainActor.run {
                                 isExtractingAudio = false
                                 handleMediaSave(audioURL: audioURL)
+                                isProcessingFileImport = false
                             }
                         } catch {
                             try? FileManager.default.removeItem(at: url)
@@ -155,11 +172,15 @@ struct AppRootView: View {
                                 isExtractingAudio = false
                                 extractionErrorMessage = error.localizedDescription
                                 showExtractionError = true
+                                isProcessingFileImport = false
                             }
                         }
                     }
                 },
-                onCancel: { showVideoPicker = false }
+                onCancel: {
+                    showVideoPicker = false
+                    isProcessingFileImport = false
+                }
             )
         }
     }
@@ -203,16 +224,18 @@ struct AppRootView: View {
         do {
             try modelContext.save()
 
+            // Set to in-progress BEFORE navigation so overlay shows immediately
             recording.status = .inProgress
-            recording.failureReason = nil  // Clear any old failure reasons
+            recording.failureReason = nil
             recording.transcriptionStartedAt = Date()
             try modelContext.save()
 
-            startTranscription(for: recording, audioURL: audioURL)
-
-            // Jump to details
+            // Navigate first with status already set
             selectedRecordingForDetails = recording
             navigateToRecordingDetails = true
+
+            // Start transcription after navigation
+            startTranscription(for: recording, audioURL: audioURL)
         } catch {
             extractionErrorMessage = error.localizedDescription
             showExtractionError = true
