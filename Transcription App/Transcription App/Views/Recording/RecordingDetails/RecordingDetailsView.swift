@@ -173,11 +173,24 @@ struct RecordingDetailsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .enableSwipeBack()
         .overlay(alignment: .top) {
-            if showCopyToast {
-                ToastView(message: "Copied transcription")
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+            Group {
+                if showCopyToast {
+                    ToastView(message: "Copied transcription", isPresented: $showCopyToast)
+                        .padding(.top, 8)
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .move(edge: .top).combined(with: .opacity)
+                            )
+                        )
+                }
             }
+            .animation(
+                showCopyToast
+                    ? .easeOut(duration: 0.25)
+                    : .easeIn(duration: 0.2),
+                value: showCopyToast
+            )
         }
         .safeAreaInset(edge: .bottom) { bottomBars }
         .sheet(isPresented: $showDeleteConfirm) {

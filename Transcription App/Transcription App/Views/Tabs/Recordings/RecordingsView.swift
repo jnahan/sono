@@ -418,10 +418,24 @@ struct RecordingsView: View {
             }
         }
         .overlay(alignment: .top) {
-            if viewModel.showCopyToast {
-                ToastView(message: "Copied transcription")
-                    .padding(.top, 8)
+            Group {
+                if viewModel.showCopyToast {
+                    ToastView(message: "Copied transcription", isPresented: $viewModel.showCopyToast)
+                        .padding(.top, 8)
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .move(edge: .top).combined(with: .opacity)
+                            )
+                        )
+                }
             }
+            .animation(
+                viewModel.showCopyToast
+                    ? .easeOut(duration: 0.25)
+                    : .easeIn(duration: 0.2),
+                value: viewModel.showCopyToast
+            )
         }
         .background(Color.white.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)

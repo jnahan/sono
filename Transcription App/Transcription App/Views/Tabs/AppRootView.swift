@@ -65,13 +65,27 @@ struct AppRootView: View {
             }
         }
         .overlay(alignment: .top) {
-            if showExtractionError {
-                ErrorToastView(
-                    message: extractionErrorMessage,
-                    isPresented: $showExtractionError
-                )
-                .padding(.top, 8)
+            Group {
+                if showExtractionError {
+                    ErrorToastView(
+                        message: extractionErrorMessage,
+                        isPresented: $showExtractionError
+                    )
+                    .padding(.top, 8)
+                    .transition(
+                        .asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        )
+                    )
+                }
             }
+            .animation(
+                showExtractionError
+                    ? .easeOut(duration: 0.25)
+                    : .easeIn(duration: 0.2),
+                value: showExtractionError
+            )
         }
         .fullScreenCover(isPresented: $showRecorderScreen) {
             RecorderView(

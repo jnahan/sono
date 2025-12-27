@@ -36,7 +36,7 @@ class RecordingListViewModel: ObservableObject {
         UIPasteboard.general.string = recording.fullText
         HapticFeedback.success()
         showCopyToast = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.showCopyToast = false
         }
     }
@@ -52,7 +52,7 @@ class RecordingListViewModel: ObservableObject {
     /// Displays a copy confirmation toast
     func displayCopyToast() {
         showCopyToast = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.showCopyToast = false
         }
     }
