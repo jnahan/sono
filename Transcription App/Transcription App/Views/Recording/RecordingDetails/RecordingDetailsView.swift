@@ -21,6 +21,7 @@ struct RecordingDetailsView: View {
     @StateObject private var audioPlayback = AudioPlaybackService()
     @StateObject private var progressManager = TranscriptionProgressManager.shared
     @StateObject private var askSonoVM: AskSonoViewModel
+    @StateObject private var viewModel = RecordingActionsViewModel()
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -62,11 +63,13 @@ struct RecordingDetailsView: View {
                         HapticFeedback.light()
                         RecordingDetailsActionMenu.show(
                             recording: recording,
+                            viewModel: viewModel,
                             onShowCollectionPicker: { showCollectionPicker = true },
                             onShowDeleteConfirm: { showDeleteConfirm = true },
                             onShowCopyToast: {
                                 ToastHelper.show($showCopyToast)
-                            }
+                            },
+                            onRetryTranscription: retryTranscription
                         )
                     }
                 )
@@ -232,6 +235,9 @@ struct RecordingDetailsView: View {
             selectedTab = .transcript
             setupAudioOnAppear()
 
+            // Configure viewModel with model context
+            viewModel.configure(modelContext: modelContext)
+
             // Initialize current progress from progress manager
             if let progress = progressManager.getProgress(for: recording.id) {
                 currentProgress = progress
@@ -311,7 +317,11 @@ struct RecordingDetailsView: View {
         Group {
             switch selectedTab {
             case .transcript:
-                TranscriptView(recording: recording, audioPlayback: audioPlayback)
+                TranscriptView(
+                    recording: recording,
+                    audioPlayback: audioPlayback,
+                    onRetryTranscription: retryTranscription
+                )
             case .summary:
                 SummaryView(recording: recording)
             case .askSono:
@@ -433,6 +443,10 @@ struct RecordingDetailsView: View {
         audioPlayback.preload(url: url)
         audioPlayback.seek(to: currentTime)
         if wasPlaying { audioPlayback.play() }
+    }
+
+    private func retryTranscription() {
+        viewModel.retryTranscription(recording)
     }
 
     // MARK: - Tabs Header

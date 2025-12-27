@@ -16,7 +16,7 @@ struct RecordingsView: View {
     @Query(sort: \Recording.recordedAt, order: .reverse) private var recordings: [Recording]
     @Query(sort: \Collection.name) private var collections: [Collection]
 
-    @StateObject private var viewModel = RecordingListViewModel()
+    @StateObject private var viewModel = RecordingActionsViewModel()
 
     @State private var selectedRecording: Recording?
     @State private var showSettings = false

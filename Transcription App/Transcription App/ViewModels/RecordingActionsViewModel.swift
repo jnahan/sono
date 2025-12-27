@@ -1,8 +1,9 @@
 import SwiftUI
 import SwiftData
 
-/// Shared logic for displaying and managing a list of recordings
-class RecordingListViewModel: ObservableObject {
+/// Shared view model for recording actions (copy, share, export, retry, delete)
+/// Used across RecordingListView, RecordingRowView, and RecordingDetailsView
+class RecordingActionsViewModel: ObservableObject {
     // MARK: - Toast State
     @Published var showCopyToast = false
 
@@ -39,6 +40,44 @@ class RecordingListViewModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.showCopyToast = false
         }
+    }
+
+    /// Shares a recording's transcription
+    /// - Parameter recording: The recording to share
+    func shareTranscription(_ recording: Recording) {
+        HapticFeedback.light()
+        ShareHelper.shareTranscription(recording.fullText, title: recording.title)
+    }
+
+    /// Exports a recording's audio file
+    /// - Parameter recording: The recording to export
+    func exportAudio(_ recording: Recording) {
+        HapticFeedback.light()
+        if let url = recording.resolvedURL {
+            ShareHelper.shareFile(at: url)
+        }
+    }
+
+    /// Retries transcription for a recording
+    /// - Parameter recording: The recording to re-transcribe
+    @MainActor func retryTranscription(_ recording: Recording) {
+        guard let modelContext = modelContext else { return }
+        guard let audioURL = recording.resolvedURL else { return }
+
+        // Reset status
+        recording.status = .inProgress
+        recording.failureReason = nil
+        recording.transcriptionStartedAt = Date()
+
+        do {
+            try modelContext.save()
+        } catch {
+            Logger.error("RecordingActionsViewModel", "Failed to save retry state: \(error.localizedDescription)")
+            return
+        }
+
+        // Start transcription
+        startBackgroundTranscription(for: recording, modelContext: modelContext)
     }
 
     /// Deletes a recording and cancels any active transcription
@@ -164,7 +203,7 @@ class RecordingListViewModel: ObservableObject {
         }
 
         guard let modelContext = modelContext else {
-            Logger.warning("RecordingListViewModel", ErrorMessages.Transcription.noModelContext)
+            Logger.warning("RecordingActionsViewModel", ErrorMessages.Transcription.noModelContext)
             return
         }
 
@@ -304,7 +343,7 @@ class RecordingListViewModel: ObservableObject {
             do {
                 try modelContext.save()
             } catch {
-                Logger.error("RecordingListViewModel", "Failed to save transcription error state: \(error.localizedDescription)")
+                Logger.error("RecordingActionsViewModel", "Failed to save transcription error state: \(error.localizedDescription)")
             }
         }
 

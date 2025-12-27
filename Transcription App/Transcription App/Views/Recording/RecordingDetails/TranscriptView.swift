@@ -3,6 +3,7 @@ import SwiftUI
 struct TranscriptView: View {
     let recording: Recording
     let audioPlayback: AudioPlaybackService
+    var onRetryTranscription: (() -> Void)? = nil
 
     var bottomContentPadding: CGFloat = 24
 
@@ -13,7 +14,9 @@ struct TranscriptView: View {
     var body: some View {
         // IMPORTANT: no ScrollView here. Parent scrolls everything.
         VStack(alignment: .leading, spacing: 12) {
-            if showTimestamps && !recording.segments.isEmpty {
+            if recording.status == .failed {
+                failedStateView
+            } else if showTimestamps && !recording.segments.isEmpty {
                 ForEach(recording.segments.sorted(by: { $0.start < $1.start })) { segment in
                     VStack(alignment: .leading, spacing: 4) {
                         Text(TimeFormatter.formatTimestamp(segment.start))
@@ -50,5 +53,37 @@ struct TranscriptView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.bottom, bottomContentPadding)
+    }
+
+    // MARK: - Failed State
+
+    private var failedStateView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(recording.failureReason ?? "Transcription failed")
+                .font(.dmSansRegular(size: 16))
+                .foregroundColor(.black)
+
+            Button(action: {
+                HapticFeedback.light()
+                onRetryTranscription?()
+            }) {
+                HStack(spacing: 8) {
+                    Image("arrow-clockwise")
+                        .resizable()
+                        .renderingMode(.template)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20)
+                        .foregroundColor(.accent)
+
+                    Text("Re-transcribe")
+                        .font(.dmSansMedium(size: 16))
+                        .foregroundColor(.accent)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color.accentLight)
+                .cornerRadius(8)
+            }
+        }
     }
 }

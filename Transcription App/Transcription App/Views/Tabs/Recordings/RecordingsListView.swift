@@ -5,7 +5,7 @@ import SwiftData
 /// Handles selection mode, navigation, and empty states
 struct RecordingsListView: View {
     let recordings: [Recording]
-    let viewModel: RecordingListViewModel
+    let viewModel: RecordingActionsViewModel
     let emptyStateView: AnyView
     let onRecordingTap: (Recording) -> Void
     let onDelete: ((IndexSet) -> Void)?
@@ -16,7 +16,7 @@ struct RecordingsListView: View {
 
     init(
         recordings: [Recording],
-        viewModel: RecordingListViewModel,
+        viewModel: RecordingActionsViewModel,
         emptyStateView: AnyView,
         onRecordingTap: @escaping (Recording) -> Void,
         onDelete: ((IndexSet) -> Void)? = nil,
@@ -60,10 +60,12 @@ struct RecordingsListView: View {
                             } label: {
                                 RecordingRowView(
                                     recording: recording,
+                                    viewModel: viewModel,
                                     onCopy: { viewModel.copyRecording(recording) },
                                     onDelete: { viewModel.deleteRecording(recording) },
                                     collections: collections,
                                     modelContext: modelContext,
+                                    onRetryTranscription: { viewModel.retryTranscription(recording) },
                                     isSelectionMode: viewModel.isSelectionMode,
                                     isSelected: viewModel.isSelected(recording.id),
                                     onSelectionToggle: {

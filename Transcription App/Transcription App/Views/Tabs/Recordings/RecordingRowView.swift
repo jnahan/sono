@@ -5,10 +5,12 @@ import SwiftData
 struct RecordingRowView: View {
     // MARK: - Properties
     let recording: Recording
+    let viewModel: RecordingActionsViewModel
     let onCopy: () -> Void
     let onDelete: () -> Void
     let collections: [Collection]
     let modelContext: ModelContext
+    var onRetryTranscription: (() -> Void)? = nil
 
     // Selection mode properties
     var isSelectionMode: Bool = false
@@ -64,29 +66,9 @@ struct RecordingRowView: View {
                         .lineLimit(1)
                     
                     // Transcript preview, progress indicator, queue status, or error message
-                    // CRITICAL: Check for fullText FIRST, regardless of status - catches completion before status propagates
-                    if !recording.fullText.isEmpty {
-                        if recording.status == .completed {
-                            // Transcription completed and status propagated - show preview
-                            Text(recording.fullText)
-                                .font(.system(size: 14))
-                                .foregroundColor(.blueGray700)
-                                .lineLimit(3)
-                                .lineSpacing(4)
-                        } else {
-                            // Transcription completed but status not .completed yet - show saving message
-                            // This prevents "Preparing to transcribe..." from showing after transcription completes
-                            HStack(spacing: 8) {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                                    .scaleEffect(0.8)
-                                
-                                Text("Saving transcription")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.blueGray500)
-                            }
-                        }
-                    } else if recording.status == .inProgress || recording.status == .notStarted {
+                    // CRITICAL: Check for active transcription FIRST (handles re-transcription)
+                    // Then check fullText (catches completion before status propagates)
+                    if recording.status == .inProgress || recording.status == .notStarted {
                         // ✅ FIX: Check for active transcription/queue FIRST, then failureReason
                         // This prevents showing stale failure messages during active transcription
                         if let progress = progressManager.getProgress(for: recording.id), progress > 0 {
@@ -154,6 +136,27 @@ struct RecordingRowView: View {
                                 .foregroundColor(.blueGray500)
                                 .italic()
                         }
+                    } else if !recording.fullText.isEmpty {
+                        if recording.status == .completed {
+                            // Transcription completed and status propagated - show preview
+                            Text(recording.fullText)
+                                .font(.system(size: 14))
+                                .foregroundColor(.blueGray700)
+                                .lineLimit(3)
+                                .lineSpacing(4)
+                        } else {
+                            // Transcription completed but status not .completed yet - show saving message
+                            // This prevents "Preparing to transcribe..." from showing after transcription completes
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                    .scaleEffect(0.8)
+
+                                Text("Saving transcription")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.blueGray500)
+                            }
+                        }
                     } else if recording.status == .failed {
                         // Show failure reason in red warning color (cannot retry)
                         Text(recording.failureReason ?? "Failed to transcribe audio. Please delete this recording.")
@@ -184,23 +187,14 @@ struct RecordingRowView: View {
                         icon: "dots-three-bold",
                         iconSize: 24,
                         frameSize: 32,
-                        actions: [
-                            ActionItem(title: "Copy transcription", icon: "copy", action: onCopy),
-                            ActionItem(title: "Share transcription", icon: "export", action: {
-                                HapticFeedback.light()
-                                ShareHelper.shareTranscription(recording.fullText, title: recording.title)
-                            }),
-                            ActionItem(title: "Export audio", icon: "waveform", action: {
-                                HapticFeedback.light()
-                                if let url = recording.resolvedURL {
-                                    ShareHelper.shareFile(at: url)
-                                }
-                            }),
-                            ActionItem(title: "Add to collection", icon: "folder-open", action: {
-                                showCollectionPicker = true
-                            }),
-                            ActionItem(title: "Delete", icon: "trash", action: { showDeleteConfirm = true }, isDestructive: true)
-                        ]
+                        actions: RecordingActionMenuBuilder.buildActions(
+                            recording: recording,
+                            viewModel: viewModel,
+                            onCopy: onCopy,
+                            onRetryTranscription: onRetryTranscription,
+                            onShowCollectionPicker: { showCollectionPicker = true },
+                            onDelete: { showDeleteConfirm = true }
+                        )
                     )
                     
                     Spacer()
