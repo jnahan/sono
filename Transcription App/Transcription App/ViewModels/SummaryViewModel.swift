@@ -2,12 +2,20 @@ import Foundation
 import SwiftData
 import SwiftUI
 
+/// State of summary generation
+enum SummaryState: Equatable {
+    case idle
+    case loadingModel
+    case generating
+    case error(String)
+}
+
 /// ViewModel for SummaryView handling AI-generated summaries
 @MainActor
 class SummaryViewModel: ObservableObject {
     // MARK: - Published Properties
 
-    @Published var isGeneratingSummary = false
+    @Published var state: SummaryState = .idle
     @Published var summaryError: String?
     @Published var streamingSummary: String = ""
     @Published var chunkProgress: String = "" // e.g., "Processing chunk 2 of 5..."
@@ -37,13 +45,18 @@ class SummaryViewModel: ObservableObject {
     func generateSummary(modelContext: ModelContext) async {
         guard !recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             summaryError = ErrorMessages.Summary.emptyTranscription
+            state = .error(ErrorMessages.Summary.emptyTranscription)
             return
         }
 
-        isGeneratingSummary = true
+        // Reset ALL state to prevent contamination from previous runs
+        state = .loadingModel
         summaryError = nil
         streamingSummary = ""
         chunkProgress = ""
+
+        // Give UI time to render .loadingModel state before blocking on LLM load
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
 
         do {
             let fullText = recording.fullText
@@ -59,51 +72,68 @@ class SummaryViewModel: ObservableObject {
 
         } catch {
             Logger.error("SummaryViewModel", "Summary generation error: \(error.localizedDescription)")
-            summaryError = ErrorMessages.format(ErrorMessages.Summary.generationFailed, error.localizedDescription)
+            let errorMessage = ErrorMessages.format(ErrorMessages.Summary.generationFailed, error.localizedDescription)
+            summaryError = errorMessage
+            state = .error(errorMessage)
             streamingSummary = ""
             chunkProgress = ""
+            return
         }
 
-        isGeneratingSummary = false
+        state = .idle
         Logger.info("SummaryViewModel", "Summary generation complete. Error: \(summaryError ?? "none"), Summary length: \(recording.summary?.count ?? 0)")
     }
 
     /// Standard summarization for shorter transcriptions
     private func generateStandardSummary(fullText: String, modelContext: ModelContext) async throws {
+        Logger.info("SummaryViewModel", "Starting summary for recording ID: \(recording.id)")
+
         // Format prompt to explicitly request summarization
         let prompt = "Please summarize the following transcription:\n\n\(fullText)"
 
-        // Reset streaming text
+        // Reset streaming text BEFORE starting generation
         streamingSummary = ""
 
         // Stream the response
         let summary = try await LLMService.shared.getStreamingCompletion(
             from: prompt,
-            systemPrompt: LLMPrompts.summarization
-        ) { [weak self] chunk in
-            guard let self = self else { return }
-            Task { @MainActor in
-                self.streamingSummary += chunk
+            systemPrompt: LLMPrompts.summarization,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] chunk in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    self.streamingSummary += chunk
+                }
             }
-        }
+        )
 
         // Validate response
         guard LLMResponseValidator.isValid(summary) else {
             summaryError = ErrorMessages.Summary.invalidResponse
+            Logger.error("SummaryViewModel", "Invalid summary response for recording ID: \(recording.id)")
             return
         }
 
-        // Use full summary without truncation
-        recording.summary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Trim whitespace
+        let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        Logger.info("SummaryViewModel", "Saving summary for recording ID: \(recording.id), length: \(trimmedSummary.count)")
 
-        // Clear streaming text
+        recording.summary = trimmedSummary
+
+        // Clear streaming text immediately after saving
         streamingSummary = ""
 
         // Save to database
         do {
             try modelContext.save()
+            Logger.success("SummaryViewModel", "Summary saved successfully for recording ID: \(recording.id)")
         } catch {
             summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
+            Logger.error("SummaryViewModel", "Failed to save summary for recording ID: \(recording.id) - \(error.localizedDescription)")
         }
     }
 
@@ -146,13 +176,19 @@ class SummaryViewModel: ObservableObject {
 
         let chunkSummary = try await LLMService.shared.getStreamingCompletion(
             from: chunkPrompt,
-            systemPrompt: LLMPrompts.summarization
-        ) { [weak self] streamChunk in
-            guard let self = self else { return }
-            Task { @MainActor in
-                self.streamingSummary += streamChunk
+            systemPrompt: LLMPrompts.summarization,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] streamChunk in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    self.streamingSummary += streamChunk
+                }
             }
-        }
+        )
 
         guard LLMResponseValidator.isValid(chunkSummary) else {
             throw NSError(domain: "SummaryViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
@@ -184,28 +220,41 @@ class SummaryViewModel: ObservableObject {
 
         let finalSummary = try await LLMService.shared.getStreamingCompletion(
             from: finalPrompt,
-            systemPrompt: LLMPrompts.summarization
-        ) { [weak self] chunk in
-            guard let self = self else { return }
-            Task { @MainActor in
-                self.streamingSummary += chunk
+            systemPrompt: LLMPrompts.summarization,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] chunk in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    self.streamingSummary += chunk
+                }
             }
-        }
+        )
 
         guard LLMResponseValidator.isValid(finalSummary) else {
             summaryError = ErrorMessages.Summary.invalidResponse
+            Logger.error("SummaryViewModel", "Invalid final summary response for recording ID: \(recording.id)")
             return
         }
 
-        recording.summary = finalSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedSummary = finalSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        Logger.info("SummaryViewModel", "Saving chunked summary for recording ID: \(recording.id), length: \(trimmedSummary.count)")
+
+        recording.summary = trimmedSummary
+
+        // Clear all streaming state immediately
         streamingSummary = ""
         chunkProgress = ""
 
         do {
             try modelContext.save()
-            Logger.info("SummaryViewModel", "Final summary saved: \(finalSummary.count) chars")
+            Logger.success("SummaryViewModel", "Chunked summary saved successfully for recording ID: \(recording.id)")
         } catch {
             summaryError = ErrorMessages.format(ErrorMessages.Summary.saveFailed, error.localizedDescription)
+            Logger.error("SummaryViewModel", "Failed to save chunked summary for recording ID: \(recording.id) - \(error.localizedDescription)")
         }
     }
 }

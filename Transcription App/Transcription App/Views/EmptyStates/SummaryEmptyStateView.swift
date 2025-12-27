@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SummaryEmptyStateView: View {
+    let isDisabled: Bool
     let onSummarize: () -> Void
 
     var body: some View {
@@ -34,6 +35,8 @@ struct SummaryEmptyStateView: View {
                             .stroke(Color.blueGray200, lineWidth: 1)
                     )
                 }
+                .disabled(isDisabled)
+                .opacity(isDisabled ? 0.5 : 1.0)
             }
             .padding(.vertical, 120)
 

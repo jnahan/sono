@@ -6,6 +6,13 @@
 import Foundation
 import SwiftUI
 
+/// State of Ask Sono processing
+enum AskSonoState: Equatable {
+    case idle
+    case loadingModel
+    case generating
+}
+
 @MainActor
 final class AskSonoViewModel: ObservableObject {
 
@@ -13,13 +20,19 @@ final class AskSonoViewModel: ObservableObject {
 
     @Published var userPrompt: String = ""
     @Published var messages: [ChatMessage] = []
-    @Published var isProcessing: Bool = false
+    @Published var state: AskSonoState = .idle
     @Published var error: String?
 
     @Published var streamingMessageId: UUID? = nil
     @Published var streamingText: String = ""
     @Published var chunkProgress: String = ""
     @Published private(set) var inputFieldId: Int = 0
+
+    // MARK: - Computed
+
+    var isProcessing: Bool {
+        state != .idle
+    }
 
     // MARK: - Private
 
@@ -66,17 +79,17 @@ final class AskSonoViewModel: ObservableObject {
         // ✅ If transcription empty: show assistant message instead of silently returning
         let transcription = recording.fullText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !transcription.isEmpty else {
-            let msg = "I can’t answer yet because this recording doesn’t have a transcription."
+            let msg = "I can't answer yet because this recording doesn't have a transcription."
             messages.append(ChatMessage(text: msg, isUser: false))
             error = msg
-            isProcessing = false
+            state = .idle
             streamingMessageId = nil
             streamingText = ""
             chunkProgress = ""
             return
         }
 
-        isProcessing = true
+        state = .loadingModel
         error = nil
         chunkProgress = ""
 
@@ -102,7 +115,7 @@ final class AskSonoViewModel: ObservableObject {
             chunkProgress = ""
         }
 
-        isProcessing = false
+        state = .idle
     }
 
     // MARK: - Standard Q&A
@@ -118,15 +131,21 @@ final class AskSonoViewModel: ObservableObject {
 
         let llmResponse = try await LLMService.shared.getStreamingCompletion(
             from: prompt,
-            systemPrompt: LLMPrompts.transcriptionQA
-        ) { [weak self] chunk in
-            guard let self else { return }
-            Task { @MainActor in
-                guard self.streamingMessageId == streamingId else { return }
-                self.streamingText += chunk
-                self.updateStreamingMessage()
+            systemPrompt: LLMPrompts.transcriptionQA,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] chunk in
+                guard let self else { return }
+                Task { @MainActor in
+                    guard self.streamingMessageId == streamingId else { return }
+                    self.streamingText += chunk
+                    self.updateStreamingMessage()
+                }
             }
-        }
+        )
 
         let trimmedResponse = llmResponse.trimmingCharacters(in: .whitespacesAndNewlines)
         guard LLMResponseValidator.isValid(trimmedResponse) else {
@@ -189,15 +208,21 @@ final class AskSonoViewModel: ObservableObject {
 
         let chunkAnswer = try await LLMService.shared.getStreamingCompletion(
             from: chunkPrompt,
-            systemPrompt: LLMPrompts.transcriptionQA
-        ) { [weak self] streamChunk in
-            guard let self else { return }
-            Task { @MainActor in
-                guard self.streamingMessageId == streamingId else { return }
-                self.streamingText += streamChunk
-                self.updateStreamingMessage()
+            systemPrompt: LLMPrompts.transcriptionQA,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] streamChunk in
+                guard let self else { return }
+                Task { @MainActor in
+                    guard self.streamingMessageId == streamingId else { return }
+                    self.streamingText += streamChunk
+                    self.updateStreamingMessage()
+                }
             }
-        }
+        )
 
         guard LLMResponseValidator.isValid(chunkAnswer) else {
             throw NSError(domain: "AskSonoViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response for chunk \(index + 1)"])
@@ -224,15 +249,21 @@ final class AskSonoViewModel: ObservableObject {
 
         let finalAnswer = try await LLMService.shared.getStreamingCompletion(
             from: finalPrompt,
-            systemPrompt: LLMPrompts.transcriptionQA
-        ) { [weak self] chunk in
-            guard let self else { return }
-            Task { @MainActor in
-                guard self.streamingMessageId == streamingId else { return }
-                self.streamingText += chunk
-                self.updateStreamingMessage()
+            systemPrompt: LLMPrompts.transcriptionQA,
+            onModelLoaded: { [weak self] in
+                Task { @MainActor in
+                    self?.state = .generating
+                }
+            },
+            onChunk: { [weak self] chunk in
+                guard let self else { return }
+                Task { @MainActor in
+                    guard self.streamingMessageId == streamingId else { return }
+                    self.streamingText += chunk
+                    self.updateStreamingMessage()
+                }
             }
-        }
+        )
 
         let trimmedResponse = finalAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
         guard LLMResponseValidator.isValid(trimmedResponse) else {

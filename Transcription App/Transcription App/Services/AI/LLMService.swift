@@ -5,17 +5,13 @@ import LLM
 class LLMService {
     // MARK: - Singleton
     static let shared = LLMService()
-    
-    // MARK: - Properties
-    private var llm: LLM?
-    
+
     // MARK: - Configuration
     private let modelName = "Llama-3.2-1B-Instruct-Q5_K_M"
-    
+
     // MARK: - Initialization
     private init() {
-        // LLM is created fresh for each request to avoid KV cache corruption
-        // No preload needed - model loads quickly enough on first use
+        // Fresh LLM instance created for each request to avoid KV cache contamination
     }
 
     // MARK: - Public Methods
@@ -25,12 +21,14 @@ class LLMService {
     /// - Parameters:
     ///   - input: The user's input prompt
     ///   - systemPrompt: The system prompt defining the assistant's behavior
+    ///   - onModelLoaded: Callback called when model finishes loading (before generation starts)
     ///   - onChunk: Callback called with each new chunk of text as it's generated
     /// - Returns: The complete LLM's response
     @MainActor
     func getStreamingCompletion(
         from input: String,
         systemPrompt: String = LLMPrompts.defaultAssistant,
+        onModelLoaded: (() -> Void)? = nil,
         onChunk: @escaping (String) -> Void
     ) async throws -> String {
         // Get model URL
@@ -38,16 +36,31 @@ class LLMService {
             throw LLMError.modelNotLoaded
         }
 
-        // Create a fresh LLM instance for each request to avoid state issues
-        // The LLM library may have internal state that needs to be reset
+        // Create a fresh LLM instance for each request to avoid KV cache contamination
+        // The KV cache stores attention states from previous generations
+        // Reusing instances causes context bleed between unrelated requests
         // All LLM operations MUST run on main thread for Metal/GPU access on physical devices
-        // Configure with parameters optimized for quality (matching Enclave defaults)
         let llm = LLM(
             from: modelURL,
-            stopSequence: "<|eot_id|>",   // Llama 3.2 end-of-turn token
-            topK: 80,                      // Higher top-K for better quality (was 40)
-            topP: 0.95,                    // Higher nucleus sampling (was 0.9)
-            temp: 0.8,                     // Balanced temperature for quality
+
+            // Stop sequence: Token that tells the model to stop generating
+            // Llama 3.2's end-of-turn token - prevents infinite generation
+            stopSequence: "<|eot_id|>",
+
+            // Top-P (nucleus sampling): Only sample from tokens whose cumulative probability >= P
+            // Meta's official Llama 3.2 1B default: 0.9
+            // Filters out unlikely tokens while maintaining diversity
+            topP: 0.9,
+
+            // Temperature: Controls randomness in token selection
+            // Meta's official Llama 3.2 1B default: 0.6
+            // Lower = more conservative/coherent, higher = more creative
+            // 0.6 is conservative to prevent hallucinations
+            temp: 0.6,
+
+            // Max tokens: Maximum length of input + output combined
+            // Increased from default to support long transcriptions
+            // 8192 tokens ≈ 32,000 characters total
             maxTokenCount: AppConstants.LLM.maxTokenCount
         )
 
@@ -55,7 +68,10 @@ class LLMService {
             throw LLMError.modelNotLoaded
         }
 
-        Logger.info("LLMService", "LLM created with temp=0.8, topP=0.95, topK=80, maxTokenCount: \(AppConstants.LLM.maxTokenCount)")
+        Logger.info("LLMService", "Created fresh LLM instance with Meta Llama 3.2 1B defaults: temp=0.6, topP=0.9, maxTokenCount=\(AppConstants.LLM.maxTokenCount)")
+
+        // Notify that model is loaded and ready to generate
+        onModelLoaded?()
 
         // Manually format the prompt for Llama 3.2 chat template
         // Format: system message, then user message, then assistant response
@@ -126,6 +142,7 @@ class LLMService {
 
         return cleanedOutput
     }
+
 }
 
 // MARK: - Errors

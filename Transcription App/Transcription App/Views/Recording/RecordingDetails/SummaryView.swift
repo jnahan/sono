@@ -13,16 +13,21 @@ struct SummaryView: View {
 
     var body: some View {
         Group {
-            if viewModel.isGeneratingSummary {
-                generatingContent
-            } else if let summary = recording.summary, !summary.isEmpty {
-                summaryContentView(summary: summary)
-            } else if let error = viewModel.summaryError {
-                errorContentView(error: error)
-            } else {
-                SummaryEmptyStateView {
-                    Task { await viewModel.generateSummary(modelContext: modelContext) }
+            switch viewModel.state {
+            case .idle:
+                if let summary = recording.summary, !summary.isEmpty {
+                    summaryContentView(summary: summary)
+                } else {
+                    SummaryEmptyStateView(isDisabled: false) {
+                        Task { await viewModel.generateSummary(modelContext: modelContext) }
+                    }
                 }
+            case .loadingModel:
+                loadingModelContent
+            case .generating:
+                generatingContent
+            case .error(let errorMessage):
+                errorContentView(error: errorMessage)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -32,13 +37,23 @@ struct SummaryView: View {
 
     // MARK: - Pieces
 
+    private var loadingModelContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PulsatingDot()
+
+            Text("Loading AI model...")
+                .font(.dmSansRegular(size: 16))
+                .foregroundColor(.black)
+        }
+    }
+
     private var generatingContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             if viewModel.streamingSummary.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     PulsatingDot()
 
-                    Text("Summarizing...")
+                    Text("Generating summary...")
                         .font(.dmSansRegular(size: 16))
                         .foregroundColor(.black)
 

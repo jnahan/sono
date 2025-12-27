@@ -312,13 +312,13 @@ struct RecordingDetailsView: View {
             switch selectedTab {
             case .transcript:
                 TranscriptView(recording: recording, audioPlayback: audioPlayback)
-                    .id(recording.id)
             case .summary:
                 SummaryView(recording: recording)
             case .askSono:
                 AskSonoView(recording: recording, viewModel: askSonoVM)
             }
         }
+        .id(recording.id)  // Force recreation when switching to different recording
     }
 
     // MARK: - Bottom Bars

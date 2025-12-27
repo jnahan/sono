@@ -55,10 +55,19 @@ struct AskSonoView: View {
         } else {
             let isStreaming = viewModel.streamingMessageId != nil && message.id == viewModel.messages.last?.id
             let hasStreamingText = isStreaming && !viewModel.streamingText.isEmpty
-            let showThinking = isStreaming && viewModel.streamingText.isEmpty
+            let isLoadingModel = viewModel.state == .loadingModel && isStreaming
+            let showThinking = isStreaming && viewModel.streamingText.isEmpty && !isLoadingModel
 
             VStack(alignment: .leading, spacing: 8) {
-                if showThinking {
+                if isLoadingModel {
+                    VStack(alignment: .leading, spacing: 8) {
+                        PulsatingDot()
+
+                        Text("Loading AI model...")
+                            .font(.dmSansRegular(size: 16))
+                            .foregroundColor(.black)
+                    }
+                } else if showThinking {
                     VStack(alignment: .leading, spacing: 8) {
                         PulsatingDot()
 
