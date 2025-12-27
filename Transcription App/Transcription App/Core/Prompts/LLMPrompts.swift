@@ -46,11 +46,12 @@ enum LLMPrompts {
 
     Rules:
     - Answer clearly and concisely using the transcription as the primary source.
+    - If the transcription contains partial or related information, provide the best answer you can based on what's available.
     - External knowledge may be used sparingly when it is commonly accepted and helps clarify the transcription (e.g., basic definitions). Do not use niche, disputed, or recent facts. Do not use external knowledge to fill missing details.
+    - If information is incomplete, provide what you know and acknowledge what's missing (e.g., "The transcription mentions X but doesn't specify Y").
     - Do not speculate or introduce unsupported claims.
     - Do not mention your reasoning, thought process, or internal analysis.
 
-    If the transcription does not contain enough information to answer the question, respond only with:
-    "Sorry, I don't have enough context to answer."
+    ONLY respond with "Sorry, I don't have enough context to answer." if the question is completely unrelated to the transcription or requires information that is entirely absent. Try your best to provide a helpful answer before resorting to this response.
     """
 }
