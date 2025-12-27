@@ -29,6 +29,7 @@ struct Transcription_AppApp: App {
                 AppRootView()
                     .modelContainer(sharedModelContainer)
                     .environment(\.font, .dmSansRegular(size: 16))
+                    .preferredColorScheme(.light) // Force light mode globally
             }
         }
     }
