@@ -29,101 +29,101 @@ struct CollectionDrawerView: View {
                 .padding(.top, 80)
                 .padding(.bottom, 24)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+            // Group 1: Default filters (fixed, not scrollable)
+            VStack(spacing: 4) {
+                Button { onSelectAll() } label: {
+                    DrawerRow(
+                        icon: "waveform",
+                        title: "All recordings",
+                        isSelected: selectedFilter == .all,
+                        isDefaultFilter: true
+                    )
+                }
+                .buttonStyle(.plain)
 
-                    // Group 1: Default filters
+                Button { onSelectUnorganized() } label: {
+                    DrawerRow(
+                        icon: "folder-open",
+                        title: "Unorganized recordings",
+                        isSelected: selectedFilter == .unorganized,
+                        isDefaultFilter: true
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Button { onSettingsTap() } label: {
+                    DrawerRow(
+                        icon: "gear-six",
+                        title: "Settings",
+                        isSelected: false,
+                        isDefaultFilter: true
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 24)
+
+            // Group 2: User collections with title (scrollable)
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Collections")
+                    .font(.dmSansMedium(size: 14))
+                    .foregroundColor(.blueGray700)
+                    .padding(.horizontal, 12)
+
+                ScrollView {
                     VStack(spacing: 4) {
-                        Button { onSelectAll() } label: {
-                            DrawerRow(
-                                icon: "waveform",
-                                title: "All recordings",
-                                isSelected: selectedFilter == .all,
-                                isDefaultFilter: true
-                            )
-                        }
-                        .buttonStyle(.plain)
+                        // Add collection button - always visible
+                        Button {
+                            onAddCollection()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image("folder-plus")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.blueGray700)
 
-                        Button { onSelectUnorganized() } label: {
-                            DrawerRow(
-                                icon: "folder-open",
-                                title: "Unorganized recordings",
-                                isSelected: selectedFilter == .unorganized,
-                                isDefaultFilter: true
-                            )
-                        }
-                        .buttonStyle(.plain)
+                                Text("Add collection")
+                                    .font(.dmSansMedium(size: 16))
+                                    .foregroundColor(.blueGray700)
 
-                        Button { onSettingsTap() } label: {
-                            DrawerRow(
-                                icon: "gear-six",
-                                title: "Settings",
-                                isSelected: false,
-                                isDefaultFilter: true
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    // Group 2: User collections with title
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Collections")
-                            .font(.dmSansMedium(size: 14))
-                            .foregroundColor(.blueGray700)
+                                Spacer()
+                            }
                             .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.clear)
+                            .cornerRadius(8)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
 
-                        VStack(spacing: 4) {
-                            // Add collection button - always visible
+                        // Existing collections
+                        ForEach(collections) { collection in
                             Button {
-                                onAddCollection()
+                                onSelectCollection(collection)
                             } label: {
-                                HStack(spacing: 8) {
-                                    Image("folder-plus")
-                                        .resizable()
-                                        .renderingMode(.template)
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(.blueGray700)
-
-                                    Text("Add collection")
-                                        .font(.dmSansMedium(size: 16))
-                                        .foregroundColor(.blueGray700)
-
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.clear)
-                                .cornerRadius(8)
-                                .contentShape(Rectangle())
+                                DrawerRow(
+                                    title: collection.name,
+                                    recordingCount: recordings.filter {
+                                        $0.collections.contains { $0.id == collection.id }
+                                    }.count,
+                                    isSelected: selectedFilter == .collection(collection),
+                                    isDefaultFilter: false,
+                                    onRename: { onRename(collection) },
+                                    onDelete: { onDelete(collection) }
+                                )
                             }
                             .buttonStyle(.plain)
-
-                            // Existing collections
-                            ForEach(collections) { collection in
-                                Button {
-                                    onSelectCollection(collection)
-                                } label: {
-                                    DrawerRow(
-                                        title: collection.name,
-                                        recordingCount: recordings.filter {
-                                            $0.collections.contains { $0.id == collection.id }
-                                        }.count,
-                                        isSelected: selectedFilter == .collection(collection),
-                                        isDefaultFilter: false,
-                                        onRename: { onRename(collection) },
-                                        onDelete: { onDelete(collection) }
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                            }
                         }
                     }
                 }
-                .padding(.horizontal, 8)
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 40)
+                }
             }
-
-            Spacer(minLength: 0)
+            .padding(.horizontal, 8)
         }
         .frame(width: 300)
         .background(Color.blueGray100)
