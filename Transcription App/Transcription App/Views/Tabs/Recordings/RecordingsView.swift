@@ -184,7 +184,11 @@ struct RecordingsView: View {
                 modelContext: modelContext,
                 isPresented: $showMoveToCollection,
                 recordings: viewModel.selectedRecordingsArray(from: viewModel.filteredRecordings),
-                onMassMoveComplete: { viewModel.exitSelectionMode() }
+                onMassMoveComplete: {
+                    withAnimation(.none) {
+                        viewModel.exitSelectionMode()
+                    }
+                }
             )
         }
 
