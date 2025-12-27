@@ -270,16 +270,26 @@ struct RecordingDetailsView: View {
                 .foregroundColor(.blueGray400)
 
             if isEditingTitle {
-                TextField("", text: $editedTitle)
+                TextField("", text: $editedTitle, axis: .vertical)
                     .font(.dmSansSemiBold(size: 24))
                     .foregroundColor(.black)
                     .focused($isTitleFocused)
+                    .lineLimit(1...3)
                     .submitLabel(.done)
                     .onSubmit { saveTitleEdit() }
+                    .simultaneousGesture(
+                        // Add a simultaneous gesture that prevents tap propagation to ScrollView
+                        // but doesn't interfere with TextField's native gestures
+                        TapGesture(count: 1)
+                            .onEnded { _ in
+                                // Do nothing - just prevent propagation
+                            }
+                    )
             } else {
                 Text(recording.title)
                     .font(.dmSansSemiBold(size: 24))
                     .foregroundColor(recording.title == "Untitled recording" ? .blueGray400 : .black)
+                    .lineLimit(3)
                     .onTapGesture { startTitleEdit() }
             }
         }

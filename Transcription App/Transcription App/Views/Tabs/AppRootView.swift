@@ -189,7 +189,6 @@ struct AppRootView: View {
 
     private func handleMediaSave(audioURL: URL) {
         let filename = audioURL.deletingPathExtension().lastPathComponent
-        let maxLength = 50
 
         var cleanFilename = filename
         if filename.contains("-audio-") {
@@ -198,7 +197,7 @@ struct AppRootView: View {
             }
         }
 
-        let title = String(cleanFilename.prefix(maxLength))
+        let title = cleanFilename
 
         let recording = Recording(
             title: title,
